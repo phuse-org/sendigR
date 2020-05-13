@@ -144,7 +144,7 @@ addFindingsAnimalAge<-function(domain, findings, inclUncertainMsg=FALSE) {
     dm<-ExtractSubjData("DM",unique(findings[,.(STUDYID,USUBJID)]))[,.(STUDYID, USUBJID, RFSTDTC,BRTHDTC,AGETXT,AGE=as.numeric(AGE),AGEU)]
     dm[,AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)][,`:=` (AGEDAYS=suppressWarnings(as.numeric(AGEDAYStxt)), 
                                                                                      AGEDAYStxt=ifelse(!grepl("^[0-9]+$",AGEDAYStxt), AGEDAYStxt,NA))]
-
+    dm <- unique(dm)
     # Merge relevant findings columns with dm for age calculation
     dm_find<-merge(dm[,.(STUDYID, USUBJID, RFSTDTC, AGEDAYS, AGEDAYStxt)], findings[, .(STUDYID, USUBJID, seq=get(paste(toupper(domain),'SEQ', sep='')), dy=get(paste(toupper(domain),'DY', sep='')),dtc=get(paste(toupper(domain),'DTC', sep='')))])
     # Calculate the age of each animal at time of finding

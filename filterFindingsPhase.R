@@ -115,10 +115,10 @@ FilterFindingsPhase<-function(domain, findings, phase, inclUncertain=FALSE) {
     
     # Join DM with TA to get a list off all possible epochs per animal
                             # Extract DM rows for animals in the input list of findings
-    dmEpoch<-merge(setkeyv(ExtractSubjData("DM",unique(findings[,.(STUDYID,USUBJID)]))[,.(STUDYID,USUBJID,ARMCD)],
+    dmEpoch<-unique(merge(setkeyv(ExtractSubjData("DM",unique(findings[,.(STUDYID,USUBJID)]))[,.(STUDYID,USUBJID,ARMCD)],
                            c('STUDYID', 'ARMCD')),
                    setkeyv(TA[,.(STUDYID,ARMCD,ETCD,EPOCH=tolower(EPOCH))],c('STUDYID', 'ARMCD')), 
-                   allow.cartesian=TRUE)
+                   allow.cartesian=TRUE))
     
     # Join findings keys with Subject Elements to get actual element(s) where the findings --DTC is within the date range of the element(s).
     # There may be more than one element associated with a finding if the --DTC is within the interval of the end date in 
