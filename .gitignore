@@ -7,3 +7,6 @@
 
 # ignore sysParameters.R for now
 sysParameters.R
+
+# data folders
+/data
