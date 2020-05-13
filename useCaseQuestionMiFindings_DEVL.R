@@ -42,19 +42,18 @@ pStudyDesign      <-  "PARALLEL"         # CT: DESIGN
 #pSpecies          <-  "RAT"              # CT: SPECIES (extensible)
 #pStrain           <-  "SPRAGUE-DAWLEY"   # CT: STRAIN  (extensible)
 #pStrain           <-  "WISTAR"
-pSpecies          <-  "RAT"
-#pStrain          <-  "WISTAR"
-pStrain           <- c("WISTAR","SPRAGUE-DAWLEY")
-#pRoute           <-  c("SUBCUTANEOUS")     # CT: ROUTE   (extensible)
-#pRoute           <- c("INTRAPERITONEAL")
-pRoute            <- c("INTRAVENOUS BOLUS", "SUBCUTANEOUS")
+pSpecies          <-  "DOG"
+pStrain           <- "BEAGLE"
+# pRoute            <-  "SUBCUTANEOUS"     # CT: ROUTE   (extensible)
+#pRoute            <- "INTRAVENOUS BOLUS"
+pRouteList        <-c("ORAL", "ORAL GAVAGE")
 pFromDTC          <-  "2017"
-pToDTC            <-  "2019"
+pToDTC            <-  "2020"
 pSex              <-  "M"                # CT: SEX
 pStudyPhase       <-  "Treatment"        # Valid: "Screening", "Treatment", "Recovery"
-pStudyPhaseInclUncertain <- TRUE    # Valid: TRUE, FALSE
-pFindingsFromAge  <-  "4m"
-pFindingsToAge    <-  "6m"
+pStudyPhaseInclUncertain <- FALSE    # Valid: TRUE, FALSE
+pFindingsFromAge  <-  "12m"
+pFindingsToAge    <-  "18m"
 ###################################################################################
 
 library(data.table)
