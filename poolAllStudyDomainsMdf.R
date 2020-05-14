@@ -87,11 +87,6 @@ for (domain in allDomains){
   variables <- c(variables, as.vector(domainVariables31[domainVariables31$Domain.Prefix == domain,]$Variable.Name))
   variables <- c(variables, c(paste(domain, 'REFID', sep="")))
   
-  if (domain == 'RELREC') {
-    variables <- c(variables, c(paste(domain, 'SEQ', sep="")))
-    variables <- c(variables, c(paste(domain, 'GRPID', sep="")))
-  }
-  
   # if any variables end in DY make VISITDY permissible
   if (any(grepl("[a-zA-Z]{2}DY", variables))) {
     variables <- c(variables, c("VISITDY"))
