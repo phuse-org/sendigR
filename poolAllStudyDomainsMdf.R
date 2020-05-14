@@ -361,7 +361,7 @@ invalidFolders <- c()
 reason <- c()
 times <- c()
 
-for (defineFile in defineFiles[1:100]) {
+for (defineFile in defineFiles) {
   studyFolder <- dirname(defineFile)
   invalidFile <- file.path(studyFolder, 'invalid.csv')
   if (!file.exists(invalidFile)) {
