@@ -1,5 +1,5 @@
 ###################################################################################
-# Script name   : poolAllStudyDomains.R
+# Script name   : poolAllStudyDomainsMDf.R
 # Date Created  : 7-May-2020
 # Documentation : <if relevant, reference to specification document>
 # Programmer    : Daniel P. Russo
@@ -49,15 +49,14 @@ library(sjlabelled)
 
 start<-Sys.time()
 
-# Avoid that character strings are converted to factors
-#options(stringsAsFactors = FALSE)
-
-# Base folders
-# these come from the shared box drive
 
 studyRoot <- Sys.getenv('SEND_DATA_V2')
-metadataRoot <- file.path(studyRoot, 'metadata')
-domainVariablesFile <- file.path(studyRoot, 'metadata', 'variables.csv')
+metadataRoot <- file.path(dirname(studyRoot), 'metadata')
+domainVariablesFile30 <- file.path(metadataRoot, 'variables30.csv')
+domainVariablesFile31 <- file.path(metadataRoot, 'variables31.csv')
+domainVariables30 <- read.csv(domainVariablesFile30, stringsAsFactors = FALSE)[c('Domain.Prefix', 'Variable.Name', 'Type')]
+domainVariables31 <- read.csv(domainVariablesFile31, stringsAsFactors = FALSE)[c('Domain.Prefix', 'Variable.Name', 'Type')]
+
 dbRoot <- Sys.getenv('SEND_DB_V3')
 
 # connect to database
@@ -70,7 +69,7 @@ notGeneralDataDomains<-c("TS","TA","TE","TX","DM","POOLDEF","SUPPQUAL", "RELREC"
 # list of data domains
 suppDomains<-paste("SUPP",setdiff(allDomains, notGeneralDataDomains), sep="")
 
-domainVariables <- read.csv(domainVariablesFile, stringsAsFactors = FALSE)[c('Domain.Prefix', 'Variable.Name', 'Type')]
+
 
 # list all define.xml
 
@@ -79,6 +78,22 @@ defineFiles <- list.files(path.expand(studyRoot)
                       ,recursive = T
                       ,full.names = T
                       ,ignore.case = T)
+
+# create a list of ALL accepable variables within a domain
+
+variableList <- list()
+for (domain in allDomains){
+  variables <- as.vector(domainVariables30[domainVariables30$Domain.Prefix == domain,]$Variable.Name)
+  variables <- c(variables, as.vector(domainVariables31[domainVariables31$Domain.Prefix == domain,]$Variable.Name))
+  variables <- c(variables, c(paste(domain, 'REFID', sep="")))
+  
+  # if any variables end in DY make VISITDY permissible
+  if (any(grepl("[a-zA-Z]{2}DY", variables))) {
+    variables <- c(variables, c("VISITDY"))
+  }
+  
+  variableList[[domain]] <- unique(variables)
+}
 
 
 
@@ -136,8 +151,9 @@ HasValidXPTs <- function(studyRoot) {
 HasProperVaraiblesInDomains <- function(folder) {
   for (domain in allDomains) {
     
-    variables <- domainVariables[domainVariables$Domain.Prefix == domain,]$Variable.Name
     allTrue <- TRUE
+    
+    variables <- variableList[[domain]]
     
     if (domain != 'SUPPQUAL') {
   
@@ -149,23 +165,12 @@ HasProperVaraiblesInDomains <- function(folder) {
         studyData <- remove_all_labels(read.xport(dmFile, as.is=T))
         
         valRegEx <- paste(domain, "VAL[0-9]+", sep="")
-        # only allow varaibles listed in the domain or any of the
-        # sort DMVAL1, DMVAL2, etc...
-        # this is rejecting some variables that were allowed in 
-        # IG 3.0 and remove in 3.1
-        # it also would reject 'permitted' values if they have 
-        # no column 
-        varaibles <- as.vector(variables)
-        
-        if (domain == 'BW') {
-          variables <- c(variables, c("BWREFID"))
-        } else if (domain == 'BG') {
-          variables <- c(variables, c("BGELTM", "BGTPTREF", "BGRFTDTC"))
-        }
-        
-        
+
         if (!all(colnames(studyData) %in% variables | grepl(valRegEx, colnames(studyData)))) {
           allTrue <- FALSE
+          # print(variables)
+          print(colnames(studyData)[(!colnames(studyData) %in% variables)])
+          # print(dmFile)
           break
         }
       }
@@ -304,19 +309,15 @@ if (!'AN' %in% dbListTables(db)) {
   dbExecute(db, 'CREATE TABLE AN (STUDYID, APPNUMBER, EDRMDF)')
 }
 
-
-
-
 for (domain in allDomains) {
-  variables <- domainVariables[domainVariables$Domain.Prefix == domain,]$Variable.Name
-  v <- as.vector(variables)
   
-  if (domain == 'BW') {
-    v <- c(v, c("BWREFID"))
-  } else if (domain == 'BG') {
-    v <- c(v, c("BGELTM", "BGTPTREF", "BGRFTDTC"))
-  }
+  # for making the tables, only use the variables
+  # listed in the IGs, instead of all the acceptable
+  # variables for a domain
+  variables <- as.vector(domainVariables30[domainVariables30$Domain.Prefix == domain,]$Variable.Name)
+  v <- unique(c(variables, as.vector(domainVariables31[domainVariables31$Domain.Prefix == domain,]$Variable.Name)))
   
+
   if ((!domain %in% dbListTables(db)) & (domain != 'SUPPQUAL')) {
     
     queryString <- paste('CREATE TABLE ', domain, ' ( ')
@@ -360,7 +361,7 @@ invalidFolders <- c()
 reason <- c()
 times <- c()
 
-for (defineFile in defineFiles) {
+for (defineFile in defineFiles[1:100]) {
   studyFolder <- dirname(defineFile)
   invalidFile <- file.path(studyFolder, 'invalid.csv')
   if (!file.exists(invalidFile)) {
@@ -388,8 +389,8 @@ logFrame <- data.frame(INVALID_FOLDERS=invalidFolders, REASON=reason, TIME=times
 logFileName <- file.path(studyRoot, '.sqliteload.log')
 
 if (file.exists(logFileName)) {
-  oldLogFrame <- pd.read.csv(logFileName, stringsAsFactors=FALSE)
-  logFrame <- rbind(logFrame, logFileName)
+  oldLogFrame <- read.csv(logFileName, stringsAsFactors=FALSE)
+  logFrame <- rbind(oldLogFrame, logFrame)
 }
 
 write.csv(logFrame, logFileName)
@@ -455,7 +456,7 @@ for (studyFolder in studyFolders) {
         # varaibles that can have VAL1, Val2, etc....
         columns <- dbGetQuery(db, sprintf('PRAGMA table_info(%s);', domain))$name
         valRegEx <- paste(domain, "VAL[0-9]+", sep="")
-        studyData <- studyData[colnames(studyData) %in% columns | grepl(valRegEx, colnames(studyData))]
+        studyData <- studyData[colnames(studyData) %in% variableList[domain] | grepl(valRegEx, colnames(studyData))]
         
         # now on the fly we need to write columns 
         # that may not be in the database 
@@ -466,7 +467,7 @@ for (studyFolder in studyFolders) {
           
         }
         
-        dbWriteTable(db, domain, studyData, append=TRUE)
+        dbWriteTable(db, domain, unique(studyData), append=TRUE)
         
       }
     }
