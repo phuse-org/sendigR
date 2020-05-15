@@ -18,7 +18,6 @@ require(dplyr)
 
 # will import the TS Domain
 importSENDDomains('TS')
-
 uniqueStudiesTS <- length(unique(TS$STUDYID))
 
 # 1763 unique studies
@@ -80,9 +79,9 @@ length(uniqueStudiesDM)
 dmSpecies <- DM[,c('STUDYID', 'SPECIES')] 
 
 # count number of unique studies where dm is nan
-length(unique(dmSpecies$STUDYID[!is.na(dmSpecies$SPECIES)]))
+length(unique(dmSpecies$STUDYID[((!is.na(dmSpecies$SPECIES)) & (dmSpecies$SPECIES != ''))]))
 
-# 622/1763  35% vs 44% in manuscript.  --- am i doing this right??
+# 110/1763  35% vs 44% in manuscript.  --- am i doing this right??
 
 
 #### Table # ####
@@ -142,6 +141,7 @@ cont_terms <- readxl::read_excel('data/SEND Terminology 2019-09-27.xls', sheet =
 
 
 sum(findings_30$MISTRESC %in% cont_terms) / length(findings_30$MISTRESC)
+
 sum(findings_31$MISTRESC %in% cont_terms) / length(findings_31$MISTRESC)
 # 94.30 vs 95.6
 
@@ -150,6 +150,6 @@ frequencyMI30 <- findings_30 %>%
                   arrange(desc(n))
 
 
-write.csv(frequencyMI30, 'data/freqMIFindings30.csv'
+write.csv(frequencyMI30, 'data/freqMIFindings30.csv')
 
           
