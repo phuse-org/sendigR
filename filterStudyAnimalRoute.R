@@ -10,11 +10,8 @@
 # <init/dd-Mon-yyyy>  <description>
 #
 # -------------------------------------------------------------------------------
-# Purpose       : 1 - Extract a list of SEND study ids which fulfills a specified 
-#                     route of administration from a pooled SEND data store.
-#                 2 - Extract a list of animal ids for the list of study ids which 
-#                     fulfils the specified route of administration for studies where 
-#                     more than one route of administration is specified at study level.
+# Purpose       : Extract studies and animals which fulfills a specified  route of 
+#                 administration from a pooled SEND data store.
 #
 # Description   : Two function are defined 
 #                   - GetStudyListROUTE
@@ -75,16 +72,13 @@ GetStudyListROUTE<-function(routeFilter=NULL, studyList=NULL) {
   }
   
   # Extract all TS rows for parameter ROUTE, rename TSVAL to ROUTE - remove duplicates
-  TSAllROUTE<-unique(TS[TSPARMCD == 'ROUTE', .(STUDYID,ROUTE=toupper(TSVAL))])
+  TSAllROUTE<-unique(TS[TSPARMCD == 'ROUTE', .(STUDYID,ROUTE=toupper(trimws(TSVAL)))])
   
   if (!(is.null(studyList) | isTRUE(is.na(studyList)) | isTRUE(studyList==''))) {
     # Limit to the set of studies given as input
     TSAllROUTE<-merge(TSAllROUTE,studyList, by='STUDYID') 
   } 
     
-  # Extract all TS rows for parameter ROUTE, rename TSVAL to ROUTE - remove duplicates
-  TSAllROUTE<-unique(TS[TSPARMCD == 'ROUTE', .(STUDYID,ROUTE=toupper(TSVAL))])
- 
   # Add variable with count of number of distinct routes per study
   TSAllROUTE[, `:=` (NUM_ROUTE = .N), by = STUDYID]
  
@@ -165,12 +159,12 @@ FilterAnimalListRoute<-function(animalList=NULL, routeFilter=NULL) {
   #  - join with EX to get all rows for these studies - include only rows where EXROUTE fits the routeFIlter
   #  - outer join with POOLDEF to get USUBJID for pools included in EX
   #  - join with unique set of studyid/usubjid from animalList to extract the animals to include in the output table
-  EXLvlAnimals<-merge(merge(unique(merge(EX[EXROUTE %in% routeFilter,.(STUDYID, USUBJID, POOLID, ROUTE=EXROUTE)],
+  EXLvlAnimals<-merge(merge(unique(merge(EX[toupper(trimws(EXROUTE)) %in% toupper(trimws(routeFilter)),.(STUDYID, USUBJID, POOLID, ROUTE=toupper(trimws(EXROUTE)))],
                                    fsetdiff(animalStudies, studyLvlAnimals[,.(STUDYID)]),
                                    by='STUDYID')),
                             POOLDEF[,.(STUDYID, POOLID, USUBJID)],
                             by=c('STUDYID', 'POOLID'),all.x=TRUE
-                           )[, USUBJID := mapply(ifelse,USUBJID.x=='',USUBJID.y,USUBJID.x )][,.(STUDYID, USUBJID, ROUTE)],
+                           )[, USUBJID := as.character(mapply(ifelse,USUBJID.x=='',USUBJID.y,USUBJID.x ))][,.(STUDYID, USUBJID, ROUTE)],
                       unique(animalList[,.(STUDYID,USUBJID)]), by=c('STUDYID', 'USUBJID'))
   
   # Return the list of extracted animals merged with the input set of animals to keep

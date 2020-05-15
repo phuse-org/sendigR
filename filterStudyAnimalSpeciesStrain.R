@@ -10,7 +10,7 @@
 # <init/dd-Mon-yyyy>  <description>
 #
 # -------------------------------------------------------------------------------
-# Purpose       : Extract a list of SEND study ids which fulfills a specified species
+# Purpose       : Extract studies and animals which fulfills a specified species
 #                 value and optional strain value from a pooled SEND data store.
 #
 # Description   : Two function are defined 
@@ -28,16 +28,15 @@
 #   - Full validation of input parameters (strainFilter only allowed if single speciesFulter value)
 ###################################################################################
 library(data.table)
-#library(DescTools)
 
 ###################################################################################
 # Function:     : GetStudyListSPECIES_STRAIN
 #
 # Description   : Returns a data table with a list of studyid, species and strain values
 #                 extracted from TS (where TSPARMCD in ('SPECIES', 'STRAIN') where
-#                 the TSVAL for species is equal to a given species input value and the  
-#                 TSVAL for strain is equal to a given strain input value (it,s optional 
-#                 to specify a strain input value).
+#                 the TSVAL for species is equal to a given species or within a list of 
+#                 species given as input and the TSVAL for strain is equal to a given 
+#                 strain or within a list of strains given as input value.
 #                 The comparisons of species and strain values are done case insensitive.
 #                 The TSVAL values for species and strains are joined together per 
 #                 STUDYID and TSGRPID and renamed to SPECIES and STRAIN respectively.
@@ -66,12 +65,16 @@ library(data.table)
 #                     NUM_SPECIES_STRAIN  (character) 
 #                       - the number of distinct species/strain values per STUDYID
 #
-# Parameters    : speciesFilter:  mandatory, the species to use as criterion for filtering of the
-#                                 study id values.
-#                                 It can be a single string, a vector or a list of multiple strings.
-#                 strainFilter:   optional, the strain to use as criterion for filtering of the
-#                                 study id values.
-#                                 It can be a single string, a vector or a list of multiple strings.
+# Parameters    : speciesFilter:  mandatory, the  species(s) to use as criterion for 
+#                                 filtering of the input data table.
+#                                 It can be a single string, a vector or a list of 
+#                                 multiple strings.
+#                 strainFilter:   optional, the  strains(s) to use as criterion for 
+#                                 filtering of the input data table.
+#                                 Only allowed when a single value is specified for 
+#                                 speciesFilter.
+#                                 It can be a single string, a vector or a list of 
+#                                 multiple strings.
 #                 studyList:      optional, a data table with a list of studies to 
 #                                 limit the output to be within this set of studies
 #
@@ -82,6 +85,15 @@ GetStudyListSPECIES_STRAIN<-function(speciesFilter=NULL, strainFilter=NULL, stud
     stop("SpeciesFilter must be specified")
   } 
   
+  InclStrainFilter<-FALSE
+  if (!(is.null(strainFilter) | isTRUE(is.na(strainFilter)) | isTRUE(strainFilter==""))) {
+    # check if strainFilter is allowed...
+    if (length(speciesFilter) > 1) {
+      stop("Not possible to handle strainFilter when speciesFilter contains multiple values")
+    }
+    InclStrainFilter<-TRUE
+  }
+    
   if (!exists("TS")) {
     # import TS if it's not already exists
     importSENDDomains(c("TS"))
@@ -91,8 +103,8 @@ GetStudyListSPECIES_STRAIN<-function(speciesFilter=NULL, strainFilter=NULL, stud
   #  - rename TSVAL to SPECIES and STRAIN respectively
   #  - merge into one table
   #  - remove duplicates
-  TSAllSPECIES_STRAIN<-unique(merge(TS[TSPARMCD=='SPECIES', .(STUDYID,TSGRPID, SPECIES=toupper(TSVAL))], 
-                                    TS[TSPARMCD=='STRAIN', .(STUDYID,TSGRPID, STRAIN=toupper(TSVAL))],
+  TSAllSPECIES_STRAIN<-unique(merge(TS[TSPARMCD=='SPECIES', .(STUDYID,TSGRPID, SPECIES=toupper(trimws(TSVAL)))], 
+                                    TS[TSPARMCD=='STRAIN', .(STUDYID,TSGRPID, STRAIN=toupper(trimws(TSVAL)))],
                                     by=c('STUDYID','TSGRPID'))[,.(STUDYID,SPECIES,STRAIN)])
     
   # Add variable with count of of distinct
@@ -104,7 +116,7 @@ GetStudyListSPECIES_STRAIN<-function(speciesFilter=NULL, strainFilter=NULL, stud
   # species part of filter condition
   where<-"SPECIES %in% toupper(trimws(speciesFilter))"
   
-  if (!(is.null(strainFilter) | isTRUE(is.na(strainFilter)) | isTRUE(strainFilter==""))) {
+  if (InclStrainFilter) {
     # a strain has been specified - add this part to filter condition
     where<-paste(where, " & STRAIN %in% toupper(trimws(strainFilter))", sep="")
   }
@@ -114,12 +126,11 @@ GetStudyListSPECIES_STRAIN<-function(speciesFilter=NULL, strainFilter=NULL, stud
   return(eval(str2lang(expr)))
 }
 
-
 ###################################################################################
 # Function:     : FilterAnimalListSpeciesStrain
 #
 # Description   : Returns a data table with a set of animals extratced from the table of  
-#                 animals given as input where the animals fits the species vaæue(s) given 
+#                 animals given as input where the animals fits the species value(s) given 
 #                 as input (a list of multiple species values may be 
 #                 given as input) and also fits the strain value(s) if given as input (optional).
 #                 Animals from the input set, which are included in studies where one of  
@@ -130,14 +141,14 @@ GetStudyListSPECIES_STRAIN<-function(speciesFilter=NULL, strainFilter=NULL, stud
 #                   - with no species/strain value registered  or  
 #                   - with more than one species/strain value registered
 #                 in TS are included in the output set if they exists in DM with matching 
-#                 DM.SPECIES or DM.SPECIES/STRAIN values or are included in TX in rial set 
-#                 with match TX.SPECIES or TX.SPECIES/STRAIN (i.e. TXVAL where TXPARMCD is 
+#                 DM.SPECIES or DM.SPECIES/STRAIN values or are included in TX in a trial set 
+#                 with matching TX.SPECIES or TX.SPECIES/STRAIN (i.e. TXVAL where TXPARMCD is 
 #                 SPECIES' or 'STRAIN')
 #                 The comparisons of the species and strain values are done case 
 #                 insensitive.
 #
 # Input         : The TX and DM domains - are imported from the pooled SEND data store if 
-#                 the doen't exist in workspace.
+#                 the don't exist in workspace.
 #                 Data tables specified in the input parameters:
 #                   - animalList
 #                     The list a animals to be filtered.
@@ -146,10 +157,11 @@ GetStudyListSPECIES_STRAIN<-function(speciesFilter=NULL, strainFilter=NULL, stud
 #                       USUBJID
 #                     other variables may be included
 #                   
-#
-# Output        : A data table with two character columns:
-#                   STUDYID
-#                   USUBJID
+# Output        : A data table with the same columns and a subset of rows from the input table
+#                 - plus additional character columns
+#                     SPECIES
+#                     STRAIN (if strainFilter has been specified)
+#                   with the actual species/strain values
 #
 # Parameters    : animalList:     mandatory, data table (see Input).
 #                 speciesFilter:  mandatory, the  species(s) to use as criterion for 
@@ -167,11 +179,21 @@ GetStudyListSPECIES_STRAIN<-function(speciesFilter=NULL, strainFilter=NULL, stud
 FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strainFilter=NULL) {
   
   if (is.null(animalList) | isTRUE(is.na(animalList)) | isTRUE(animalList=="")) {
-    stop("Input parameter animalList must have assigned a data table ")
+    stop("animalList must be be specified with a data table")
   } 
+  
   if (is.null(speciesFilter) | isTRUE(is.na(speciesFilter)) | isTRUE(speciesFilter=="")) {
-    stop("SpeciesFilter must be specified")
+    stop("speciesFilter must be specified")
   } 
+  
+  InclStrainFilter<-FALSE
+  if (!(is.null(strainFilter) | isTRUE(is.na(strainFilter)) | isTRUE(strainFilter==""))) {
+    # check if strainFilter is allowed...
+    if (length(speciesFilter) > 1) {
+      stop("Not possible to handle strainFilter when speciesFilter contains multiple values")
+    }
+    InclStrainFilter<-TRUE
+  }
   
   # List of studyid values included in the input table of animals
   animalStudies<-unique(animalList[,.(STUDYID)])
@@ -187,14 +209,14 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
   # Get list of studies with SPECIES/STRAIN parameter value(s) included in the speciesFIlter/strainFilter
   tsSPECIES_STRAIN<-GetStudyListSPECIES_STRAIN(speciesFilter, strainFilter, animalStudies)
   
-  if ((is.null(strainFilter) | isTRUE(is.na(strainFilter)) | isTRUE(strainFilter==""))) {
+  if (!InclStrainFilter) {
     # Only speciesFilter has been specified:
     
-    # Extract list of animals for studies with only one SPECIES specified in TS
-    studyLvlAnimals<-merge(tsSPECIES_STRAIN[NUM_SPECIES==1, .(STUDYID, SPECIES, STRAIN)], 
-                           animalList[,.(STUDYID, USUBJID)], by='STUDYID')[,.(STUDYID, USUBJID, SPECIES, STRAIN)]
+    # Extract list of all animals for studies with only one SPECIES specified in TS
+    studyLvlAnimals<-merge(tsSPECIES_STRAIN[NUM_SPECIES==1, .(STUDYID, SPECIES)], 
+                           animalList[,.(STUDYID, USUBJID)], by='STUDYID')[,.(STUDYID, USUBJID, SPECIES)]
     
-    # Extract list of animals belonging to studies with no species value registered or with more 
+    # Extract list of animals belonging to studies with no species value registered in TS or with more 
     # than one species value registered in TS:
     #  - extract list of studies included in animalList which are not included in studyLvlAnimals
     #  - join with DM to get all rows for these studies 
@@ -203,21 +225,22 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
     #  - include only rows where SPECIES fits the speciesFIlter
     #  - join with unique set of studyid/usubjid from animalList to extract the animals to include in the output table
     TxDmLvlAnimals<-
-      merge(merge(merge(DM[,.(STUDYID, SETCD, USUBJID, dmSPECIES=toupper(SPECIES))],
-                        fsetdiff(animalStudies, studyLvlAnimals[,.(STUDYID)]),
+      merge(merge(merge(DM[,.(STUDYID, SETCD, USUBJID, dmSPECIES=toupper(trimws(SPECIES)))],
+                        fsetdiff(animalStudies, 
+                                 studyLvlAnimals[,.(STUDYID)]),
                         by='STUDYID'),
-                  TX[TXPARMCD=='SPECIES',.(STUDYID, SETCD, txSPECIES=toupper(TXVAL))],
-                  by=c('STUDYID','SETCD'),all.x = TRUE)[,.(STUDYID, USUBJID, SPECIES = fcoalesce(dmSPECIES, txSPECIES))][SPECIES %in% speciesFilter],
+                  TX[TXPARMCD=='SPECIES',.(STUDYID, SETCD, txSPECIES=toupper(trimws(TXVAL)))],
+                  by=c('STUDYID','SETCD'),all.x = TRUE)[,.(STUDYID, USUBJID, SPECIES = fcoalesce(dmSPECIES, txSPECIES))][SPECIES %in% toupper(trimws(speciesFilter))],
             unique(animalList[,.(STUDYID,USUBJID)]), 
             by=c('STUDYID', 'USUBJID'))
   } else {
     # Both species and strain have been specified:
     
-    # Extract list of animals for studies with only one SPECIES and STRAIN specified in TS
+    # Extract list of all animals for studies with only one SPECIES and STRAIN specified in TS
     studyLvlAnimals<-merge(tsSPECIES_STRAIN[NUM_SPECIES_STRAIN==1, .(STUDYID, SPECIES, STRAIN)], 
                            animalList[,.(STUDYID, USUBJID)], by='STUDYID')[,.(STUDYID, USUBJID, SPECIES, STRAIN)]
     
-    # Extract list of animals belonging to studies with no species/strain value registered or with more 
+    # Extract list of animals belonging to studies with no species/strain value registered in TS or with more 
     # than one species/strain values registered in TS:
     #  - extract list of studies included in animalList which are not included in studyLvlAnimals
     #  - join with DM to get all rows for these studies 
@@ -226,19 +249,21 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
     #  - include only rows where SPECIES and STRAIN fits the speciesFilter and strainFilter respectively
     #  - join with unique set of studyid/usubjid from animalList to extract the animals to include in the output table
     TxDmLvlAnimals<-
-      merge(merge(merge(DM[,.(STUDYID, SETCD, USUBJID, dmSPECIES=toupper(SPECIES), dmSTRAIN=toupper(STRAIN))],
-                        fsetdiff(animalStudies, studyLvlAnimals[,.(STUDYID)]),
+      merge(merge(merge(DM[,.(STUDYID, SETCD, USUBJID, dmSPECIES=toupper(SPECIES), dmSTRAIN=toupper(trimws(STRAIN)))],
+                        fsetdiff(animalStudies, 
+                                 studyLvlAnimals[,.(STUDYID)]),
                         by='STUDYID'),
-                  merge(TX[TXPARMCD=='SPECIES',.(STUDYID, SETCD, txSPECIES=toupper(TXVAL))],
-                        TX[TXPARMCD=='STRAIN',.(STUDYID, SETCD, txSTRAIN=toupper(TXVAL))],
+                  merge(TX[TXPARMCD=='SPECIES',.(STUDYID, SETCD, txSPECIES=toupper(trimws(TXVAL)))],
+                        TX[TXPARMCD=='STRAIN',.(STUDYID, SETCD, txSTRAIN=toupper(trimws(TXVAL)))],
                         by=c('STUDYID','SETCD'),all = TRUE),
-                  by=c('STUDYID','SETCD'),all.x = TRUE)[,.(STUDYID, USUBJID, SPECIES = fcoalesce(dmSPECIES, txSPECIES), STRAIN = fcoalesce(dmSTRAIN, txSTRAIN))][SPECIES %in% speciesFilter & STRAIN %in% strainFilter],
+                  by=c('STUDYID','SETCD'),all.x = TRUE)[,.(STUDYID, USUBJID, SPECIES = fcoalesce(dmSPECIES, txSPECIES), STRAIN = fcoalesce(dmSTRAIN, txSTRAIN))][SPECIES %in% toupper(trimws(speciesFilter)) & STRAIN %in% toupper(trimws(strainFilter))],
             unique(animalList[,.(STUDYID,USUBJID)]), 
             by=c('STUDYID', 'USUBJID'))
   }
+  
   # Return the list of extracted animals merged with the input set of animals to keep
   # any additional columns from the input table 
   return(merge(animalList,
-               rbindlist(list(studyLvlAnimals, TxDmLvlAnimals),use.names=TRUE, fill=TRUE),
+               rbindlist(list(studyLvlAnimals, TxDmLvlAnimals), use.names=TRUE, fill=TRUE),
                by=c('STUDYID', 'USUBJID'))) 
 }
