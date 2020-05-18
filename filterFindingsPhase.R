@@ -133,10 +133,10 @@ FilterFindingsPhase<-function(domain, findings, phase, inclUncertain=FALSE) {
                                             # elements start/end dates 
                                                                 # If a --DTC or SESTDTC value misses the timepart 
                                                                 # - it's automatically calculated as 00:00:00
-                       allow.cartesian=TRUE)[between(parse_iso_8601(DTC),
-                                                     parse_iso_8601(SESTDTC),
-                                                     # If a SEENDTC values misses the timepart - it's calculated as 23:59:59
-                                                     parse_iso_8601(ifelse(grepl("T",SEENDTC),SEENDTC,paste(SEENDTC,"T23:59:59",sep=""))))]
+                       allow.cartesian=TRUE)[data.table::between(parse_iso_8601(DTC),
+                                                         parse_iso_8601(SESTDTC),
+                                                         # If a SEENDTC values misses the timepart - it's calculated as 23:59:59
+                                                         parse_iso_8601(ifelse(grepl("T",SEENDTC),SEENDTC,paste(SEENDTC,"T23:59:59",sep=""))))]
 
     # Add number of distinct elements per finding to identify if more then one element fits the finding date
     findElement[,`:=` (NUM_ELEMENT = .N), by = .(STUDYID,USUBJID,SEQ)]
