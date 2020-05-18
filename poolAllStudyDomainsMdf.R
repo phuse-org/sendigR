@@ -92,7 +92,12 @@ for (domain in allDomains){
     variables <- c(variables, c("VISITDY"))
   }
   
-  variableList[[domain]] <- unique(variables)
+  if (domain == 'SUPPQUAL') {
+    for (suppdomain in suppDomains)
+      variableList[[suppdomain]] <- unique(variables)
+  } else {
+    variableList[[domain]] <- unique(variables)
+  }
 }
 
 
@@ -384,16 +389,16 @@ for (defineFile in defineFiles) {
   }
 }
 
-logFrame <- data.frame(INVALID_FOLDERS=invalidFolders, REASON=reason, TIME=times)
-
-logFileName <- file.path(studyRoot, '.sqliteload.log')
-
-if (file.exists(logFileName)) {
-  oldLogFrame <- read.csv(logFileName, stringsAsFactors=FALSE)
-  logFrame <- rbind(oldLogFrame, logFrame)
-}
-
-write.csv(logFrame, logFileName)
+# logFrame <- data.frame(INVALID_FOLDERS=invalidFolders, REASON=reason, TIME=times)
+# 
+# logFileName <- file.path(studyRoot, '.sqliteload.log')
+# 
+# if (file.exists(logFileName)) {
+#   oldLogFrame <- read.csv(logFileName, stringsAsFactors=FALSE)
+#   logFrame <- rbind(oldLogFrame, logFrame)
+# }
+# 
+# write.csv(logFrame, logFileName, row.names=FALSE)
 
 
 for (studyFolder in studyFolders) {
@@ -456,8 +461,9 @@ for (studyFolder in studyFolders) {
         # varaibles that can have VAL1, Val2, etc....
         columns <- dbGetQuery(db, sprintf('PRAGMA table_info(%s);', domain))$name
         valRegEx <- paste(domain, "VAL[0-9]+", sep="")
-        studyData <- studyData[colnames(studyData) %in% variableList[domain] | grepl(valRegEx, colnames(studyData))]
+        studyData <- studyData[colnames(studyData) %in% variableList[[domain]] | grepl(valRegEx, colnames(studyData))]
         
+
         # now on the fly we need to write columns 
         # that may not be in the database 
         

@@ -42,19 +42,19 @@ pStudyDesign      <-  "PARALLEL"         # CT: DESIGN
 #pSpecies          <-  "RAT"              # CT: SPECIES (extensible)
 #pStrain           <-  "SPRAGUE-DAWLEY"   # CT: STRAIN  (extensible)
 #pStrain           <-  "WISTAR"
-pSpecies          <-  "RAT"
+pSpecies          <-  "DOG"
 #pStrain          <-  "WISTAR"
-pStrain           <- c("WISTAR","SPRAGUE-DAWLEY")
+pStrain           <- c("BEAGLE")
 #pRoute           <-  c("SUBCUTANEOUS")     # CT: ROUTE   (extensible)
 #pRoute           <- c("INTRAPERITONEAL")
-pRoute            <- c("INTRAVENOUS BOLUS", "SUBCUTANEOUS")
+pRoute            <- c("ORAL", "ORAL GAVAGE")
 pFromDTC          <-  "2017"
-pToDTC            <-  "2019"
+pToDTC            <-  "2020"
 pSex              <-  "M"                # CT: SEX
 pStudyPhase       <-  "Treatment"        # Valid: "Screening", "Treatment", "Recovery"
-pStudyPhaseInclUncertain <- TRUE    # Valid: TRUE, FALSE
-pFindingsFromAge  <-  "4m"
-pFindingsToAge    <-  "6m"
+pStudyPhaseInclUncertain <- FALSE    # Valid: TRUE, FALSE
+pFindingsFromAge  <-  "12m"
+pFindingsToAge    <-  "18m"
 ###################################################################################
 
 library(data.table)
@@ -76,11 +76,26 @@ source("subjDataExtract.R")
 source("filterFindingsPhase.R")
 source("addFindingsAnimalAge.R")
 source("filterFindingsAnimalAge.R")
+source("dbManager.R")
+
+
+# total studies
+totalStudiesTS <- GenericQuery('SELECT DISTINCT STUDYID FROM TS')
+
+nStudiesTotal <- nrow(totalStudiesTS)
+
+print(sprintf("Total Number of Studies in TS: %s", nStudiesTotal))
+
+#studiesSPECIES_STRAIN<-GetStudyListSPECIES_STRAIN(pSpecies, pStrain)
+studiesSTSTDTC<-GetStudyListSTSTDTC(pFromDTC,pToDTC)
+
+nStudies <- nrow(studiesSTSTDTC)
+
+print(sprintf("Studies after Start Date: %s/%s", nStudies, nStudiesTotal))
+
 
 # Extract list of studies per condition
 studiesSDESIGN<-GetStudyListSDESIGN(pStudyDesign)
-#studiesSPECIES_STRAIN<-GetStudyListSPECIES_STRAIN(pSpecies, pStrain)
-studiesSTSTDTC<-GetStudyListSTSTDTC(pFromDTC,pToDTC)
 
 # Get the combined list of all studies to look into 
 studiesAll<-merge(studiesSDESIGN, studiesSTSTDTC, by='STUDYID')
@@ -88,17 +103,60 @@ studiesAll<-merge(studiesSDESIGN, studiesSTSTDTC, by='STUDYID')
 # Get a unique list of the study ud values
 studiesAllID<-unique(studiesAll[ ,.(STUDYID)])
 
+nStudies <- nrow(studiesAllID)
+
+print(sprintf("Studies after Study Design: %s/%s", nStudies, nStudiesTotal))
+
+
+# total animals
+totalAnimalsDM <- GenericQuery('SELECT DISTINCT USUBJID FROM DM')
+
+nAnimalsTotal <- nrow(totalAnimalsDM)
+
 # Extract subset of of all control animals for the selected  studies 
 controlAnimals<-GetControlAnimals(studiesAllID)
 
-# Limit to set of animals to relevant sex
-controlAnimals<-filterAnimalsSex(controlAnimals, pSex)
+nAnimals <- nrow(controlAnimals)
+
+print(sprintf("Animals after control: %s/%s", nAnimals, nAnimalsTotal))
+
+# Limit to set of animals to relevant route(s) of administration
+controlAnimals<-FilterAnimalListRoute(controlAnimals, pRoute)
+
+nAnimals <- nrow(controlAnimals)
+
+print(sprintf("Animals after Route: %s/%s", nAnimals, nAnimalsTotal))
+
+
+# Limit to set of animals to relevant species/strain(s)
+controlAnimals<-FilterAnimalsSpeciesStrain(controlAnimals, pSpecies)
+
+nAnimals <- nrow(controlAnimals)
+
+print(sprintf("Animals after Species: %s/%s", nAnimals, nAnimalsTotal))
 
 # Limit to set of animals to relevant species/strain(s)
 controlAnimals<-FilterAnimalsSpeciesStrain(controlAnimals, pSpecies, pStrain)
 
-# Limit to set of animals to relevant route(s) of administration
-controlAnimals<-FilterAnimalListRoute(controlAnimals, pRoute)
+nAnimals <- nrow(controlAnimals)
+
+print(sprintf("Animals after Strain: %s/%s", nAnimals, nAnimalsTotal))
+
+
+# Limit to set of animals to relevant sex
+controlAnimals<-filterAnimalsSex(controlAnimals, pSex)
+
+nAnimals <- nrow(controlAnimals)
+
+print(sprintf("Animals after Sex: %s/%s", nAnimals, nAnimalsTotal))
+
+# total studies
+totalFindingsMI <- GenericQuery('SELECT DISTINCT * FROM MI')
+
+nFindingsTotal <- nrow(totalFindingsMI)
+
+print(sprintf("Total Number of Findings in MI: %s", nFindingsTotal))
+
 
 # Extract all MI findings for the control animals
 allMI<-ExtractSubjData("MI", controlAnimals)
@@ -107,10 +165,39 @@ allMI<-ExtractSubjData("MI", controlAnimals)
 allMI<-addFindingsAnimalAge('mi', allMI, inclUncertainMsg=TRUE)
 
 # Filter MI findings - save Dosing phase findings (and include rows where phase cannot be identified )
-dosingMI<-FilterFindingsPhase('MI', allMI, pStudyPhase, pStudyPhaseInclUncertain)
+dosingMI <- FilterFindingsPhase('MI', allMI, pStudyPhase, pStudyPhaseInclUncertain)
+
+nFindings <- nrow(dosingMI)
+
+print(sprintf("Findings after Phase: %s/%s", nFindings, nFindingsTotal))
+
 
 # Filter MI findings for a specific age interval
 dosingMI<-filterFindingsAnimalAge(dosingMI, pFindingsFromAge, pFindingsToAge)
+
+nFindings <- nrow(dosingMI)
+
+print(sprintf("Findings after Age: %s/%s", nFindings, nFindingsTotal))
+
+
+dosingMI$MISTRESC <- toupper(dosingMI$MISTRESC)
+
+
+findingsCount <- dosingMI %>%
+          dplyr::count(MISPEC, MISTRESC) %>%
+          dplyr::arrange(-n) %>%
+          dplyr::filter(MISTRESC != 'NORMAL', MISTRESC != 'UNREMARKABLE', MISTRESC != '')
+
+
+nUniqueAnimals <- length(unique(dosingMI$USUBJID))
+
+findingsCount$Incidence <- (findingsCount$n / nUniqueAnimals) * 100
+
+findingsCount$Incidence <- paste0(round(findingsCount$Incidence, 2), '%')
+
+findingsCount <- dplyr::select(findingsCount, -n)
+
+write.csv(findingsCount, 'data/RankedMIFindings.csv')
 
 ##########################################################################
 message("Execution time: ",round(difftime(Sys.time(), start, units = 'min'),1)," minutes")
