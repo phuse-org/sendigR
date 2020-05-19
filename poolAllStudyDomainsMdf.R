@@ -395,16 +395,16 @@ for (defineFile in defineFiles) {
   }
 }
 
-# logFrame <- data.frame(INVALID_FOLDERS=invalidFolders, REASON=reason, TIME=times)
-# 
-# logFileName <- file.path(studyRoot, '.sqliteload.log')
-# 
-# if (file.exists(logFileName)) {
-#   oldLogFrame <- read.csv(logFileName, stringsAsFactors=FALSE)
-#   logFrame <- rbind(oldLogFrame, logFrame)
-# }
-# 
-# write.csv(logFrame, logFileName, row.names=FALSE)
+logFrame <- data.frame(INVALID_FOLDERS=invalidFolders, REASON=reason, TIME=times)
+
+logFileName <- file.path(studyRoot, '.sqliteload.log')
+
+if (file.exists(logFileName)) {
+  oldLogFrame <- read.csv(logFileName, stringsAsFactors=FALSE)
+  logFrame <- rbind(oldLogFrame, logFrame)
+}
+
+write.csv(logFrame, logFileName, row.names=FALSE)
 
 
 for (studyFolder in studyFolders) {
