@@ -47,8 +47,14 @@ library(RSQLite)
 library(data.table)
 library(sjlabelled)
 
-start<-Sys.time()
+# necessary for setting the number
+# of digits for milliseconds in 
+# the strptime function....
+# this will parse to up 5
+# decimals
+options(digits.secs = 5)
 
+start<-Sys.time()
 
 studyRoot <- Sys.getenv('SEND_DATA_V2')
 metadataRoot <- file.path(dirname(studyRoot), 'metadata')
@@ -403,7 +409,7 @@ for (defineFile in defineFiles) {
 
 for (studyFolder in studyFolders) {
   
-  # us ts domain to get study name 
+  # use ts domain to get study name 
   
   fName <- 'ts.xpt'
   dmFile <- file.path(studyFolder, fName)
@@ -416,8 +422,8 @@ for (studyFolder in studyFolders) {
   lastModifiedRecord <- dbGetQuery(db, queryString)$EDRMDF
   
   lastModifiedEDR <- read.csv(file.path(studyFolder, '.lastupdate_EDR.log'), header=FALSE, stringsAsFactors=FALSE)
-  timeString <- strptime(lastModifiedEDR$V1, "%Y-%m-%dT%H:%M:%S")
-  lastModifiedFileObj <- as.POSIXlt(timeString)
+  timeString <- strptime(lastModifiedEDR$V1, "%Y-%m-%dT%H:%M:%S:%OS")
+  newStudyMdfTime <- as.POSIXlt(timeString)
   
   ISNEW <- FALSE
   
@@ -429,13 +435,26 @@ for (studyFolder in studyFolders) {
     ISNEW <- TRUE
   } else {
     
-    lastModifiedRecordObj <- as.POSIXlt(lastModifiedRecord)
+    # studies can be submitted across a 
+    # few different applications, so
+    # we need to ensure the most recent 
+    # version is the one going into the 
+    # db
     
-    if (lastModifiedRecordObj <= lastModifiedFileObj) {
-      ISNEW <- TRUE
-    } else {
-      ISNEW <- FALSE
-    }
+    queryString <- sprintf("SELECT * FROM AN WHERE STUDYID == '%s'", studyID)
+    
+    prevStudyiesMdfTime <- dbGetQuery(db, queryString)$EDRMDF
+    
+    # this comparse the EDRMDF time
+    # of the study trying to go in
+    # (lastModifiedFileObj)
+    # vs all the studies previously
+    # entered, if it is  
+    # > than all, proceed to input
+    # it in the database
+    
+    ISNEW <- all(unlist(lapply(lastModifiedStudies$EDRMDF, 
+                               function (oneRecord) {as.POSIXlt(oneRecord) < newStudyMdfTime})))
   }
   
   if (ISNEW) {
