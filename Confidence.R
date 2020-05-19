@@ -8,35 +8,47 @@
 # Each query block should be able to run 
 # so long as the code up until the first
 # header is run before.  
-#
-source("sysParameters.R")
-source("studyListStudyStartDate.R")
 source("importSENDDomains.R")
 source("studyListStudyDesign.R")
+source("filterStudyAnimalSpeciesStrain.R")
+source("filterStudyAnimalRoute.R")
+source("studyListStudyStartDate.R")
 source("animalListControl.R")
+source("filterAnimalsSex.R")
+source("subjDataExtract.R")
+source("filterFindingsPhase.R")
 source("addFindingsAnimalAge.R")
+source("filterFindingsAnimalAge.R")
+source("dbManager.R")
 
 library(dplyr)
 
 # control terminology list need for 
 # a variety of different query blocks
 cont_terms <- readxl::read_excel('data/SEND Terminology 2019-09-27.xls', 
-                                 sheet = "SEND Terminology 2019-09-27")[['CDISC Submission Value']]
+                                 sheet = "SEND Terminology 2019-09-27")
 
 # query parameters for our question
-
-design <- "PARALLEL"
-route1 <- "ORAL"
-route2 <- "ORAL GAVAGE"
-sex <- "M"
-species <- "DOG"
-strain <- "BEAGLE"
-startdate <- "2017"
-enddate <- "2020"
-sex <- "M"
-lowerBoundAge <- '12m'
-upperBoundAge <- '18m'
-phase <- "Treatment"
+###################################################################################
+# Input parameter values
+pStudyDesign      <-  "PARALLEL"         # CT: DESIGN
+#pSpecies          <-  "RAT"              # CT: SPECIES (extensible)
+#pStrain           <-  "SPRAGUE-DAWLEY"   # CT: STRAIN  (extensible)
+#pStrain           <-  "WISTAR"
+pSpecies          <-  "DOG"
+#pStrain          <-  "WISTAR"
+pStrain           <- c("BEAGLE")
+#pRoute           <-  c("SUBCUTANEOUS")     # CT: ROUTE   (extensible)
+#pRoute           <- c("INTRAPERITONEAL")
+pRoute            <- c("ORAL", "ORAL GAVAGE")
+pFromDTC          <-  "2017"
+pToDTC            <-  "2020"
+pSex              <-  "M"                # CT: SEX
+pStudyPhase       <-  "Treatment"        # Valid: "Screening", "Treatment", "Recovery"
+pStudyPhaseInclUncertain <- FALSE    # Valid: TRUE, FALSE
+pFindingsFromAge  <-  "12m"
+pFindingsToAge    <-  "18m"
+###################################################################################
 
 
 
@@ -46,25 +58,125 @@ phase <- "Treatment"
 #
 #########################################
 
-db <- dbConnect(RSQLite::SQLite(), dbFullName)
-ts_date <- data.table(unique(dbGetQuery(db, 'SELECT STUDYID, TSPARMCD, TSVAL FROM TS WHERE TSPARMCD = "STSTDTC"')))
-dbDisconnect(db)
 
+recordsInTS <- GenericQuery('SELECT DISTINCT STUDYID FROM TS')
+
+nRecordsInTS <- nrow(recordsInTS)
+
+TSdate <- GenericQuery('SELECT STUDYID, TSVAL FROM TS WHERE TSPARMCD = "STSTDTC"')
+
+nStudiesWithDate <- nrow(TSdate)
 
 # confidently matching is
 # just the number of studies
 # in the specified date interval
-conf_matching_start <- unique(GetStudyListSTSTDTC(fromDTC=startdate, toDTC=enddate))
+confMatchingStart <- GetStudyListSTSTDTC(fromDTC=startdate, toDTC=enddate)
 
 # any studies not found by 
 # our algorithm are nonmatching
-non_matching_start <- ts_date[(!(ts_date$STUDYID %in% conf_matching_start$STUDYID)),]
-conf_non_matching <- sum(!is.na(parse_iso_8601(non_matching_start$TSVAL)))
+nonMatchingStart <- TSdate[(!(TSdate$STUDYID %in% confMatchingStart$STUDYID)),]
+confNonMatchingStart <- nonMatchingStart[(!is.na(parse_iso_8601(nonMatchingStart$TSVAL))),]
 
-# 94 values are confidently non-matching
-# 1490 records are confidently matching
-# 1590 records have a STSTDTC
+# studies not confidently matching, or not confidently non matchings
+ambiguousStart <- recordsInTS[(!recordsInTS$STUDYID %in% confNonMatchingStart$STUDYID) & (!recordsInTS$STUDYID %in% confMatchingStart$STUDYID),] 
 
+print(sprintf("Num conf matches: %s", nrow(confMatchingStart)))
+print(sprintf("Num conf non-matches: %s", nrow(confNonMatchingStart)))
+print(sprintf("Denominator: %s", nRecordsInTS))
+
+print(sprintf("Confidence: %.2f", ((nrow(confMatchingStart) + nrow(confNonMatchingStart)) / nRecordsInTS) * 100))
+
+
+#########################################
+#
+# QUERY BLOCK -- Study Design 
+#
+#########################################
+
+# confidence is defined as records matching
+# the controlled terms.  confidence not
+# matching, if more than one design, they
+# all have to by matching controlled term
+
+
+recordsInTS <- GenericQuery('SELECT DISTINCT STUDYID FROM TS')
+nRecordsInTS <- nrow(recordsInTS)
+
+TSdesign <- GenericQuery('SELECT STUDYID, TSPARMCD, TSVAL FROM TS WHERE TSPARMCD = "SDESIGN"')
+nStudiesWithDate <- nrow(TSdesign)
+
+
+# only use study design controled terms
+studyDesignCodelist <- 'C89967'
+sdesignControlledTerms <- cont_terms[cont_terms$`Codelist Code` == studyDesignCodelist,]$`CDISC Submission Value`
+
+
+confMatchingDesign <- GetStudyListSDESIGN(design)
+nonMatchingDesign <- TSdesign[(!(TSdesign$STUDYID %in% confMatchDesign$STUDYID)),]
+nonMatchingDesign$is_controlled <- toupper(gsub("[\r\n]", "", nonMatchingDesign$TSVAL)) %in% sdesignControlledTerms
+
+
+# make sure multiple studies all match controled term
+nonMatchingDesignUnique <- nonMatchingDesign %>%
+                                dplyr::group_by(STUDYID) %>%
+                                dplyr::mutate(all_true = dplyr::if_else(sum(is_controlled) == dplyr::n(), TRUE, FALSE)) %>%
+                                dplyr::ungroup() %>%
+                                dplyr::distinct(STUDYID, all_true)
+
+confNonMatchingDesign <- nonMatchingDesignUnique[nonMatchingDesignUnique$all_true,]
+
+
+ambiguousDesign <- recordsInTS[(!recordsInTS$STUDYID %in% confNonMatchingDesign$STUDYID) & (!recordsInTS$STUDYID %in% confMatchingDesign$STUDYID),] 
+
+print(sprintf("Num conf matches: %s", nrow(confMatchingDesign)))
+print(sprintf("Num conf non-matches: %s", nrow(confNonMatchingDesign)))
+print(sprintf("Denominator: %s", nRecordsInTS))
+
+print(sprintf("Confidence: %.2f", ((nrow(confMatchingDesign) + nrow(confNonMatchingDesign)) / nRecordsInTS) * 100))
+
+
+#########################################
+#
+# QUERY BLOCK -- Control Animals 
+#
+#########################################
+
+
+# Control animals are considered confidently
+# matching if they fall in a set considered
+# by our aglorithm as likely a negative 
+# control.  Confidently non matching are 
+# only those that fall into a set labeled 
+# explicitly as positive controls.
+
+
+dmWithSetcd <- GenericQuery("SELECT STUDYID, USUBJID, SETCD FROM DM")
+txCntrl <- GenericQuery("SELECT STUDYID, SETCD, TXVAL FROM TX WHERE TXPARMCD == 'TCNTRL'")
+
+
+dmCntrls <- merge(dmWithSetcd, txCntrl, by=c('STUDYID', 'SETCD'))
+
+nCntrlAnimals <- nrow(dmCntrls)
+
+# find animals not idenified as 
+# negative control but have
+# POSITIVE CONTROL specified as 
+# their tcntrl value
+confMatchingControl <- GetControlAnimals()
+nonMatchingControl <- dmCntrls[!(dmCntrls$USUBJID %in% confMatchingControl$USUBJID),]
+nonMatchingControl$TXVAL <- toupper(nonMatchingControl$TXVAL)
+confNonMatchingControl <- nonMatchingControl[nonMatchingControl$TXVAL ==  'POSITIVE CONTROL',]
+
+
+ambiguousControls <- dmCntrls[(!dmCntrls$USUBJID %in% confNonMatchingControl$USUBJID) & (!dmCntrls$USUBJID %in% confMatchingControl$USUBJID),] 
+
+
+
+print(sprintf("Num conf matches: %s", nrow(confMatchingControl)))
+print(sprintf("Num conf non-matches: %s", nrow(confNonMatchingControl)))
+print(sprintf("Denominator: %s", nCntrlAnimals))
+
+print(sprintf("Confidence: %.2f", ((nrow(confMatchingControl) + nrow(confNonMatchingControl)) / nCntrlAnimals) * 100))
 
 #########################################
 #
@@ -86,62 +198,59 @@ conf_non_matching <- sum(!is.na(parse_iso_8601(non_matching_start$TSVAL)))
 # of animals with their routes specified in TS
 # however, we can't do
 
-db <- dbConnect(RSQLite::SQLite(), dbFullName)
-ex <- unique(data.table(dbGetQuery(db, "SELECT STUDYID, USUBJID, EXROUTE FROM EX")))
-ts_route <- data.table(unique(dbGetQuery(db, 'SELECT STUDYID, TSPARMCD, TSVAL FROM TS WHERE TSPARMCD = "ROUTE"')))
-dbDisconnect(db)
 
-ts_route <- ts_route[,.(STUDYID, EXROUTE=toupper(TSVAL))]
-ex$EXROUTE <- toupper(ex$EXROUTE)
+exRoute <- GenericQuery("SELECT STUDYID, USUBJID, EXROUTE FROM EX")
+dmAnimals <- GenericQuery("SELECT STUDYID, USUBJID FROM DM")
+tsRoute <- data.table(GenericQuery('SELECT STUDYID, TSPARMCD, TSVAL FROM TS WHERE TSPARMCD = "ROUTE"'))
 
-ts_route <- ts_route %>%
+mergedDmEx <- merge(dmAnimals, unique(exRoute), all=TRUE)
+
+
+nRecords <- nrow(unique(mergedDmEx[,c('STUDYID', 'USUBJID')]))
+
+
+tsRoute <- tsRoute[,.(STUDYID, EXROUTE=toupper(TSVAL))]
+mergedDmEx$EXROUTE <- toupper(mergedDmEx$EXROUTE)
+
+tsRoute <- tsRoute %>%
               dplyr::group_by(STUDYID) %>%
               dplyr::mutate(NUM_ROUTE = n()) %>%
               dplyr::ungroup()
 
+tsRoute$EXROUTE[tsRoute$NUM_ROUTE > 1] <- NA
 
-ts_route$EXROUTE[ts_route$NUM_ROUTE > 1] <- NA              
-ts_route <- unique(ts_route)
-ts_animals <- merge(ts_route[,c("STUDYID", "EXROUTE")], ex[,c("STUDYID", "USUBJID")])
+tsAnimals <- merge(tsRoute[,c("STUDYID", "EXROUTE")], mergedDmEx[,c("STUDYID", "USUBJID")])
 
-merged <- merge(ex, ts_animals, by=c('STUDYID', 'USUBJID'))
+mergedDmExTs <- merge(mergedDmEx, tsAnimals, by=c('STUDYID', 'USUBJID'))
 
-final_route <- merged %>%
-        mutate(ROUTE = toupper(coalesce(EXROUTE.x, EXROUTE.y))) %>%
-        select(-EXROUTE.x, -EXROUTE.y) %>%
-        unique()
-
-conf_matching_route <- final_route[final_route$ROUTE == route1 | final_route$ROUTE == route2,]
-not_matching_route <- final_route[!final_route$USUBJID %in% conf_matching_route$USUBJID,]
-not_matching_conf <- not_matching_route[not_matching_route$ROUTE %in% cont_terms,]
-
-#########################################
-#
-# QUERY BLOCK -- Study Design 
-#
-#########################################
-
-# confidence is defined as records matching
-# the controlled terms.  confidence not
-# matching, if more than one design, they
-# all have to by matching controlled term
+finalRoute <- mergedDmExTs %>%
+                mutate(ROUTE = toupper(coalesce(EXROUTE.x, EXROUTE.y))) %>%
+                select(-EXROUTE.x, -EXROUTE.y) %>%
+                unique()
 
 
-db <- dbConnect(RSQLite::SQLite(), dbFullName)
-ts_design <- data.table(unique(dbGetQuery(db, 'SELECT STUDYID, TSPARMCD, TSVAL FROM TS WHERE TSPARMCD = "SDESIGN"')))
-dbDisconnect(db)
+roaCodelist <- 'C66729'
+roaControlledTerms <- cont_terms[cont_terms$`Codelist Code` == roaCodelist,]$`CDISC Submission Value`
 
-conf_matching_design <- GetStudyListSDESIGN(design)
-non_matching_design <- ts_design[(!(ts_design$STUDYID %in% conf_matching_design$STUDYID)), .(STUDYID, SDESIGN = TSVAL)]
-non_matching_design$is_controlled <- toupper(non_matching_design$SDESIGN) %in% cont_terms
 
-non_matching_design_unique <- non_matching_design %>%
-  dplyr::group_by(STUDYID) %>%
-  dplyr::mutate(all_true = dplyr::if_else(sum(is_controlled) == dplyr::n(), TRUE, FALSE)) %>%
-  dplyr::ungroup() %>%
-  dplyr::distinct(STUDYID, all_true)
+confMatchingRoute <- finalRoute[finalRoute$ROUTE %in% pRoute,]
+notMatchingRoute <- finalRoute[!finalRoute$USUBJID %in% confMatchingRoute$USUBJID,]
 
-conf_non_matching_design <- non_matching_design_unique[non_matching_design_unique$all_true,]
+
+notMatchingRoute$is_controlled <- notMatchingRoute$ROUTE %in% roaControlledTerms
+
+# make sure animals with multiple routes all match controled term
+nonMatchingRouteUnique <- notMatchingRoute %>%
+                            dplyr::group_by(STUDYID, USUBJID) %>%
+                            dplyr::mutate(all_true = dplyr::if_else(sum(is_controlled) == dplyr::n(), TRUE, FALSE)) %>%
+                            dplyr::ungroup() %>%
+                            dplyr::distinct(STUDYID, USUBJID, all_true)
+
+confNonMatchingRoute <- nonMatchingRouteUnique[nonMatchingRouteUnique$all_true,]
+
+animals <- unique(mergedDmEx[,c('STUDYID', 'USUBJID')])
+
+ambigiousRecords <- animals[(!animals$USUBJID %in% confNonMatchingRoute$USUBJID) & (!animals$USUBJID %in% confMatchingRoute$USUBJID),]
 
 
 #########################################
@@ -159,10 +268,9 @@ conf_non_matching_design <- non_matching_design_unique[non_matching_design_uniqu
 
 # TX is not used, because in our database 
 # all animals have species info in TS or DM
-db <- dbConnect(RSQLite::SQLite(), dbFullName)
-dm <- dbGetQuery(db, "SELECT STUDYID, USUBJID, ARMCD, SETCD, SPECIES, STRAIN, SEX FROM DM")
-animals <- unique(dbGetQuery(db, 'SELECT STUDYID, TSPARMCD, TSVAL FROM TS WHERE TSPARMCD = "SPECIES" or TSPARMCD = "STRAIN"'))
-dbDisconnect(db)
+dm <- GenericQuery("SELECT STUDYID, USUBJID, ARMCD, SETCD, SPECIES, STRAIN, SEX FROM DM")
+animals <- GenericQuery('SELECT STUDYID, TSPARMCD, TSVAL FROM TS WHERE TSPARMCD = "SPECIES" or TSPARMCD = "STRAIN"')
+
 # dcast requires every row->col pair to be unique
 # in order to cast.  however, some studies have
 # multiple strains.  In order to cast, need to 
@@ -216,44 +324,37 @@ imputed_dm <- imputed_dm[!duplicated(imputed_dm[c('STUDYID', 'USUBJID')]),]
 imputed_dm$SPECIES <- toupper(imputed_dm$SPECIES)
 imputed_dm$STRAIN <- toupper(imputed_dm$STRAIN)
 
-conf_match_species <- imputed_dm[imputed_dm$SPECIES == species,]
-not_matching_species <- imputed_dm[imputed_dm$SPECIES != species,]
-conf_not_matching_species <- not_matching_species[not_matching_species$SPECIES %in% cont_terms,]
+speciesCodelist <- 'C77808'
+speciesControlledTerms <- cont_terms[cont_terms$`Codelist Code` == speciesCodelist,]$`CDISC Submission Value`
 
-conf_match_strain <- imputed_dm[imputed_dm$STRAIN == strain,]
-not_matching_strain <- imputed_dm[imputed_dm$STRAIN != strain,]
-conf_not_matching_strain <- not_matching_strain[not_matching_strain$STRAIN %in% cont_terms,]
+strainCodelist <- 'C77530'
+strainControlledTerms <- cont_terms[cont_terms$`Codelist Code` == strainCodelist,]$`CDISC Submission Value`
 
-#########################################
-#
-# QUERY BLOCK -- Control Animals 
-#
-#########################################
+confMatchingSpecies <- imputed_dm[imputed_dm$SPECIES == pSpecies,]
+nonMatchingSpecies <- imputed_dm[imputed_dm$SPECIES != pSpecies,]
+confNonMatchingSpecies <- nonMatchingSpecies[nonMatchingSpecies$SPECIES %in% speciesControlledTerms,]
+
+ambigiousSpecies <- imputed_dm[(!imputed_dm$USUBJID %in% confNonMatchingSpecies$USUBJID) & (!imputed_dm$USUBJID %in% confMatchingSpecies$USUBJID),]
+
+print(sprintf("Num conf matches: %s", nrow(confMatchingSpecies)))
+print(sprintf("Num conf non-matches: %s", nrow(confNonMatchingSpecies)))
+print(sprintf("Denominator: %s", nrow(imputed_dm)))
+
+print(sprintf("Confidence: %.2f", ((nrow(confMatchingSpecies) + nrow(confNonMatchingSpecies)) / nrow(imputed_dm)) * 100))
 
 
-# Control animals are considered confidently
-# matching if they fall in a set considered
-# by our aglorithm as likely a negative 
-# control.  Confidently non matching are 
-# only those that fall into a set labeled 
-# explicitly as positive controls.
 
-db <- dbConnect(RSQLite::SQLite(), dbFullName)
-dm <- unique(dbGetQuery(db, "SELECT STUDYID, USUBJID, SETCD FROM DM"))
-tx <- unique(dbGetQuery(db, "SELECT STUDYID, SETCD, TXVAL FROM TX WHERE TXPARMCD == 'TCNTRL'"))
-dbDisconnect(db)
+confMatchingStrain <- imputed_dm[imputed_dm$STRAIN == pStrain,]
+nonMatchingStrain <- imputed_dm[imputed_dm$STRAIN != pStrain,]
+confNonMatchingStrain <- nonMatchingStrain[nonMatchingStrain$STRAIN %in% strainControlledTerms,]
 
-dm_with_setcd <- merge(dm, tx)
+ambigiousStrain <- imputed_dm[(!imputed_dm$USUBJID %in% confNonMatchingStrain$USUBJID) & (!imputed_dm$USUBJID %in% confMatchingStrain$USUBJID),]
 
-# find animals not idenified as 
-# negative control but have
-# POSITIVE CONTROL specified as 
-# their tcntrl value
-conf_matching_control <- GetControlAnimals()
-not_matching_control <- dm_with_setcd[!(dm_with_setcd$USUBJID %in% conf_matching_control$STUDYID),]
-not_matching_control$TXVAL <- toupper(not_matching_control$TXVAL)
-conf_not_matching_control <- not_matching_control[not_matching_control$TXVAL ==  'POSITIVE CONTROL',]
+print(sprintf("Num conf matches: %s", nrow(confMatchingStrain)))
+print(sprintf("Num conf non-matches: %s", nrow(confNonMatchingStrain)))
+print(sprintf("Denominator: %s", nrow(imputed_dm)))
 
+print(sprintf("Confidence: %.2f", ((nrow(confMatchingStrain) + nrow(confNonMatchingStrain)) / nrow(imputed_dm)) * 100))
 
 #########################################
 #
@@ -262,13 +363,42 @@ conf_not_matching_control <- not_matching_control[not_matching_control$TXVAL == 
 #########################################
 
 
-db <- dbConnect(RSQLite::SQLite(), dbFullName)
-dm <- unique(dbGetQuery(db, "SELECT STUDYID, USUBJID, SEX FROM DM"))
-dbDisconnect(db)
+
+dm <- GenericQuery("SELECT STUDYID, USUBJID, SEX FROM DM")
+
 
 # gives us frequency counts of 
 # sex in DM
 table(dm$SEX, useNA='always')
+
+
+#########################################
+#
+# QUERY BLOCK -- findings records phase
+#
+#########################################
+
+
+
+mi <- data.table(GenericQuery('SELECT * FROM MI'))
+
+treatment <- FilterFindingsPhase('MI', mi, 'Treatment', TRUE)
+dosing <- FilterFindingsPhase('MI', mi, 'Dosing', FALSE)
+screening <- FilterFindingsPhase('MI', mi, 'Screening', FALSE)
+
+
+ambiguousAge <- treatment[treatment$PHASE == 'Uncertain',]
+confMatchingPhase <- treatment[treatment$PHASE != 'Uncertain',]
+confNotMatchingPhase <- rbind(dosing, screening)
+
+
+print(sprintf("Num conf matches: %s", nrow(confMatchingPhase)))
+print(sprintf("Num conf non-matches: %s", nrow(confNotMatchingPhase)))
+print(sprintf("Denominator: %s", nrow(mi)))
+
+print(sprintf("Confidence: %.2f", ((nrow(confMatchingPhase) + nrow(confNotMatchingPhase)) / nrow(mi)) * 100))
+
+
 
 
 #########################################
@@ -286,11 +416,9 @@ table(dm$SEX, useNA='always')
 # ie., NA values 
 
 
-db <- dbConnect(RSQLite::SQLite(), dbFullName)
-mi <- data.table(unique(dbGetQuery(db, "SELECT * FROM MI")))
-dbDisconnect(db)
+mi <- GenericQuery('SELECT * FROM MI')
 
-mi_with_age <- unique(addFindingsAnimalAge('mi', mi))
+mi_with_age <- addFindingsAnimalAge('mi', data.table(mi))
 
 # our query asks for findings between 
 # 12 months and 18 months at time of
@@ -298,8 +426,15 @@ mi_with_age <- unique(addFindingsAnimalAge('mi', mi))
 lower_age <- 12*30
 upper_age <- 18*30
 
-conf_matches_age <- mi_with_age[((mi_with_age$AGE >= lower_age) & (mi_with_age$AGE <= upper_age)),]
-conf_not_matching_age <- mi_with_age[((mi_with_age$AGE < lower_age) | (mi_with_age$AGE > upper_age)),]
+confMatchingAge <- mi_with_age[((mi_with_age$AGE >= lower_age) & (mi_with_age$AGE <= upper_age)),]
+confNotMatchingAge <- mi_with_age[((mi_with_age$AGE < lower_age) | (mi_with_age$AGE > upper_age)),]
+ambiguousAge <- mi_with_age[is.na(mi_with_age$AGE),]
+
+print(sprintf("Num conf matches: %s", nrow(confMatchingAge)))
+print(sprintf("Num conf non-matches: %s", nrow(confNotMatchingAge)))
+print(sprintf("Denominator: %s", nrow(mi)))
+
+print(sprintf("Confidence: %.2f", ((nrow(confMatchingAge) + nrow(confNotMatchingAge)) / nrow(mi)) * 100))
 
 
 
@@ -319,15 +454,11 @@ conf_not_matching_age <- mi_with_age[((mi_with_age$AGE < lower_age) | (mi_with_a
 # this orgam/finding pair.  Confidently non-matching 
 # would be those 
 
-finding <- 'CYST'
-organ <- 'GLAND, PITUITARY'
-
 # Confident matches are
-db <- dbConnect(RSQLite::SQLite(), dbFullName)
-mifindings <- unique(dbGetQuery(db, "SELECT * FROM MI"))
-tsfindings <- dbGetQuery(db, "SELECT STUDYID, TSPARMCD, TSVAL FROM TS WHERE TSPARMCD = 'SNDIGVER' ")
 
-dbDisconnect(db)
+mifindings <- GenericQuery("SELECT * FROM MI")
+tsfindings <- GenericQuery("SELECT STUDYID, TSPARMCD, TSVAL FROM TS WHERE TSPARMCD = 'SNDIGVER' ")
+
 
 studies_31 <-  tsfindings$STUDYID[grepl("3.1", tsfindings$TSVAL)]
 findings_31 <- mifindings[mifindings$STUDYID %in% studies_31,]
@@ -335,12 +466,14 @@ findings_31 <- mifindings[mifindings$STUDYID %in% studies_31,]
 findings_31$MISTRESC <- toupper(findings_31$MISTRESC)
 findings_31$MISPEC <- toupper(findings_31$MISPEC)
 
-conf_matches_findings <- findings_31[((findings_31$MISPEC == organ) & (findings_31$MISTRESC == finding)),]
-not_matching_findings <- findings_31[!((findings_31$MISPEC == organ) & (findings_31$MISTRESC == finding)),]
 
-# both MISPEC and MISTRESC should be 
-# in controlled terms...
+miCodelists <- c('C120531', 'C88025', 'C132321')
+findingsControlledTerms <- cont_terms[cont_terms$`Codelist Code` %in% miCodelists,]$`CDISC Submission Value`
 
-conf_non_matches_findings <- not_matching_findings[((not_matching_findings$MISPEC %in% cont_terms) & 
-                                                      (not_matching_findings$MISTRESC %in% cont_terms)),]
+confFindings <- findings_31[findings_31$MISTRESC %in% findingsControlledTerms,]
+
+print(sprintf("Num conf : %s", nrow(confFindings)))
+print(sprintf("Denominator: %s", nrow(findings_31)))
+
+print(sprintf("Confidence: %.2f", ((nrow(confFindings) /  nrow(findings_31)) * 100)))
 
