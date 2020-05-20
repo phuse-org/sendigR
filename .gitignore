@@ -5,8 +5,8 @@
 .Ruserdata
 *.Rproj
 
-# ignore sysParameters.R for now
-sysParameters.R
+# ignore sysParameters*.R for now
+sysParameters*.R
 
 # data folders
 /data
