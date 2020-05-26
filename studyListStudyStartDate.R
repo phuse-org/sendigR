@@ -139,7 +139,12 @@ GetStudyListSTSTDTC<-function(fromDTC=NULL, toDTC=NULL, inclUncertain=FALSE) {
       dtcFilter<-paste(paste("(", dtcFilter), ") | is.na(parse_iso_8601(STSTDTC))")
       # Build the statement to execute - include column indication of missing or wrong value
       stmt=paste(paste("tsSTSTDTC[", dtcFilter, sep=""),
-                      ",.(STUDYID, STSTDTC,MISSING_MSG=ifelse(is.na(parse_iso_8601(STSTDTC)),ifelse(is.na(STSTDTC), 'STSTDTC is missing', 'STSTDTC has wrong format'),NA))]", sep="")
+                 ",.(STUDYID, STSTDTC, UNCERTAIN_MSG=ifelse(is.na(parse_iso_8601(STSTDTC)),
+                                                            ifelse(is.na(STSTDTC), 
+                                                                   'GetStudyListSTSTDTC: STSTDTC is missing', 
+                                                                   'GetStudyListSTSTDTC: STSTDTC has wrong format'),
+                                                            NA))]", 
+                 sep="")
     }
     else {
       # Build the statement to execute
