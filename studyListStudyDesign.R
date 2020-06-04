@@ -13,17 +13,30 @@
 # Purpose       : Extract a list of SEND study ids which fulfills a specified 
 #                 study design.
 #
-# Description   : A function GetStudyListSDESIGN is defined:
-#                   Returns a data table with the list of study ids from TS 
-#                   where the value of TSVAL for the TSPARMCD 'SDESIGN'  
-#                   is equal to a given study design.
-#                   The comparison of study design values are done case insensitive.
+# Description   : Contains function GetStudyListSDESIGN:
+#                 Returns a data table with the list of study ids from TS where  
+#                 the value of TSVAL for the TSPARMCD 'SDESIGN' is equal to a given 
+#                 study design.
+#                 The comparison of study design values are done case insensitive.
+#                 If specified (imput parameter 'inclUncertain') - studyid values
+#                 included in TS 
+#                   a) without any row for TSPARMCD='SDESIGN' or
+#                   b) TSVAL doesn't contain a value included in the  CDISC CT list 
+#                      'DESIGN' for TSPARMCD='SDESIGN'
+#                 are extracted and returned too - including af message tellinge 
+#                 whether reason is a) or b).
 #
 # Input         : The TS domain - is imported from the pooled SEND data store if 
 #                 it doesn't exist in workspace
 #
 # Output        : The function GetStudyListSDESIGN returns a data table with one column:
-#                     STUDYID             (character)
+#                     STUDYID           (character)
+#                     SDESIGN           (character) 
+#                     UNCERTAIN_MSG     (character)
+#                       Only included when parameter inclUncertain=TRUE 
+#                       Contains indication of whether STSTDTC is missing of has wrong 
+#                       format - is NA for rows where STSTDTC is valid.
+#                     Additional columns contained in the studyList table (if specified) 
 #
 # Parameters    : The function GetStudyListSDESIGN are defined with one input 
 #                 parameter:
@@ -33,6 +46,13 @@
 #                                 list of studyid values includes only studies with 
 #                                 one study design specied in TS ("Y") or may include
 #                                 studies with multiple study designs specifed ("N"). 
+#                   studyList:
+#                             Optional, a data table with a list of studies to 
+#                             limit the output to be within this set of studies
+#                   inclUncertain:
+#                             Optional, boolean (TRUE or FALSE), default: FALSE 
+#                             Indicates whether study ids STSTDTC is missing or wrong 
+#                             shall be included or not in the output data table
 #
 # Usage notes   : Source the script.
 #                 Execute the function GetStudyListSDESIGN as many times as needed to extract 
@@ -45,16 +65,15 @@
 #######################################################################################################################################################################
 
 library(data.table)
-#library(DescTools)
 
-GetStudyListSDESIGN<-function(studyDesign=NULL, Exclusively=TRUE, UncertainTabName=NULL) {
+GetStudyListSDESIGN<-function(studyDesign=NULL, Exclusively=TRUE, studyList=NULL, inclUncertain=FALSE) {
   
   ##################################################################################
   # Hard code CT list of study design - should be read from a CT input file
   ctDESIGN=c("CROSSOVER","DOSE ESCALATION","FACTORIAL","LATIN SQUARE","PARALLEL")
   ##################################################################################
   
-  if (is.null(studyDesign)) {
+  if ((is.null(studyDesign) | isTRUE(is.na(studyDesign)) | isTRUE(studyDesign==""))) {
     stop("A study design must be specified")
   } 
   
@@ -67,29 +86,89 @@ GetStudyListSDESIGN<-function(studyDesign=NULL, Exclusively=TRUE, UncertainTabNa
     importSENDDomains(c("TS"))
   }
   
+  if (!(inclUncertain %in% c(TRUE,FALSE))) {
+    stop("Parameter Exclusively must be either TRUE or FALSE")
+  }
+  
+  studyListIncl<-FALSE
+  if (!(is.null(studyList) | isTRUE(is.na(studyList)) | isTRUE(studyList==''))) {
+    # An initial list of studies is included
+    studyListIncl<-TRUE
+  }
+  
   # Extract all TS rows for parameter SDESIGN rename TSVAL to SDESIGN
   tsSDESIGN<-unique(TS[TSPARMCD == 'SDESIGN', .(STUDYID, SDESIGN = toupper(trimws(TSVAL)))])
+  if (inclUncertain) {
+    #Include all studies with no SDESIGN parameter included
+    tsSDESIGN<-rbindlist(list(tsSDESIGN, fsetdiff(unique(TS[,.(STUDYID)]), tsSDESIGN[,.(STUDYID)])[,.(STUDYID, SDESIGN = NA)]))
+  }
+  if (studyListIncl) {
+    # Limit to the set of studies given as input
+    tsSDESIGN<-merge(tsSDESIGN, studyList[,.(STUDYID)], by='STUDYID')
+  }
   
   # Add variable with count of distinct study designs specified per study
   tsSDESIGN[, `:=` (NUM_SDESIGN = .N), by = STUDYID]
   
-  if (!is.null(UncertainTabName)) {
-    # Find studies with no SDESIGN parameter in TS
-    # Find studies with invalid value in SDESIGN parameter in TS
-    assign(UncertainTabName,
-           rbindlist(list(tsSDESIGNmiss=fsetdiff(unique(TS[,.(STUDYID)]),tsSDESIGN[,.(STUDYID)])[,.(STUDYID, MSG="Missing TS parameter SDESIGN")],
-                                tsSDESIGNinvalid=tsSDESIGN[! (toupper(SDESIGN) %in% ctDESIGN), .(STUDYID, MSG="No valid CT value for TS parameter SDESIGN")])), 
-           envir=parent.env(environment(NULL))) 
+  # Construct the statement to apply the specified design
+  designFilter<-'toupper(SDESIGN) %in% toupper(trimws(studyDesign))'
+  if (Exclusively) {
+    designFilter<-paste(designFilter, ' & NUM_SDESIGN==1', sep='')
   }
   
-  # extract and return list of studies of specified design
-  if (Exclusively) {
-    # extract from list of studies with only one study design specified in TS
-    return(tsSDESIGN[ toupper(SDESIGN) %in% toupper(trimws(studyDesign)) & NUM_SDESIGN==1, .(STUDYID)])
+  if (inclUncertain) {
+    ## Include uncertain studies
+    
+    # Include condition for rows with empty or wrong value of SDESIGN
+    designFilter<-paste(paste("(", designFilter), ") | ! (toupper(SDESIGN) %in% ctDESIGN)")
+    
+    # Build the statement to execute - include column indication of missing or wrong value
+    stmt=paste(paste("tsSDESIGN[", designFilter, sep=""),
+               ",.(STUDYID, SDESIGN, UNCERTAIN_MSG=ifelse( ! (toupper(SDESIGN) %in% ctDESIGN),
+                                                          ifelse(is.na(SDESIGN), 
+                                                                 'GetStudyListSDESIGN: TS parameter SDESIGN is missing', 
+                                                                 'GetStudyListSDESIGN: TS parameter SDESIGN does not contain a valid CT value'),
+                                                          NA))]", 
+               sep="")
+    # Execute statement to extract studies fulfilling the condition(s) plus uncertain studies
+    foundStudies<-eval(parse(text=stmt))
+    
+    if (studyListIncl) {
+      # Merge the list of extracted studies with the input set of studies to keep
+      # any additional columns from the input table 
+      foundStudies<-merge(foundStudies, studyList, by='STUDYID')
+      if ("UNCERTAIN_MSG.y" %in% names(foundStudies)) {
+        # The studyList table contains alread an UNCERTAIN_MSG column
+        #  - merge the UNCERTAIN_MSG from each of the merged tables into one column
+        #  - non-empty messages are separated by '|'
+        #  - exclude the original studyList.UNCERTAIN_MSG after the merge  
+        foundStudies<-foundStudies[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
+                                                               paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep='|'),
+                                                               Coalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, !names(foundStudies) %in% c('UNCERTAIN_MSG.x','UNCERTAIN_MSG.y'), with=FALSE]
+      }
+    }
+    # Return the list of extracted studies
+    return(foundStudies)
   }
-  else {
-    # extract from complete list of studies
-    return(unique(tsSDESIGN[toupper(SDESIGN) %in% toupper(trimws(studyDesign)), .(STUDYID)]))
+  else  {
+    ## Do not include uncertain studies
+    
+    # Build the statement to extract studies fulfilling the condition(s) and execute
+    foundStudies<-eval(parse(text=paste(paste("tsSDESIGN[", 
+                                              designFilter, 
+                                              sep=""),
+                                        ",.(STUDYID, SDESIGN)]", 
+                                        sep="")))
+    
+    if (studyListIncl) {
+      # Return the list of extracted studies merged with the input set of studies to keep
+      # any additional columns from the input table 
+      return(merge(foundStudies, studyList, by='STUDYID'))
+    }
+    else {
+      # Return the list of extracted studies
+      return(foundStudies)
+    }
   }
 }
 
