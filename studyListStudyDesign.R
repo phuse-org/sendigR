@@ -144,7 +144,7 @@ GetStudyListSDESIGN<-function(studyDesign=NULL, Exclusively=TRUE, studyList=NULL
         #  - exclude the original studyList.UNCERTAIN_MSG after the merge  
         foundStudies<-foundStudies[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
                                                                paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep='|'),
-                                                               Coalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, !names(foundStudies) %in% c('UNCERTAIN_MSG.x','UNCERTAIN_MSG.y'), with=FALSE]
+                                                               Coalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
       }
     }
     # Return the list of extracted studies

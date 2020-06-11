@@ -46,19 +46,60 @@
 #   - Handling of pooled data
 ###################################################################################
 
-filterAnimalsSex<-function(animalList, sexFilter) {
-  if (any(names(animalList) == "SEX")) {
-    # SEX column is included in input table
-    #  -extract and return the rows matching the specified sex
-    reuturn(animalList[toupper(SEX)==toupper(sexFilter)])
-  } else {
-    # No SEX column is included in input table
-    # - extract DM rows for animals in input table
-    #  - merge the two tables 
-    #  - extract the rows matching the specified sex
-    #  - return rows with all the variables included in input table (i.e. SEX is deleted)
-    return(merge(setkeyv(ExtractSubjData("DM",animalList)[,.(STUDYID,USUBJID,SEX)], c("STUDYID", "USUBJID")),
-                 setkeyv(animalList, c("STUDYID", "USUBJID")))[toupper(SEX)==toupper(sexFilter)][,SEX:=NULL])
+library(data.table)
+
+filterAnimalsSex<-function(animalList=NULL, sexFilter=NULL, inclUncertain=FALSE) {
+  
+  
+  ##################################################################################
+  # Hard code CT list of SEX - should be read from a CT input file
+  ctSEX=c("F","M","U","UNDIFFERENTIATED")
+  ##################################################################################
+
+  # Verify input parameter
+  if (is.null(animalList) | isTRUE(is.na(animalList)) | isTRUE(animalList=='')) {
+    stop('Input parameter animalList must have assigned a data table ')
+  } 
+  if (is.null(sexFilter) | isTRUE(is.na(sexFilter)) | isTRUE(sexFilter=='')) {
+    stop('Input parameter sexFilter must have assigned a data table ')
+  } 
+  if (!(inclUncertain %in% c(TRUE,FALSE))) {
+    stop("Parameter inclUncertain must be either TRUE or FALSE")
   }
   
+  if (!exists('DM')) {
+    importSENDDomains(c('DM'), animalStudies)
+  }
+    
+  # Merge the input list of animals with DM to add the SEX variable
+  animalListSEX<-merge(animalList[,.(STUDYID, USUBJID)], DM[,.(STUDYID, USUBJID, SEX)], by=c("STUDYID", "USUBJID"), all.x=TRUE)
+
+  if (inclUncertain) {
+    # Include uncertain rows
+    #  - extract the rows matching the specified sex plus the uncertain rows
+    foundAnimals<-animalListSEX[toupper(trimws(SEX)) %in% toupper(trimws(sexFilter)) | ! toupper(trimws(SEX)) %in% ctSEX | is.na(USUBJID),
+                                .(STUDYID, USUBJID, SEX, UNCERTAIN_MSG=ifelse(!is.na(USUBJID) & ! toupper(trimws(SEX)) %in% ctSEX ,
+                                                                              'filterAnimalsSex: DM.SEX does not contain a valid CT value',
+                                                                               NA))]
+  }
+  else {
+    # Do not include uncertain rows
+    # - extract  the rows matching the specified sex 
+    animalListSEX[toupper(trimws(SEX)) %in% toupper(trimws(sexFilter))]
+  }
+    
+  # Merge the list of extracted animals with the input set of animals to keep
+  # any additional columns from the input table 
+  foundAnimals<-merge(foundAnimals, animalList, by=c('STUDYID', 'USUBJID'))
+  if ("UNCERTAIN_MSG.y" %in% names(foundAnimals)) {
+    # An UNCERTAIN_MSG column is included in both input and found list of animals
+    #  - merge the UNCERTAIN_MSG from each of the merged tables into one column
+    #  - non-empty messages are separated by '|'
+    #  - exclude the original UNCERTAIN_MSG columns after the merge  
+    foundAnimals<-foundAnimals[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
+                                                           paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep='|'),
+                                                           Coalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
+  }
+  # Return list of found animals  
+  return(foundAnimals)
 }
