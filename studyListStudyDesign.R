@@ -100,7 +100,10 @@ GetStudyListSDESIGN<-function(studyDesign=NULL, Exclusively=TRUE, studyList=NULL
   tsSDESIGN<-unique(TS[TSPARMCD == 'SDESIGN', .(STUDYID, SDESIGN = toupper(trimws(TSVAL)))])
   if (inclUncertain) {
     #Include all studies with no SDESIGN parameter included
-    tsSDESIGN<-rbindlist(list(tsSDESIGN, fsetdiff(unique(TS[,.(STUDYID)]), tsSDESIGN[,.(STUDYID)])[,.(STUDYID, SDESIGN = NA)]))
+    tsSDESIGNmiss<-fsetdiff(unique(TS[,.(STUDYID)]), tsSDESIGN[,.(STUDYID)])
+    if (nrow(tsSDESIGNmiss)) {
+      tsSDESIGN<-rbindlist(list(tsSDESIGN, tsSDESIGNmiss[,.(STUDYID, SDESIGN = NA)]))
+    }
   }
   if (studyListIncl) {
     # Limit to the set of studies given as input

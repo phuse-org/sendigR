@@ -117,7 +117,10 @@ GetStudyListSTSTDTC<-function(fromDTC=NULL, toDTC=NULL, studyList=NULL, inclUnce
   tsSTSTDTC<-TS[TSPARMCD == 'STSTDTC', .(STUDYID, STSTDTC = TSVAL)]
   if (inclUncertain) {
     #Include all studies with no STSTDTC parameter included
-    tsSTSTDTC<-rbindlist(list(tsSTSTDTC, fsetdiff(unique(TS[,.(STUDYID)]), tsSTSTDTC[,.(STUDYID)])[,.(STUDYID, STSTDTC = NA)]))
+    tsSTSTDTCMiss<-fsetdiff(unique(TS[,.(STUDYID)]), tsSTSTDTC[,.(STUDYID)])
+    if (nrow(tsSTSTDTCMiss) > 0) {
+      tsSTSTDTC<-rbindlist(list(tsSTSTDTC, tsSTSTDTCMiss[,.(STUDYID, STSTDTC = NA)]))
+    }
   }
   if (studyListIncl) {
     # Limit to the set of studies given as input
