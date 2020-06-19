@@ -30,6 +30,7 @@
 #                   stringi
 #                   RSQLite
 #                   varhandle
+#                   readxl
 #                   
 #
 ###################################################################################
@@ -73,6 +74,7 @@ dummyuseCaseQuestionMiFindings<-function() {
 }
 setwd(getSrcDirectory(dummyuseCaseQuestionMiFindings))
 
+source("miscFunctions.R")
 source("importSENDDomains.R")
 source("studyListStudyDesign.R")
 source("filterStudyAnimalSpeciesStrain.R")
@@ -102,7 +104,7 @@ controlAnimals<-filterAnimalsSex(controlAnimalsAll, pSex, inclUncertain=pInclUnc
 controlAnimals<-FilterAnimalsSpeciesStrain(controlAnimals, pSpecies, pStrain)
 
 # Limit to set of animals to relevant route(s) of administration
-controlAnimals<-FilterAnimalListRoute(controlAnimals, pRoute)
+controlAnimals<-FilterAnimalListRoute(controlAnimals, pRoute, inclUncertain=pInclUncertain)
 
 # Extract all MI findings for the control animals
 allMI<-ExtractSubjData("MI", controlAnimals)

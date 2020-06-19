@@ -26,8 +26,9 @@
 #                 are extracted and returned too - including af message tellinge 
 #                 whether reason is a) or b).
 #
-# Input         : The TS domain - is imported from the pooled SEND data store if 
-#                 it doesn't exist in workspace
+# Input         :  - The TS domain - is imported from the pooled SEND data store if 
+#                    it doesn't exist in workspace
+#                  - CDISC CT code list DESIGN
 #
 # Output        : The function GetStudyListSDESIGN returns a data table with one column:
 #                     STUDYID           (character)
@@ -121,6 +122,9 @@ GetStudyListSDESIGN<-function(studyDesign=NULL, Exclusively=TRUE, studyList=NULL
   
   if (inclUncertain) {
     ## Include uncertain studies
+    
+    # Get values of codelist DESIGN from CDISC CT
+    ctDESIGN<-getCTCodListValues("DESIGN")
     
     # Include condition for rows with empty or wrong value of SDESIGN
     designFilter<-paste(paste("(", designFilter), ") | ! (toupper(SDESIGN) %in% ctDESIGN)")

@@ -22,6 +22,13 @@
 #                   matching the specified sex is extracted based on the DM.SEX variable.
 #                 The comparison of the sex values are done case insensitive.
 #                 
+#                 If the input parameter inclUncertain flag is enabled, uncertain animals
+#                 are included in the output set.
+#                 This uncertain situations are identified and reported (in column UNCERTAIN_MSG):
+#                  -  The DM.SEX value is empty or invalid (not CT value - CDISC codelist SEX)
+#                 Non-empty UNCERTAIN_MSG values are merged with non-empty UNCERTAIN_MSG values 
+#                 which may exist in the input set of animals (animalList).
+#                 
 # Input         : - A data table containing the input set of animals (input parameter 
 #                   'animalList') - the minimum set of variables in the table are:
 #                     - STUDYID       - character
@@ -29,33 +36,28 @@
 #                 - Domain (imported from the pooled SEND data store if they don't 
 #                   exist in workspace): 
 #                     - DM  
+#                 - CDISC CT code list SEX
 #
-# Output        : A data table containing the rows matching the specified input values
-#                 of SEX in the input data table.
-#                 The data table contains the same variables as the input data table.
+# Output        : A data table with the character columns:
+#                   STUDYID
+#                   USUBJID
+#                   SEX
+#                   UNCERTAIN_MSG - if input parameter inclUncertain flag is enabled
+#                 plus any additional columns which may be included in the input data animalList
 #
 # Parameters    : The function filterAnimalsSex must be called with input parameters: 
 #                 - animalList: Mandatory, data table
 #                               The data table to extract data from
 #                 - sexFilter:  Mandatory, character
-#                               The value of SEX for extract data for
+#                               The value of SEX for extract data for 
+#                 - inclUncertain: Optional, Include uncertain rows or not
 #
-# Usage notes   : Example - extract mail animals from list of all control animals:
-#                   filterAnimalsSex(controlAnimals, "M")
-# MISSING: 
-#   - Handling of pooled data
 ###################################################################################
 
 library(data.table)
 
 filterAnimalsSex<-function(animalList=NULL, sexFilter=NULL, inclUncertain=FALSE) {
   
-  
-  ##################################################################################
-  # Hard code CT list of SEX - should be read from a CT input file
-  ctSEX=c("F","M","U","UNDIFFERENTIATED")
-  ##################################################################################
-
   # Verify input parameter
   if (is.null(animalList) | isTRUE(is.na(animalList)) | isTRUE(animalList=='')) {
     stop('Input parameter animalList must have assigned a data table ')
@@ -68,7 +70,7 @@ filterAnimalsSex<-function(animalList=NULL, sexFilter=NULL, inclUncertain=FALSE)
   }
   
   if (!exists('DM')) {
-    importSENDDomains(c('DM'), animalStudies)
+    importSENDDomains(c('DM'), unique(animalList[,.(STUDYID)]))
   }
     
   # Merge the input list of animals with DM to add the SEX variable
@@ -76,7 +78,11 @@ filterAnimalsSex<-function(animalList=NULL, sexFilter=NULL, inclUncertain=FALSE)
 
   if (inclUncertain) {
     # Include uncertain rows
-    #  - extract the rows matching the specified sex plus the uncertain rows
+    
+    # Get values of codelist SEX from CDISC CT
+    ctSEX<-getCTCodListValues("SEX")
+    
+    # Extract the rows matching the specified sex plus the uncertain rows
     foundAnimals<-animalListSEX[toupper(trimws(SEX)) %in% toupper(trimws(sexFilter)) | ! toupper(trimws(SEX)) %in% ctSEX | is.na(USUBJID),
                                 .(STUDYID, USUBJID, SEX, UNCERTAIN_MSG=ifelse(!is.na(USUBJID) & ! toupper(trimws(SEX)) %in% ctSEX ,
                                                                               'filterAnimalsSex: DM.SEX does not contain a valid CT value',
