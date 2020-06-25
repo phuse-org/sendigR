@@ -101,7 +101,7 @@ controlAnimalsAll<-GetControlAnimals(studiesAll, inclUncertain=pInclUncertain)
 controlAnimals<-filterAnimalsSex(controlAnimalsAll, pSex, inclUncertain=pInclUncertain)
 
 # Limit to set of animals to relevant species/strain(s)
-controlAnimals<-FilterAnimalsSpeciesStrain(controlAnimals, pSpecies, pStrain)
+controlAnimals<-FilterAnimalsSpeciesStrain(controlAnimals, pSpecies, pStrain, inclUncertain=pInclUncertain)
 
 # Limit to set of animals to relevant route(s) of administration
 controlAnimals<-FilterAnimalListRoute(controlAnimals, pRoute, inclUncertain=pInclUncertain)
