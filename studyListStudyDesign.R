@@ -1,7 +1,6 @@
 ###################################################################################
 # Script name   : studyListStudyDesign.R
 # Date Created  : 04-Feb-2020
-# Documentation : Specification - R script - Q0.5 Study Design.docx
 # Programmer    : Bo Larsen
 # --------------------------------------------------------------------------------
 # Change log: 
@@ -18,7 +17,7 @@
 #                 the value of TSVAL for the TSPARMCD 'SDESIGN' is equal to a given 
 #                 study design.
 #                 The comparison of study design values are done case insensitive.
-#                 If specified (imput parameter 'inclUncertain') - studyid values
+#                 If specified (input parameter 'inclUncertain') - studyid values
 #                 included in TS 
 #                   a) without any row for TSPARMCD='SDESIGN' or
 #                   b) TSVAL doesn't contain a value included in the  CDISC CT list 
@@ -28,7 +27,7 @@
 #
 # Input         :  - The TS domain - is imported from the pooled SEND data store if 
 #                    it doesn't exist in workspace
-#                  - CDISC CT code list DESIGN
+#                  - CDISC CT code list DESIGN imported from a CDISC CT file.
 #
 # Output        : The function GetStudyListSDESIGN returns a data table with one column:
 #                     STUDYID           (character)
@@ -41,12 +40,14 @@
 #
 # Parameters    : The function GetStudyListSDESIGN are defined with one input 
 #                 parameter:
-#                   studyDesign:  mandatory. The study design to use as criterion for 
-#                                 filtering of the study id values.
-#                   Exclusively:  mandatory, default value "Y". Specifies if the returned
-#                                 list of studyid values includes only studies with 
-#                                 one study design specied in TS ("Y") or may include
-#                                 studies with multiple study designs specifed ("N"). 
+#                   studyDesignFilter:  
+#                             Mandatory, character.
+#                             The study design to use as criterion for filtering of the study id values.
+#                             It can be a single string, a vector or a list of multiple strings. 
+#                   exclusively:  
+#                             Optional, boolean.
+#                               TRUE: Include studies only for studies with no other studye deisgn than Filter
+#                               FALSE: Include animals for all studies with route matching routeFilter
 #                   studyList:
 #                             Optional, a data table with a list of studies to 
 #                             limit the output to be within this set of studies
@@ -54,43 +55,30 @@
 #                             Optional, boolean (TRUE or FALSE), default: FALSE 
 #                             Indicates whether study ids STSTDTC is missing or wrong 
 #                             shall be included or not in the output data table
-#
-# Usage notes   : Source the script.
-#                 Execute the function GetStudyListSDESIGN as many times as needed to extract 
-#                 list(s) of studies for the wanted study design.
-#                 Examples:
-#                   GetStudyListSDESIGN("parallel")
-#                   GetStudyListSDESIGN("parallel", Exclusively="n")
-#                   GetStudyListSDESIGN("DOSE ESCALATION")
 # 
 #######################################################################################################################################################################
 
 library(data.table)
 
-GetStudyListSDESIGN<-function(studyDesign=NULL, Exclusively=TRUE, studyList=NULL, inclUncertain=FALSE) {
+GetStudyListSDESIGN<-function(studyDesignFilter=NULL, exclusively=TRUE, studyList=NULL, inclUncertain=FALSE) {
   
-  ##################################################################################
-  # Hard code CT list of study design - should be read from a CT input file
-  ctDESIGN=c("CROSSOVER","DOSE ESCALATION","FACTORIAL","LATIN SQUARE","PARALLEL")
-  ##################################################################################
-  
-  if ((is.null(studyDesign) | isTRUE(is.na(studyDesign)) | isTRUE(studyDesign==""))) {
-    stop("A study design must be specified")
+  if ((is.null(studyDesignFilter) | isTRUE(is.na(studyDesignFilter)) | isTRUE(studyDesignFilter==""))) {
+    stop('Input parameter studyDesignFilter must have assigned a non-empty value')
   } 
   
-  if (!(toupper(Exclusively) %in% c(TRUE,FALSE))) {
-    stop("Parameter Exclusively must be either (T)RUE or (F)ALSE")
+  if (!(exclusively %in% c(TRUE,FALSE))) {
+    stop("Parameter Exclusively must be either TRUE or FALSE")
+  }
+  
+  if (!(inclUncertain %in% c(TRUE,FALSE))) {
+    stop("Parameter inclUncertain must be either TRUE or FALSE")
   }
   
   if (!exists("TS")) {
     # import TS if it's not already exists
     importSENDDomains(c("TS"))
   }
-  
-  if (!(inclUncertain %in% c(TRUE,FALSE))) {
-    stop("Parameter Exclusively must be either TRUE or FALSE")
-  }
-  
+
   studyListIncl<-FALSE
   if (!(is.null(studyList) | isTRUE(is.na(studyList)) | isTRUE(studyList==''))) {
     # An initial list of studies is included
@@ -115,8 +103,8 @@ GetStudyListSDESIGN<-function(studyDesign=NULL, Exclusively=TRUE, studyList=NULL
   tsSDESIGN[, `:=` (NUM_SDESIGN = .N), by = STUDYID]
   
   # Construct the statement to apply the specified design
-  designFilter<-'toupper(SDESIGN) %in% toupper(trimws(studyDesign))'
-  if (Exclusively) {
+  designFilter<-'toupper(SDESIGN) %in% toupper(trimws(studyDesignFilter))'
+  if (exclusively) {
     designFilter<-paste(designFilter, ' & NUM_SDESIGN==1', sep='')
   }
   

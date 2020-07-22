@@ -24,17 +24,30 @@
 #                   2) contains words from two sets, defined in the beginning of 
 #                      the script as currentModifiers and currentCntrlNouns
 #
-# Input         : A data table with a character column named STUDYID (input parameter)
-#                 These SEND domains: TX, DM (there are imported from the pooled
-#                 SEND store if they don't exist as data tables in the workspace)
+#                 If the input parameter inclUncertain flag is enabled, uncertain animals
+#                 are included in the output set.
+#                 These uncertain situations are identified and reported (in column UNCERTAIN_MSG):
+#                   - TX parameter 'TCNTRL' is missing
+#                   - TXVAL for TX parameter 'TCNTRL' cannot be identified as Negative or Positive control
+#                   
+# Input         : - A data table specified in the input parameter studylList:
+#                   It contains the list of studies extract control animals for
+#                   - must contain these character variables:
+#                       STUDYID
+#                     other variables may be included
+#                 - The TX and DM domains - are imported from the pooled SEND data 
+#                   store if they don't exist in workspace.
 #
-# Output        : A data table with two character columns:
+# Output        : A data table with the character columns:
 #                   STUDYID
 #                   USUBJID
+#                   TCNTRL (value of TXVAL for TX parameter TCNTRL)
+#                   UNCERTAIN_MSG - if input parameter inclUncertain flag is enabled
+#                 plus any additional columns which may be included in the input data studylList
 #
-# Parameters    : Contains one input parameter:
-#                   studyList - a data table with a character column named STUDYID
-#
+# Parameters    : studyList:      Mandatory, data table (see Input)
+#                 inclUncertain:  Optional, boolean.
+#                                   Include uncertain rows or not
 #
 ###################################################################################
 
@@ -55,7 +68,7 @@ GetControlAnimals<-function(studyList=NULL, inclUncertain=FALSE) {
   ###################################################################################
   # Check whether the input string setNames contains a value indicating it's a  
   # negative or positive control group.
-  # Default input param,eter values set to indentify negative control groups
+  # Default input parameter values set to identify negative or positive control groups
   ###################################################################################
   HasControlTerms<-function(setName, standAlonesWords=negStandAlonesWords, 
                                      controlMods=negModifiers, 
@@ -95,6 +108,9 @@ GetControlAnimals<-function(studyList=NULL, inclUncertain=FALSE) {
   ###################################################################################
   
   # Verify input parameter
+  if (is.null(studyList) | isTRUE(is.na(studyList)) | isTRUE(studyList=='')) {
+    stop('Input parameter studyList must have assigned a data table ')
+  } 
   if (!(inclUncertain %in% c(TRUE,FALSE))) {
     stop("Parameter inclUncertain must be either TRUE or FALSE")
   }
@@ -110,17 +126,13 @@ GetControlAnimals<-function(studyList=NULL, inclUncertain=FALSE) {
     importSENDDomains(c('DM'), studyList)
   }
 
-  # Define sort order of included domains to ensure data can be merged
-  #setkeyv(TX,c('STUDYID', 'SETCD'))
-  #setkeyv(DM,c('STUDYID', 'SETCD', 'USUBJID'))
-
   # Get the control sets for all studies
   txCtrlSet <- TX[TXPARMCD == 'TCNTRL', .(STUDYID, SETCD, TCNTRL=TXVAL)]
   if (inclUncertain) {
     # Include uncertain studies/animals - add studies with no TXPARM 'TCNTRL' to list of control sets
     txCtrlSet <- rbindlist(list(txCtrlSet, 
                                 fsetdiff(unique(TS[,.(STUDYID)]), 
-                                         txCtrlSet[,.(STUDYID)])[,.(STUDYID, SETCD = NA, TCNTRL = NA)]))
+                                         txCtrlSet[,.(STUDYID)])[!is.na(STUDYID),.(STUDYID, SETCD = as.character(NA), TCNTRL = as.character(NA))]))
   }
   
   studyListIncl<-FALSE
@@ -129,8 +141,7 @@ GetControlAnimals<-function(studyList=NULL, inclUncertain=FALSE) {
     txCtrlSet<-merge(txCtrlSet, studyList[,.(STUDYID)], by='STUDYID')
     studyListIncl<-TRUE
   }
-  #setkeyv(txCtrlSet,c('STUDYID', 'SETCD'))
-  
+
   # Get set of control groups identified as negative 
   foundCtrlSet <- txCtrlSet[sapply(txCtrlSet$TCNTRL, HasControlTerms)]
   
@@ -145,12 +156,11 @@ GetControlAnimals<-function(studyList=NULL, inclUncertain=FALSE) {
                                notNegCtrlSet[sapply(notNegCtrlSet$TCNTRL, HasControlTerms,NA,posModifiers)])
     
     # Set the UNCERTAIN_MSG for the control groups identified as uncertain
-    # (is.null(SETCD) | isTRUE(is.na(SETCD)) | isTRUE(SETCD=='')
     uncertainCtrlSet[, `:=` (UNCERTAIN_MSG = ifelse(is.na(TCNTRL),
                                                     'GetControlAnimals: TX parameter TCNTRL is missing',
                                                     'GetControlAnimals: Cannot decide type of control group from TXVAL in TX parameter TCNTRL'))]
     # Combine set of negative and uncertain control groups
-    foundCtrlSet[,`:=` (UNCERTAIN_MSG = NA)]
+    foundCtrlSet[,`:=` (UNCERTAIN_MSG = as.character(NA))]
     foundCtrlSet<-rbindlist(list(foundCtrlSet, uncertainCtrlSet))
     
     # Get the list of animals belong to the identified control groups - incl. uncertain control groups which doesn't match any rows in DM

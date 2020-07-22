@@ -1,7 +1,6 @@
 ###################################################################################
 # Script name   : miscFunctions.R
 # Date Created  : 18-Jun-2020
-# Documentation : na
 # Programmer    : Bo Larsen
 # --------------------------------------------------------------------------------
 # Change log: 
@@ -12,19 +11,9 @@
 # -------------------------------------------------------------------------------
 # Purpose       : Miscellaneous functions 
 #
-# Description   : Contains small functions - see heade for each function for details
-#
-# Input         : na
-#
-# Output        : na
-#
-# Parameters    : na
-#
-# Usage notes   : na
+# Description   : Contains small functions - see header for each function for details
 #
 ###################################################################################
-
-
 
 ###################################################################################
 # Function name : getCTCodListValues

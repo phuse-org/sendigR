@@ -1,7 +1,6 @@
 ###################################################################################
 # Script name   : subjDataExtract.R
 # Date Created  : 20-Feb-2020
-# Documentation : <if relevant, reference to specification document>
 # Programmer    : Bo Larsen
 # --------------------------------------------------------------------------------
 # Change log: 
@@ -43,7 +42,7 @@
 
 library(data.table)
 
-ExtractSubjData<-function(domain=NULL, animalList=NULL, includeVar=NULL) {
+ExtractSubjData<-function(domain=NULL, animalList=NULL) {
   if (is.null(domain) | isTRUE(is.na(domain)) | isTRUE(domain=='')) {
     stop('Input parameter domain must have assigned a domain name ')
   }  
@@ -78,6 +77,8 @@ ExtractSubjData<-function(domain=NULL, animalList=NULL, includeVar=NULL) {
                         use.names=TRUE, fill=TRUE)
   } 
   
-  return(SubjData)
+  # Merge the extracted findings with the input set of animals to keep
+  # any additional columns from the input table - return rows
+  return(merge(SubjData, animalList, by=c('STUDYID', 'USUBJID')))
 }
 

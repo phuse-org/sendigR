@@ -49,6 +49,7 @@ pSpecies          <-  "RAT"
 pStrain           <- c("WISTAR","SPRAGUE-DAWLEY")
 #pSpecies         <- "DOG  "
 #pSpecies         <- c("MONKEY","RAT")
+#pSpecies         <- c("DOG","RAT")
 #pStrain           <-  "BEAGLE"
 #pRoute           <-  c("SUBCUTANEOUS")     # CT: ROUTE   (extensible)
 #pRoute           <- c("INTRAPERITONEAL")
@@ -59,11 +60,13 @@ pFromDTC          <-  "2016"
 pToDTC            <-  "2019"
 pSex              <-  "M"                # CT: SEX
 pStudyPhase       <-  "Treatment"        # Valid: "Screening", "Treatment", "Recovery"
-pStudyPhaseInclUncertain <- TRUE    # Valid: TRUE, FALSE
+#pStudyPhase       <-  c("Treatment", "Screening")
 pFindingsFromAge  <-  "4m"
 pFindingsToAge    <-  "6m"
 
-pInclUncertain=TRUE
+pInclUncertain    <-  TRUE
+pExclusively      <-  FALSE
+pMatchAll         <-  FALSE
 ###################################################################################
 
 library(data.table)
@@ -87,36 +90,57 @@ source("filterFindingsPhase.R")
 source("addFindingsAnimalAge.R")
 source("filterFindingsAnimalAge.R")
 
-
 # Get the combined list of all studies to look into 
-studiesAll<-GetStudyListSDESIGN(pStudyDesign, 
-                                studyList=GetStudyListSTSTDTC(pFromDTC, pToDTC, 
-                                                              inclUncertain=pInclUncertain), 
-                                inclUncertain=pInclUncertain)
+studiesAll<-GetStudyListSDESIGN(studyDesignFilter = pStudyDesign, 
+                                studyList         = GetStudyListSTSTDTC(fromDTC       = pFromDTC, 
+                                                                        toDTC         = pToDTC, 
+                                                                        inclUncertain = pInclUncertain), 
+                                inclUncertain     = pInclUncertain, 
+                                exclusively       = pExclusively)
 
 # Extract subset of of all control animals for the selected  studies 
-controlAnimalsAll<-GetControlAnimals(studiesAll, inclUncertain=pInclUncertain)
+controlAnimalsAll<-GetControlAnimals(studyList     = studiesAll, 
+                                     inclUncertain = pInclUncertain)
 
 # Limit to set of animals to relevant sex
-controlAnimals<-filterAnimalsSex(controlAnimalsAll, pSex, inclUncertain=pInclUncertain)
+controlAnimals<-filterAnimalsSex(animalList    = controlAnimalsAll, 
+                                 sexFilter     = pSex, 
+                                 inclUncertain = pInclUncertain)
 
 # Limit to set of animals to relevant species/strain(s)
-controlAnimals<-FilterAnimalsSpeciesStrain(controlAnimals, pSpecies, pStrain, inclUncertain=pInclUncertain)
+controlAnimals<-FilterAnimalsSpeciesStrain(animalList    = controlAnimals, 
+                                           speciesFilter = pSpecies, 
+                                           strainFilter  = pStrain, 
+                                           inclUncertain = pInclUncertain, 
+                                           exclusively   = pExclusively)
 
 # Limit to set of animals to relevant route(s) of administration
-controlAnimals<-FilterAnimalListRoute(controlAnimals, pRoute, inclUncertain=pInclUncertain)
+controlAnimals<-FilterAnimalListRoute(animalList    = controlAnimals, 
+                                      routeFilter   = pRoute, 
+                                      inclUncertain = pInclUncertain,
+                                      exclusively   = pExclusively, 
+                                      matchAll      = pMatchAll)
 
 # Extract all MI findings for the control animals
-allMI<-ExtractSubjData("MI", controlAnimals)
+allMI<-ExtractSubjData(domain     = "MI", 
+                       animalList = controlAnimals)
 
 # Add animal age of finding column
-allMI<-addFindingsAnimalAge('mi', allMI, inclUncertainMsg=TRUE)
+allMI<-addFindingsAnimalAge(domain        = "MI", 
+                            findings      = allMI, 
+                            inclUncertain = pInclUncertain)
 
 # Filter MI findings - save Dosing phase findings (and include rows where phase cannot be identified )
-dosingMI<-FilterFindingsPhase('MI', allMI, pStudyPhase, pStudyPhaseInclUncertain)
+dosingMI<-FilterFindingsPhase(domain        = "MI", 
+                              findings      = allMI, 
+                              phaseFilter   = pStudyPhase,  
+                              inclUncertain = pInclUncertain)
 
 # Filter MI findings for a specific age interval
-dosingMI<-filterFindingsAnimalAge(dosingMI, pFindingsFromAge, pFindingsToAge)
+dosingMI<-filterFindingsAnimalAge(findings      = dosingMI, 
+                                  fromAge       = pFindingsFromAge, 
+                                  toAge         = pFindingsToAge,  
+                                  inclUncertain = pInclUncertain)
 
 ##########################################################################
 message("Execution time: ",round(difftime(Sys.time(), start, units = 'min'),1)," minutes")

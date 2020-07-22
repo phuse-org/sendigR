@@ -1,7 +1,6 @@
 ###################################################################################
 # Script name   : studyListStudyStartDate.R
 # Date Created  : 25-Mar-2020
-# Documentation : n/a
 # Programmer    : Bo Larsen
 # --------------------------------------------------------------------------------
 # Change log: 
@@ -71,16 +70,6 @@
 #                             Indicates whether study ids STSTDTC is missing or wrong 
 #                             shall be included or not in the output data table
 #
-# Usage notes   : Examples:
-#                   Get all the studies from 2019:
-#                     GetStudyListSTSTDTC("2019","2019")
-#                   Get all the studies between 2015 and 2019:
-#                     GetStudyListSTSTDTC("2015","2019")
-#                   Get all the studies after March 2016:
-#                     GetStudyListSTSTDTC(fromDTC="2016-04")
-#                   Get all the studies before March 2016 - include studies without a valid STSTDTC:
-#                     GetStudyListSTSTDTC(toDTC="2016-02", inclUncertain=TRUE)
-# 
 #######################################################################################################################################################################
 
 library(data.table)

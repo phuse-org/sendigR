@@ -1,7 +1,6 @@
 ###################################################################################
 # Script name   : filterAnimalsSex.R
 # Date Created  : 20-Mar-2020
-# Documentation : <if relevant, reference to specification document>
 # Programmer    : Bo Larsen
 # --------------------------------------------------------------------------------
 # Change log: 
@@ -36,7 +35,7 @@
 #                 - Domain (imported from the pooled SEND data store if they don't 
 #                   exist in workspace): 
 #                     - DM  
-#                 - CDISC CT code list SEX
+#                 - CDISC CT code list SEX imported from a CDISC CT file.
 #
 # Output        : A data table with the character columns:
 #                   STUDYID
@@ -46,11 +45,12 @@
 #                 plus any additional columns which may be included in the input data animalList
 #
 # Parameters    : The function filterAnimalsSex must be called with input parameters: 
-#                 - animalList: Mandatory, data table
+#                 - animalList: Mandatory, data table.
 #                               The data table to extract data from
-#                 - sexFilter:  Mandatory, character
+#                 - sexFilter:  Mandatory, character.
 #                               The value of SEX for extract data for 
-#                 - inclUncertain: Optional, Include uncertain rows or not
+#                 - inclUncertain: Optional, boolean.
+#                                  Include uncertain rows or not
 #
 ###################################################################################
 
@@ -63,7 +63,7 @@ filterAnimalsSex<-function(animalList=NULL, sexFilter=NULL, inclUncertain=FALSE)
     stop('Input parameter animalList must have assigned a data table ')
   } 
   if (is.null(sexFilter) | isTRUE(is.na(sexFilter)) | isTRUE(sexFilter=='')) {
-    stop('Input parameter sexFilter must have assigned a data table ')
+    stop('Input parameter sexFilter must have assigned a non-empty value')
   } 
   if (!(inclUncertain %in% c(TRUE,FALSE))) {
     stop("Parameter inclUncertain must be either TRUE or FALSE")
@@ -91,7 +91,7 @@ filterAnimalsSex<-function(animalList=NULL, sexFilter=NULL, inclUncertain=FALSE)
   else {
     # Do not include uncertain rows
     # - extract  the rows matching the specified sex 
-    animalListSEX[toupper(trimws(SEX)) %in% toupper(trimws(sexFilter))]
+    foundAnimals<-animalListSEX[toupper(trimws(SEX)) %in% toupper(trimws(sexFilter))]
   }
     
   # Merge the list of extracted animals with the input set of animals to keep

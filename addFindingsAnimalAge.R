@@ -1,7 +1,6 @@
 ###################################################################################
 # Script name   : addFindingsAnimalAge.R
 # Date Created  : 19-Mar-2020
-# Documentation : Specification - R script -Animal Age at TOM.docx
 # Programmer    : Bo Larsen
 # --------------------------------------------------------------------------------
 # Change log: 
@@ -11,10 +10,10 @@
 #
 # -------------------------------------------------------------------------------
 # Purpose       : Add a variable with the age of animal at the time of finding to
-#                 a set of rows extratced from a findings domain.
+#                 a set of rows extracted from a findings domain.
 #
 # Description   : The function addFindingsAnimalAge calculates for each row in a 
-#                 set of findings the age og the animal at the time of the finding
+#                 set of findings the age of the animal at the time of the finding
 #                 using this algorithm:
 #                 
 #                 1. Compute Animal_age_on_Reference_Start_Date in days
@@ -38,14 +37,14 @@
 #                    [Animal_age_on_Reference_Start_Date] + [Study_days_between_study_start_and_findings ]. 
 #                    Report in days into additional variable AGE in the findings data set.
 #                    
-#                 If an age can not be calculated du to missing values in relevant 
-#                 variables in either DM or the finings data, the reason is documented
-#                 in an additional variable AGE_MESSAGE in the findings data set.
+#                 If an age can not be calculated due to missing values in relevant 
+#                 variables in either DM or the findings data, the reason is documented
+#                 in an additional variable UNCERTAIN_MSG in the findings data set.
 #                 This variable is only included in the output data table in the 
 #                 input parameter 'inclUncertain' is specified as TRUE.
 #
 # Input         : - A data table containing the input set of findings (input parameter 
-#                   'findings') - the minimun set of variables in the table are:
+#                   'findings') - the minimum set of variables in the table are:
 #                     - STUDYID       - character
 #                     - USUBJID       - character
 #                     - <domain>SEQ   - integer
@@ -57,38 +56,28 @@
 #                     - DM  
 #
 # Output        : A data table containing all the rows and variables in the input 
-#                 table additional additional variable(s):
+#                 table plus additional variable(s):
 #                     - AGE         - integer
-#                       The calculated age in days of the anmimal at the time of 
+#                       The calculated age in days of the animal at the time of 
 #                       the finding. The value is NA if an AGE couldn't be 
 #                       calculated due to missing values in relevant variables.
-#                     - AGE_MESSAGE - character
+#                     - UNCERTAIN_MSG - character
 #                       Only included if the input parameter 'inclUncertain' is 
 #                       specified as TRUE.
-#                       If the AGE couldn't be calculated - it contains an explanation 
-#                       of the reason - else it's empty (NA)
+#                 plus any additional columns which may be included in the input data findings
 #
 # Parameters    : The function addFindingsAnimalAge is defined with input parameters:
 #                   domain:   Mandatory, character
 #                             The name of the actual findings domain.
-#                   findings: Manadatory, data table
+#                   findings: Mandatory, data table
 #                             The table with the findings to calculate age for
 #                   inclUncertain:
 #                             Optional, boolean (TRUE or FALSE), default: FALSE
 #                             Indicates whether the output table shall contain
 #                             a variable or not with the an explantion for rows 
 #                             where the age cannot be calculated.
-#
-# Usage notes   : Source the script.
-#                 Execute the function addFindingsAnimalAge as many times as needed to  
-#                 calculate the age of animal in sets of findings rows.
-#                 Examples:
-#                   allMI<-addFindingsAnimalAge('MI', allMI)
-#                   LBgluc<-addFindingsAnimalAge('LB', LBgluc, inclUncertainMsg=TRUE)
-#                 Please be aware that the input data set must be a data table.
-#
+#                             
 # MISSING:
-#   - Differentiate between rodents/non-rodents (if relevant)
 #   - Handling of pooled data
 ###################################################################################
 
@@ -97,7 +86,7 @@ library(parsedate)
 library(stringr)
 
 
-addFindingsAnimalAge<-function(domain, findings, inclUncertainMsg=FALSE) {
+addFindingsAnimalAge<-function(domain=NULL, findings=NULL, inclUncertain=FALSE) {
 
   ###################################################################################################
   # calculate the age for an animal at the referenece start date in DM to days 
@@ -135,39 +124,61 @@ addFindingsAnimalAge<-function(domain, findings, inclUncertainMsg=FALSE) {
     }
   }
   ###################################################################################################
-  
-  if (is.null(findings) | is.null(domain) ) {
-    print("ERROR: A domain name and a data table with findings to add age column to must be specified")
-  } 
-  else {
-    # Get relevant DM rows and calculate age at RFSTDTC
-    dm<-ExtractSubjData("DM",unique(findings[,.(STUDYID,USUBJID)]))[,.(STUDYID, USUBJID, RFSTDTC,BRTHDTC,AGETXT,AGE=as.numeric(AGE),AGEU)]
-    dm[,AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)][,`:=` (AGEDAYS=suppressWarnings(as.numeric(AGEDAYStxt)), 
-                                                                                     AGEDAYStxt=ifelse(!grepl("^[0-9]+$",AGEDAYStxt), AGEDAYStxt,NA))]
 
-    # Merge relevant findings columns with dm for age calculation
-    dm_find<-merge(dm[,.(STUDYID, USUBJID, RFSTDTC, AGEDAYS, AGEDAYStxt)], findings[, .(STUDYID, USUBJID, seq=get(paste(toupper(domain),'SEQ', sep='')), dy=get(paste(toupper(domain),'DY', sep='')),dtc=get(paste(toupper(domain),'DTC', sep='')))])
-    # Calculate the age of each animal at time of finding
-    dm_find[,`:=` (AGE = ifelse(!(dy == "" | is.na(dy)),
-                           #  --DY is populated
-                           AGEDAYS + ifelse(dy>0,dy-1,dy),
-                           ifelse(!(dtc == "" | is.na(dtc)),
-                                  #  --DTC is populated
-                                  AGEDAYS + as.numeric(parse_iso_8601(dtc) - parse_iso_8601(RFSTDTC)),
-                                  # Neither --DY nor --DTC is populated
-                                  NA)),
-                   AGE_MESSAGE=ifelse((dy=="" | is.na(dy)) & (dtc=="" | is.na(dtc)),ifelse(is.na(AGEDAYStxt),'Neither --DY nor --DTC has been populated', AGEDAYStxt), AGEDAYStxt))]
-    
-    # Remove columns not to be merged into the final data rows
-    dm_find[, `:=` (dy=NULL, dtc=NULL, RFSTDTC=NULL, AGEDAYS=NULL, AGEDAYStxt=NULL)]
-    if (!inclUncertainMsg) {
-      dm_find[,AGE_MESSAGE := NULL]
-    }
-    
-    # Merge and return the list of finding IDs plus age with the input list of findings to include all variables
-    merge(setkeyv(findings,c("STUDYID", "USUBJID", paste(toupper(domain),'SEQ', sep=''))), 
-          # Rename the SEQ variable to the real --SEQ variable name
-          setkeyv(setnames(dm_find, "seq",paste(toupper(domain),'SEQ', sep='')),c("STUDYID", "USUBJID",paste(toupper(domain),'SEQ', sep=''))),
-          all.x=TRUE)
+  # Evaluate input parameters
+  if (is.null(domain) | isTRUE(is.na(domain)) | isTRUE(domain=='')) {
+    stop('Input parameter domain must have assigned a domain name ')
+  }  
+    if (is.null(findings) | isTRUE(is.na(findings)) | isTRUE(findings=='')) {
+    stop('Input parameter findings must have assigned a data table ')
   }
+  if (!(inclUncertain %in% c(TRUE,FALSE))) {
+    stop("Parameter inclUncertain must be either TRUE or FALSE")
+  }
+
+  # Get relevant DM rows 
+  dm<-ExtractSubjData("DM",unique(findings[,.(STUDYID,USUBJID)]))[,.(STUDYID, USUBJID, RFSTDTC,BRTHDTC,AGETXT,AGE=as.numeric(AGE),AGEU)]
+  # Calculate age at RFSTDTC
+  # If an age has been calculated - convert returned value from function to numeric age in days value - else save returned error message
+  dm[,AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)][,`:=` (AGEDAYS=suppressWarnings(as.numeric(AGEDAYStxt)), 
+                                                                                   UNCERTAIN_MSG=ifelse(!grepl("^[0-9]+$",AGEDAYStxt), paste('addFindingsAnimalAge: ', AGEDAYStxt, sep=''),as.character(NA)))]
+
+  # Merge relevant findings columns with dm for age calculation
+  dm_find<-merge(dm[,.(STUDYID, USUBJID, RFSTDTC, AGEDAYS, UNCERTAIN_MSG)], findings[, .(STUDYID, USUBJID, seq=get(paste(toupper(domain),'SEQ', sep='')), dy=get(paste(toupper(domain),'DY', sep='')),dtc=get(paste(toupper(domain),'DTC', sep='')))])
+  # Calculate the age of each animal at time of finding
+  dm_find[,`:=` (AGE = ifelse(!(dy == "" | is.na(dy)),
+                         #  --DY is populated
+                         AGEDAYS + ifelse(dy>0,dy-1,dy),
+                         ifelse(!(dtc == "" | is.na(dtc)),
+                                #  --DTC is populated
+                                AGEDAYS + as.numeric(parse_iso_8601(dtc) - parse_iso_8601(RFSTDTC)),
+                                # Neither --DY nor --DTC is populated
+                                as.numeric(NA))),
+                 UNCERTAIN_MSG=ifelse((dy=="" | is.na(dy)) & (dtc=="" | is.na(dtc)),ifelse(is.na(UNCERTAIN_MSG),'addFindingsAnimalAge: Neither --DY nor --DTC has been populated', UNCERTAIN_MSG), UNCERTAIN_MSG))]
+  
+  # Remove columns not to be merged into the final data rows
+  dm_find[, `:=` (dy=NULL, dtc=NULL, RFSTDTC=NULL, AGEDAYS=NULL)]
+  if (!inclUncertain) {
+    dm_find[,UNCERTAIN_MSG := NULL]
+  }
+  
+  # Merge and return the list of finding IDs plus age with the input list of findings to include all variables
+  dm_find<-
+    merge(findings, 
+          # Rename the SEQ variable to the real --SEQ variable name
+          setnames(dm_find, "seq",paste(toupper(domain),'SEQ', sep='')),
+          by=c("STUDYID", "USUBJID", paste(toupper(domain),'SEQ', sep='')),
+          all.x=TRUE)  
+  
+  if ("UNCERTAIN_MSG.y" %in% names(dm_find)) {
+    # An UNCERTAIN_MSG column is included in both input and calculated set of findings
+    #  - merge the UNCERTAIN_MSG from each of the merged tables into one column
+    #  - non-empty messages are separated by '|'
+    #  - exclude the original UNCERTAIN_MSG columns after the merge  
+    dm_find<-dm_find[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
+                                                  paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep='|'),
+                                                  Coalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
+  }
+  # return final data set 
+  return(dm_find)
 }
