@@ -59,7 +59,7 @@ library(data.table)
 filterAnimalsSex<-function(animalList=NULL, sexFilter=NULL, inclUncertain=FALSE) {
   
   # Verify input parameter
-  if (is.null(animalList) | isTRUE(is.na(animalList)) | isTRUE(animalList=='')) {
+  if (!is.data.table(animalList)) {
     stop('Input parameter animalList must have assigned a data table ')
   } 
   if (is.null(sexFilter) | isTRUE(is.na(sexFilter)) | isTRUE(sexFilter=='')) {

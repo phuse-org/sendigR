@@ -102,7 +102,7 @@ FilterAnimalListRoute<-function(animalList=NULL, routeFilter=NULL, inclUncertain
   
   ##################################################################################################################
   
-  if (is.null(animalList) | isTRUE(is.na(animalList)) | isTRUE(animalList=='')) {
+  if (!is.data.table(animalList)) {
     stop('Input parameter animalList must have assigned a data table ')
   } 
   if (is.null(routeFilter) | isTRUE(is.na(routeFilter)) | isTRUE(routeFilter=='')) {

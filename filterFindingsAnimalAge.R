@@ -78,7 +78,7 @@ library(stringi)
 
 filterFindingsAnimalAge<-function(findings=NULL, fromAge=NULL, toAge=NULL, inclUncertain=FALSE)
 {
-  if (is.null(findings) | isTRUE(is.na(findings)) | isTRUE(findings=='')) {
+  if (!is.data.table(findings)) {
     stop('Input parameter findings must have assigned a data table ')
   }
   if ((is.null(fromAge) | isTRUE(is.na(fromAge)) | isTRUE(fromAge=="")) & (is.null(toAge) | isTRUE(is.na(toAge)) | isTRUE(toAge==""))) {

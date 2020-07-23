@@ -102,7 +102,7 @@ FilterFindingsPhase<-function(domain=NULL, findings=NULL, phaseFilter=NULL, incl
   if (is.null(domain) | isTRUE(is.na(domain)) | isTRUE(domain=='')) {
     stop('Input parameter domain must have assigned a domain name ')
   }  
-  if (is.null(findings) | isTRUE(is.na(findings)) | isTRUE(findings=='')) {
+  if (!is.data.table(findings)) {
     stop('Input parameter findings must have assigned a data table ')
   }
   if (is.null(phaseFilter) | isTRUE(is.na(phaseFilter)) | isTRUE(phaseFilter=='')) {

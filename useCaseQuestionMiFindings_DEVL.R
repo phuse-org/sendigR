@@ -1,7 +1,6 @@
 ###################################################################################
 # Script name   : <script name>.R
 # Date Created  : dd-Mon-2020
-# Documentation : <if relevant, reference to specification document>
 # Programmer    : <programmer name>
 # --------------------------------------------------------------------------------
 # Change log: 
@@ -10,7 +9,7 @@
 # <init/dd-Mon-yyyy>  <description>
 #
 # -------------------------------------------------------------------------------
-# Purpose       : <overall prupose of script>
+# Purpose       : <overall purpose of script>
 #
 # Description   : <detailed description of the algorithm(s) implemented in the script>
 #
@@ -77,18 +76,7 @@ dummyuseCaseQuestionMiFindings<-function() {
 }
 setwd(getSrcDirectory(dummyuseCaseQuestionMiFindings))
 
-source("miscFunctions.R")
-source("importSENDDomains.R")
-source("studyListStudyDesign.R")
-source("filterStudyAnimalSpeciesStrain.R")
-source("filterStudyAnimalRoute.R")
-source("studyListStudyStartDate.R")
-source("animalListControl.R")
-source("filterAnimalsSex.R")
-source("subjDataExtract.R")
-source("filterFindingsPhase.R")
-source("addFindingsAnimalAge.R")
-source("filterFindingsAnimalAge.R")
+source("initSENDFunctions.R")
 
 # Get the combined list of all studies to look into 
 studiesAll<-GetStudyListSDESIGN(studyDesignFilter = pStudyDesign, 

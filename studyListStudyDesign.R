@@ -80,7 +80,7 @@ GetStudyListSDESIGN<-function(studyDesignFilter=NULL, exclusively=TRUE, studyLis
   }
 
   studyListIncl<-FALSE
-  if (!(is.null(studyList) | isTRUE(is.na(studyList)) | isTRUE(studyList==''))) {
+  if (is.data.table(studyList)) {
     # An initial list of studies is included
     studyListIncl<-TRUE
   }

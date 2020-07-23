@@ -129,7 +129,7 @@ addFindingsAnimalAge<-function(domain=NULL, findings=NULL, inclUncertain=FALSE) 
   if (is.null(domain) | isTRUE(is.na(domain)) | isTRUE(domain=='')) {
     stop('Input parameter domain must have assigned a domain name ')
   }  
-    if (is.null(findings) | isTRUE(is.na(findings)) | isTRUE(findings=='')) {
+    if (!is.data.table(findings)) {
     stop('Input parameter findings must have assigned a data table ')
   }
   if (!(inclUncertain %in% c(TRUE,FALSE))) {
@@ -144,7 +144,9 @@ addFindingsAnimalAge<-function(domain=NULL, findings=NULL, inclUncertain=FALSE) 
                                                                                    UNCERTAIN_MSG=ifelse(!grepl("^[0-9]+$",AGEDAYStxt), paste('addFindingsAnimalAge: ', AGEDAYStxt, sep=''),as.character(NA)))]
 
   # Merge relevant findings columns with dm for age calculation
-  dm_find<-merge(dm[,.(STUDYID, USUBJID, RFSTDTC, AGEDAYS, UNCERTAIN_MSG)], findings[, .(STUDYID, USUBJID, seq=get(paste(toupper(domain),'SEQ', sep='')), dy=get(paste(toupper(domain),'DY', sep='')),dtc=get(paste(toupper(domain),'DTC', sep='')))])
+  dm_find<-merge(dm[,.(STUDYID, USUBJID, RFSTDTC, AGEDAYS, UNCERTAIN_MSG)], 
+                 findings[, .(STUDYID, USUBJID, seq=get(paste(toupper(domain),'SEQ', sep='')), dy=get(paste(toupper(domain),'DY', sep='')),dtc=get(paste(toupper(domain),'DTC', sep='')))],
+                 by=c("STUDYID", "USUBJID"))
   # Calculate the age of each animal at time of finding
   dm_find[,`:=` (AGE = ifelse(!(dy == "" | is.na(dy)),
                          #  --DY is populated
