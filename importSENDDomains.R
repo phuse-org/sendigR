@@ -1,7 +1,6 @@
 ###################################################################################
 # Script name   : importSENDDomains.R
 # Date Created  : 23-Jan-2020
-# Documentation : <if relevant, reference to specification document>
 # Programmer    : Bo Larsen
 # --------------------------------------------------------------------------------
 # Change log: 
@@ -48,7 +47,7 @@
 #                     importSENDDomains(c("CL"), studyIdList)
 #
 #                 NB: If the actual pooled SEND store is not located in SQLite database 
-#                 - substitue this version of the sccript with a new script accessing 
+#                 - substitue this version of the script with a new script accessing 
 #                   the actual data store
 #                 - ensure that function name, input parameter and output table format 
 #                   are equal to the function defined in this script.

@@ -30,6 +30,7 @@
 #                   stringi
 #                   RSQLite
 #                   varhandle
+#                   readxl
 #                   
 #
 ###################################################################################
@@ -38,6 +39,7 @@ start<-Sys.time()
 
 ###################################################################################
 # Input parameter values
+<<<<<<< HEAD
 pStudyDesign      <-  "PARALLEL" # CT: DESIGN
 pSpecies          <-  "DOG" # CT: SPECIES (extensible)
 pStrain           <- "BEAGLE" # CT: STRAIN  (extensible)
@@ -49,6 +51,36 @@ pStudyPhase       <-  "Treatment"        # Valid: "Screening", "Treatment", "Rec
 pStudyPhaseInclUncertain <- FALSE    # Valid: TRUE, FALSE
 pFindingsFromAge  <-  "12m"
 pFindingsToAge    <-  "18m"
+=======
+pStudyDesign      <-  "PARALLEL"         # CT: DESIGN
+#pSpecies          <-  "Rat"              # CT: SPECIES (extensible)
+#pStrain           <-  "SPRAGUE-DAWLEY"   # CT: STRAIN  (extensible)
+#pStrain           <-  "wistar"
+#pStrain           <-  ""
+pSpecies          <-  "RAT"
+#pStrain          <-  "WISTAR"
+pStrain           <- c("WISTAR","SPRAGUE-DAWLEY")
+#pSpecies         <- "DOG  "
+#pSpecies         <- c("MONKEY","RAT")
+#pSpecies         <- c("DOG","RAT")
+#pStrain           <-  "BEAGLE"
+#pRoute           <-  c("SUBCUTANEOUS")     # CT: ROUTE   (extensible)
+#pRoute           <- c("INTRAPERITONEAL")
+#pRoute           <- c("ORAL", "ORAL GAVAGE")
+#pRoute           <- c("ORAL GAVAGE")
+pRoute            <- c("INTRAVENOUS BOLUS", "SUBCUTANEOUS")
+pFromDTC          <-  "2016"
+pToDTC            <-  "2019"
+pSex              <-  "M"                # CT: SEX
+pStudyPhase       <-  "Treatment"        # Valid: "Screening", "Treatment", "Recovery"
+#pStudyPhase       <-  c("Treatment", "Screening")
+pFindingsFromAge  <-  "4m"
+pFindingsToAge    <-  "6m"
+
+pInclUncertain    <-  TRUE
+pExclusively      <-  FALSE
+pMatchAll         <-  FALSE
+>>>>>>> devl_bo
 ###################################################################################
 
 library(data.table)
@@ -59,6 +91,7 @@ dummyuseCaseQuestionMiFindings<-function() {
 }
 setwd(getSrcDirectory(dummyuseCaseQuestionMiFindings))
 
+source("miscFunctions.R")
 source("importSENDDomains.R")
 source("studyListStudyDesign.R")
 source("filterStudyAnimalSpeciesStrain.R")
@@ -71,40 +104,58 @@ source("filterFindingsPhase.R")
 source("addFindingsAnimalAge.R")
 source("filterFindingsAnimalAge.R")
 
-# Extract list of studies per condition
-studiesSDESIGN<-GetStudyListSDESIGN(pStudyDesign)
-#studiesSPECIES_STRAIN<-GetStudyListSPECIES_STRAIN(pSpecies, pStrain)
-studiesSTSTDTC<-GetStudyListSTSTDTC(pFromDTC,pToDTC)
-
 # Get the combined list of all studies to look into 
-studiesAll<-merge(studiesSDESIGN, studiesSTSTDTC, by='STUDYID')
-
-# Get a unique list of the study ud values
-studiesAllID<-unique(studiesAll[ ,.(STUDYID)])
+studiesAll<-GetStudyListSDESIGN(studyDesignFilter = pStudyDesign, 
+                                studyList         = GetStudyListSTSTDTC(fromDTC       = pFromDTC, 
+                                                                        toDTC         = pToDTC, 
+                                                                        inclUncertain = pInclUncertain), 
+                                inclUncertain     = pInclUncertain, 
+                                exclusively       = pExclusively)
 
 # Extract subset of of all control animals for the selected  studies 
-controlAnimals<-GetControlAnimals(studiesAllID)
+controlAnimalsAll<-GetControlAnimals(studyList     = studiesAll, 
+                                     inclUncertain = pInclUncertain)
 
 # Limit to set of animals to relevant sex
-controlAnimals<-filterAnimalsSex(controlAnimals, pSex)
+controlAnimals<-filterAnimalsSex(animalList    = controlAnimalsAll, 
+                                 sexFilter     = pSex, 
+                                 inclUncertain = pInclUncertain)
 
 # Limit to set of animals to relevant species/strain(s)
-controlAnimals<-FilterAnimalsSpeciesStrain(controlAnimals, pSpecies, pStrain)
+controlAnimals<-FilterAnimalsSpeciesStrain(animalList    = controlAnimals, 
+                                           speciesFilter = pSpecies, 
+                                           strainFilter  = pStrain, 
+                                           inclUncertain = pInclUncertain, 
+                                           exclusively   = pExclusively)
 
 # Limit to set of animals to relevant route(s) of administration
-controlAnimals<-FilterAnimalListRoute(controlAnimals, pRoute)
+controlAnimals<-FilterAnimalListRoute(animalList    = controlAnimals, 
+                                      routeFilter   = pRoute, 
+                                      inclUncertain = pInclUncertain,
+                                      exclusively   = pExclusively, 
+                                      matchAll      = pMatchAll)
 
 # Extract all MI findings for the control animals
-allMI<-unique(ExtractSubjData("MI", controlAnimals))
+
+allMI<-ExtractSubjData(domain     = "MI", 
+                       animalList = controlAnimals)
 
 # Add animal age of finding column
-allMI<-addFindingsAnimalAge('mi', allMI, inclUncertainMsg=TRUE)
+allMI<-addFindingsAnimalAge(domain        = "MI", 
+                            findings      = allMI, 
+                            inclUncertain = pInclUncertain)
 
 # Filter MI findings - save Dosing phase findings (and include rows where phase cannot be identified )
-dosingMI<-FilterFindingsPhase('MI', allMI, pStudyPhase, pStudyPhaseInclUncertain)
+dosingMI<-FilterFindingsPhase(domain        = "MI", 
+                              findings      = allMI, 
+                              phaseFilter   = pStudyPhase,  
+                              inclUncertain = pInclUncertain)
 
 # Filter MI findings for a specific age interval
-dosingMI<-filterFindingsAnimalAge(dosingMI, pFindingsFromAge, pFindingsToAge)
+dosingMI<-filterFindingsAnimalAge(findings      = dosingMI, 
+                                  fromAge       = pFindingsFromAge, 
+                                  toAge         = pFindingsToAge,  
+                                  inclUncertain = pInclUncertain)
 
 ##########################################################################
 message("Execution time: ",round(difftime(Sys.time(), start, units = 'min'),1)," minutes")
