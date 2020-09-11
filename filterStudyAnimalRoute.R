@@ -140,7 +140,9 @@ FilterAnimalListRoute<-function(animalList=NULL, routeFilter=NULL, inclUncertain
   # Extract all TS rows for parameter ROUTE, rename TSVAL to ROUTE_TS 
   # - remove duplicates
   # - limit to the set of studies for input set of animals
-  tsROUTEall<-merge(unique(TS[TSPARMCD == 'ROUTE', .(STUDYID,ROUTE_TS=toupper(trimws(TSVAL)))]), animalStudies, by='STUDYID')
+  tsROUTEall<-merge(unique(TS[TSPARMCD == 'ROUTE', .(STUDYID,ROUTE_TS=toupper(trimws(TSVAL)))]), 
+                    animalStudies, 
+                    by='STUDYID')
   # Add studies with no TS parameter ROUTE from the set of studies for input set of animals
   tsROUTEall<-
     rbindlist(list(tsROUTEall,
@@ -162,7 +164,9 @@ FilterAnimalListRoute<-function(animalList=NULL, routeFilter=NULL, inclUncertain
           merge(animalList[,.(STUDYID, USUBJID)], 
                 unique(merge(unique(EX[,.(STUDYID, USUBJID, POOLID, ROUTE_EX=toupper(trimws(EXROUTE)))]),
                        POOLDEF[,.(STUDYID, POOLID, USUBJID)],
-                       by=c('STUDYID', 'POOLID'),all.x=TRUE)[,.(STUDYID, USUBJID=ifelse(USUBJID.x=='',USUBJID.y,USUBJID.x ), ROUTE_EX)]), 
+                       by=c('STUDYID', 'POOLID'),all.x=TRUE)[,.(STUDYID, 
+                                                                USUBJID=as.character(ifelse(USUBJID.x=='',USUBJID.y,USUBJID.x )), 
+                                                                ROUTE_EX)]), 
                 by=c('STUDYID', 'USUBJID'), all.x = TRUE),
            by='STUDYID', allow.cartesian = TRUE)
   #  Add variables 
