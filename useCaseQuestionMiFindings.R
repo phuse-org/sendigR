@@ -48,7 +48,7 @@ pStudyDesign      <- "PARALLEL"
 pFromDTC          <- "2017"
 pToDTC            <- "2020"
 pRoute            <- c("ORAL", "ORAL GAVAGE")
-pSpecies          <- "DOG  "
+pSpecies          <- "DOG"
 pStrain           <- "BEAGLE"
 pSex              <- "M"
 pStudyPhase       <- "Treatment"
@@ -57,12 +57,13 @@ pFindingsToAge    <- "18m"
 pFindingsDomain   <- "MI"
 
 # Parameters to control behavior the filtering functions
-pInclUncertain    <-  FALSE
+pInclUncertain    <-  TRUE
 pExclusively      <-  FALSE
 pMatchAll         <-  FALSE
-###################################################################################
 
-library(data.table)
+# database type - valid types are ('sqlite', 'oracle')
+pDbType           <- 'sqlite'
+###################################################################################
 
 # define the path to R scripts to actual script location
 dummyuseCaseQuestionMiFindings<-function() {
@@ -70,7 +71,19 @@ dummyuseCaseQuestionMiFindings<-function() {
 }
 setwd(getSrcDirectory(dummyuseCaseQuestionMiFindings))
 
+# initiate setup and connect to db
 source("initSENDFunctions.R")
+if (pDbType == 'sqlite') {
+  initEnvironment(dbType='sqlite', 
+                  dbPath='<full path to the SQLite dn file>', 
+                  ctFile='<full path to a CISC CT Excel (xlcs) file downloaded from either NCI or CDISC>')
+} else {
+  initEnvironment(dbType='oracle', 
+                  dbPath='<Oracle db name>', 
+                  dbUser='<username>', dbPwd='password', 
+                  dbSchema = '<name of table owner if relevant>',
+                  ctFile='<full path to a CISC CT Excel (xlcs) file downloaded from either NCI or CDISC>')
+}
 
 # Get the combined list of all studies to look into 
 studiesAll<-GetStudyListSDESIGN(studyDesignFilter = pStudyDesign, 

@@ -54,37 +54,22 @@
 #
 ###################################################################################
 
-library(RSQLite)
 library(data.table)
 
 # Import all specified SEND domains
 importSENDDomains<-function(domainList, studyList=NULL) {
   
   ############################################################
-  # Import one domain
+  # Import one domain - assign output into a global table 
   importDomain<-function(domain) {
-    stmt<-paste("select t.* from ", domain, " t", sep="")
-    if (!is.null(studyList)) {
-      # Add a join to the specified set of studyids to limit the set of imported rows
-      stmt<-paste(stmt, " join temp_studyList s on s.studyid = t.studyid", sep="")
-    }
-    assign(toupper(domain),data.table(dbGetQuery(db, stmt)), envir=.GlobalEnv)
+    assign(toupper(domain),doImportDomain(domain, studyList), envir=.GlobalEnv)
+    return()
   }
   ############################################################
-  source("sysParameters.R")
-  
-  # connect to database
-  db<-dbConnect(RSQLite::SQLite(), dbFullName)
-  
-  if (!is.null(studyList)) {
-    # Save the content of studyList parameter as a temporary table in the database
-    dbWriteTable(db, "temp_studyList", studyList, temporary=TRUE)
-  }
-  
-  
-  # Import each domain from the specifed list
+
+
+  # Import each domain from the specified list
   lapply(domainList, importDomain)
   
-  dbDisconnect(db)
 }
 
