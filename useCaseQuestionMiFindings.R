@@ -26,15 +26,12 @@
 #                     parsedate
 #                     stringr
 #                     stringi
-#                     RSQLite
 #                     varhandle
 #                     readxl
+#                     tools
+#                     The package relevant for the actual database type 
+#                     (eg.RSQLite or ROracle )
 #                 - A set SEND study data is available in data store.
-#                 - If the data store is not a SQLite database, create a new version 
-#                   of function importSENDDomains in importSENDDomains.R to fetch 
-#                   data from the actual kind of data store
-#                 - Copy sysParameters_TEMPLATE.R to sysParameters.R and update
-#                   to match the actual environment
 #                 - Download the newest CDISC CT file with SEND terminology (from
 #                   CDISC or NCI)
 #                   

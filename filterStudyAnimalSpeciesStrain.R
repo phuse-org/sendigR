@@ -352,10 +352,9 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
         #  - non-empty messages are separated by ' & '
         #  - The function name is included as first part of the combined texts
         #  - exclude the original UNCERTAIN_MSG columns after the merge  
-        uncertainAnimals[,`:=` (UNCERTAIN_MSG=paste('FilterAnimalsSpeciesStrain: ',
-                                                    ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
-                                                           paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep=' & '),
-                                                           fcoalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y))))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
+        uncertainAnimals[,`:=` (UNCERTAIN_MSG = ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
+                                                       paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep=' & '),
+                                                       fcoalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
         # Add the set of uncertain animals to the set of found animals
         foundAnimals<-rbindlist(list(foundAnimals,uncertainAnimals), use.names=TRUE, fill=TRUE)
     }
@@ -375,8 +374,10 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
       #  - non-empty messages are separated by '|'
       #  - exclude the original UNCERTAIN_MSG columns after the merge  
       foundAnimals<-foundAnimals[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
-                                                              paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep='|'),
-                                                              fcoalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
+                                                              paste(UNCERTAIN_MSG.y, paste0('FilterAnimalsSpeciesStrain: ',UNCERTAIN_MSG.x), sep='|'),
+                                                              fcoalesce(ifelse(!is.na(UNCERTAIN_MSG.x), 
+                                                                               paste0('FilterAnimalsSpeciesStrain: ',UNCERTAIN_MSG.x), NA ), 
+                                                                        UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
   }
   # Return list of found animals  
   return(foundAnimals)

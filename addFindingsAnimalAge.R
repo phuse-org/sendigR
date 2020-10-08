@@ -22,7 +22,7 @@
 #                        in AGEU to days.
 #                     c. Else If AGETXT is populated convert the mid-point of the 
 #                        range from units specified in AGEU to days.
-#                     These AGEU units are handled with the dexcribed conversion 
+#                     These AGEU units are handled with the described conversion 
 #                     from value to number of days:
 #                     - DAYS 
 #                     - WEEKS   : value * 7
@@ -39,7 +39,7 @@
 #                    
 #                 If an age can not be calculated due to missing values in relevant 
 #                 variables in either DM or the findings data, the reason is documented
-#                 in an additional variable UNCERTAIN_MSG in the findings data set.
+#                 in an additional variable NO_AGE_MSG in the findings data set.
 #                 This variable is only included in the output data table in the 
 #                 input parameter 'inclUncertain' is specified as TRUE.
 #
@@ -61,7 +61,7 @@
 #                       The calculated age in days of the animal at the time of 
 #                       the finding. The value is NA if an AGE couldn't be 
 #                       calculated due to missing values in relevant variables.
-#                     - UNCERTAIN_MSG - character
+#                     - NO_AGE_MSG - character
 #                       Only included if the input parameter 'inclUncertain' is 
 #                       specified as TRUE.
 #                 plus any additional columns which may be included in the input data findings
@@ -74,7 +74,7 @@
 #                   inclUncertain:
 #                             Optional, boolean (TRUE or FALSE), default: FALSE
 #                             Indicates whether the output table shall contain
-#                             a variable or not with the an explantion for rows 
+#                             a variable or not with the an explanation for rows 
 #                             where the age cannot be calculated.
 #                             
 # MISSING:
@@ -141,10 +141,10 @@ addFindingsAnimalAge<-function(domain=NULL, findings=NULL, inclUncertain=FALSE) 
   # Calculate age at RFSTDTC
   # If an age has been calculated - convert returned value from function to numeric age in days value - else save returned error message
   dm[,AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)][,`:=` (AGEDAYS=suppressWarnings(as.numeric(AGEDAYStxt)), 
-                                                                                   UNCERTAIN_MSG=ifelse(!grepl("^[0-9]+$",AGEDAYStxt), paste('addFindingsAnimalAge: ', AGEDAYStxt, sep=''),as.character(NA)))]
+                                                                                   NO_AGE_MSG=ifelse(!grepl("^[0-9]+$",AGEDAYStxt), paste('addFindingsAnimalAge: ', AGEDAYStxt, sep=''),as.character(NA)))]
 
   # Merge relevant findings columns with dm for age calculation
-  dm_find<-merge(dm[,.(STUDYID, USUBJID, RFSTDTC, AGEDAYS, UNCERTAIN_MSG)], 
+  dm_find<-merge(dm[,.(STUDYID, USUBJID, RFSTDTC, AGEDAYS, NO_AGE_MSG)], 
                  findings[, .(STUDYID, USUBJID, seq=get(paste(toupper(domain),'SEQ', sep='')), dy=get(paste(toupper(domain),'DY', sep='')),dtc=get(paste(toupper(domain),'DTC', sep='')))],
                  by=c("STUDYID", "USUBJID"))
   # Calculate the age of each animal at time of finding
@@ -156,12 +156,12 @@ addFindingsAnimalAge<-function(domain=NULL, findings=NULL, inclUncertain=FALSE) 
                                 AGEDAYS + as.numeric(parse_iso_8601(dtc) - parse_iso_8601(RFSTDTC)),
                                 # Neither --DY nor --DTC is populated
                                 as.numeric(NA))),
-                 UNCERTAIN_MSG=ifelse((dy=="" | is.na(dy)) & (dtc=="" | is.na(dtc)),ifelse(is.na(UNCERTAIN_MSG),'addFindingsAnimalAge: Neither --DY nor --DTC has been populated', UNCERTAIN_MSG), UNCERTAIN_MSG))]
+                 NO_AGE_MSG=ifelse((dy=="" | is.na(dy)) & (dtc=="" | is.na(dtc)),ifelse(is.na(NO_AGE_MSG),'addFindingsAnimalAge: Neither --DY nor --DTC has been populated', NO_AGE_MSG), NO_AGE_MSG))]
   
   # Remove columns not to be merged into the final data rows
   dm_find[, `:=` (dy=NULL, dtc=NULL, RFSTDTC=NULL, AGEDAYS=NULL)]
   if (!inclUncertain) {
-    dm_find[,UNCERTAIN_MSG := NULL]
+    dm_find[,NO_AGE_MSG := NULL]
   }
   
   # Merge and return the list of finding IDs plus age with the input list of findings to include all variables
@@ -172,14 +172,14 @@ addFindingsAnimalAge<-function(domain=NULL, findings=NULL, inclUncertain=FALSE) 
           by=c("STUDYID", "USUBJID", paste(toupper(domain),'SEQ', sep='')),
           all.x=TRUE)  
   
-  if ("UNCERTAIN_MSG.y" %in% names(dm_find)) {
-    # An UNCERTAIN_MSG column is included in both input and calculated set of findings
-    #  - merge the UNCERTAIN_MSG from each of the merged tables into one column
+  if ("NO_AGE_MSG.y" %in% names(dm_find)) {
+    # An NO_AGE_MSG column is included in both input and calculated set of findings
+    #  - merge the NO_AGE_MSG from each of the merged tables into one column
     #  - non-empty messages are separated by '|'
-    #  - exclude the original UNCERTAIN_MSG columns after the merge  
-    dm_find<-dm_find[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
-                                                  paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep='|'),
-                                                  Coalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
+    #  - exclude the original NO_AGE_MSG columns after the merge  
+    dm_find<-dm_find[,`:=` (NO_AGE_MSG=ifelse(!is.na(NO_AGE_MSG.x) & !is.na(NO_AGE_MSG.y), 
+                                                  paste(NO_AGE_MSG.y, NO_AGE_MSG.x, sep='|'),
+                                                  Coalesce(NO_AGE_MSG.x, NO_AGE_MSG.y)))][, `:=` (NO_AGE_MSG.x=NULL,NO_AGE_MSG.y=NULL)]
   }
   # return final data set 
   return(dm_find)

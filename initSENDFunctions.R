@@ -147,9 +147,12 @@ initEnvironment<-function(dbType=NULL, dbPath=NULL,  dbUser=NULL, dbPwd=NULL, db
 ##############################################################################################
 ## Valid db types
 GvalidDbTypes<-
-    data.table(db_type         = c('sqlite',  'oracle', 'odbc_login', 'odbc_nologin'),
-               req_credentials = c( FALSE,     TRUE,     TRUE,         FALSE), 
-               package_name    = c('RSQLite', 'ROracle','RODBCDBI',   'RODBCDBI'))
+    data.table(db_type         = c('sqlite',  'oracle'),
+               req_credentials = c( FALSE,     TRUE), 
+               package_name    = c('RSQLite', 'ROracle'))
+# data.table(db_type         = c('sqlite',  'oracle', 'odbc_login', 'odbc_nologin'),
+#            req_credentials = c( FALSE,     TRUE,     TRUE,         FALSE), 
+#            package_name    = c('RSQLite', 'ROracle','RODBCDBI',   'RODBCDBI'))
 
 ##############################################################################################
 ## Connect function specific for each db type
@@ -166,14 +169,14 @@ connectDB_oracle<-function(dbPath, dbUser, dbPwd) {
 }
 
 # ODBC with login credentials
-connectDB_odbc_login<-function(dbPath, dbUser, dbPwd) {
-  return(dbConnect(RODBCDBI::ODBC(), dsn=dbPath, user=dbUser, password=dbPwd))
-}
+# connectDB_odbc_login<-function(dbPath, dbUser, dbPwd) {
+#   return(dbConnect(RODBCDBI::ODBC(), dsn=dbPath, user=dbUser, password=dbPwd))
+# }
 
 # ODBC without login credentials
-connectDB_odbc_nologin<-function(dbPath) {
-  return(dbConnect(RODBCDBI::ODBC(), dsn=dbPath))
-}
+# connectDB_odbc_nologin<-function(dbPath) {
+#   return(dbConnect(RODBCDBI::ODBC(), dsn=dbPath))
+# }
 
 
 ##############################################################################################
@@ -197,7 +200,7 @@ doImportDomain_sqlite<-function(domain, studyList) {
   }
   
   # Fetch all rows, clear buffer and return data
-  domainData<-data.table(dbFetch(cur))
+  domainData<-setDT(dbFetch(cur))
   dbClearResult(cur)
   
   return(domainData) 
@@ -235,7 +238,7 @@ doImportDomain_oracle<-function(domain, studyList) {
   }
   
   # Fetch all rows, clear buffer and return data
-  domainData<-data.table(fetch(cur))
+  domainData<-setDT(fetch(cur))
   dbClearResult(cur)
   
   return(domainData) 
