@@ -136,6 +136,21 @@ initEnvironment<-function(dbType=NULL, dbPath=NULL,  dbUser=NULL, dbPwd=NULL, db
     dbInputParams<-paste0('(dbPath)')
   GdbHandle<<-eval(parse(text=paste0('connectDB_',dbProperties[,.(db_type)],dbInputParams)))
   
+  
+  ## Assign function specific  for db type to execute a generic query
+  genericQueryName<-paste0('genericQuery_', dbProperties[,.(db_type)])
+  if (exists(genericQueryName))
+    genericQuery<<-get(genericQueryName)
+  else
+    stop(sprintf('A function named %s is missing', disconnectDBName))
+  
+  ## Assign function specific  for db type to disconnect from db
+  disconnectDBName<-paste0('disconnectDB_', dbProperties[,.(db_type)])
+  if (exists(disconnectDBName))
+    disconnectDB<<-get(disconnectDBName)
+  else
+    stop(sprintf('A function named %s is missing', doImportDomainName))
+  
   ## Assign function specific  for db type to import a SEND domain from db
   doImportDomainName<-paste0('doImportDomain_', dbProperties[,.(db_type)])
   if (exists(doImportDomainName))
@@ -160,12 +175,12 @@ GvalidDbTypes<-
 
 # SQLite
 connectDB_sqlite<-function(dbPath) {
-  return(dbConnect(RSQLite::SQLite(), dbPath))
+  return(RSQLite::dbConnect(RSQLite::SQLite(), dbPath))
 }
 
 # Oracle
 connectDB_oracle<-function(dbPath, dbUser, dbPwd) {
-  return(dbConnect(dbDriver("Oracle"), username=dbUser, password=dbPwd, dbname=dbPath))
+  return(ROracle::dbConnect(dbDriver("Oracle"), username=dbUser, password=dbPwd, dbname=dbPath))
 }
 
 # ODBC with login credentials
@@ -178,37 +193,88 @@ connectDB_oracle<-function(dbPath, dbUser, dbPwd) {
 #   return(dbConnect(RODBCDBI::ODBC(), dsn=dbPath))
 # }
 
+##############################################################################################
+## Disconnect function specific for each db type
+##############################################################################################
+
+# SQLite
+disconnectDB_sqlite<-function() {
+  return(RSQLite::dbDisconnect(GdbHandle))
+}
+
+# Oracle
+disconnectDB_oracle<-function() {
+  return(ROracle::dbDisconnect(GdbHandle))
+}
+
+
+
+##############################################################################################
+## Functions to execute a generic query specific for each db 
+## Result data set always returned as data table
+## NOTE: Does not currently support 'in' functionality in the where clause !
+##############################################################################################
+
+# SQLite
+genericQuery_sqlite<-function(query_string, query_params=NULL) {
+  
+  if (is.null(query_params)){
+    query_result <- setDT(RSQLite::dbGetQuery(GdbHandle, query_string))
+  } else {
+    query_result <- setDT(RSQLite::dbGetQuery(GdbHandle, query_string, query_params))
+  }
+  
+  return(query_result) 
+}
+
+
+# Oracle
+genericQuery_oracle<-function(query_string, query_params=NULL) {
+  
+  if (is.null(query_params)){
+    cur <- ROracle::dbSendQuery(GdbHandle, query_string)
+  } else {
+    cur <- ROracle::dbSendQuery(GdbHandle, query_string, query_params)
+  }
+  
+  # Fetch all rows, clear buffer and return data
+  query_result<-setDT(ROracle::fetch(cur))
+  ROracle::dbClearResult(cur)
+  
+  return(query_result) 
+}
+
 
 ##############################################################################################
 ## Functions to import a domain specific for each db type
 ##############################################################################################
 
 # SQLite
-doImportDomain_sqlite<-function(domain, studyList) {
+doImportDomain_sqlite<-function(domain, studyList=NULL) {
   if (!is.null(studyList)) {
     # Construct the select statement with a filtering of studyid values
     stmt<-sprintf( "select * from %s where studyid in (:1)", domain)
     
     # Parse select statement and bind input list of studyids
-    cur<-dbSendQuery(GdbHandle, stmt) 
-    dbBind(cur, list(unname(unlist(list(studyList)))))
+    cur<-RSQLite::dbSendQuery(GdbHandle, stmt) 
+    RSQLite::dbBind(cur, list(unname(unlist(list(studyList)))))
   }
   else {
     # Construct select statement of all rows and parse it
     stmt<-sprintf("select * from %s", domain)
-    cur<-dbSendQuery(GdbHandle, stmt)
+    cur<-RSQLite::dbSendQuery(GdbHandle, stmt)
   }
   
   # Fetch all rows, clear buffer and return data
-  domainData<-setDT(dbFetch(cur))
-  dbClearResult(cur)
+  domainData<-setDT(RSQLite::dbFetch(cur))
+  RSQLite::dbClearResult(cur)
   
   return(domainData) 
 }
 
 
 # Oracle
-doImportDomain_oracle<-function(domain, studyList) {
+doImportDomain_oracle<-function(domain, studyList=NULL) {
   if (!is.null(studyList)) {
     # construct the select statement with a filtering of studyid values
     # - converts to an in-memory table in oracle to limit the set of 
@@ -229,17 +295,17 @@ doImportDomain_oracle<-function(domain, studyList) {
     
     # Parse select statement and bind input list of studyids 
     # - convert list  to a comma separated string
-    cur<-dbSendQuery(GdbHandle, stmt, paste0(unlist(list(studyList)), collapse=',')) 
+    cur<-ROracle::dbSendQuery(GdbHandle, stmt, paste0(unlist(list(studyList)), collapse=',')) 
   }
   else {
     # Construct select statement of all rows and parse it
     stmt<-sprintf("select * from %s%s", GdbSchema, domain)
-    cur<-dbSendQuery(GdbHandle, stmt)
+    cur<-ROracle::dbSendQuery(GdbHandle, stmt)
   }
   
   # Fetch all rows, clear buffer and return data
-  domainData<-setDT(fetch(cur))
-  dbClearResult(cur)
+  domainData<-setDT(ROracle::fetch(cur))
+  ROracle::dbClearResult(cur)
   
   return(domainData) 
 }

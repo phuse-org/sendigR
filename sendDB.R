@@ -1,0 +1,294 @@
+# Following R style conventions:
+#     https://google.github.io/styleguide/Rguide.html
+#     http://adv-r.had.co.nz/Style.html
+# 
+# 
+# This module contains a bunch of
+# functions to support some SEND db
+# data analysis and manipulation. 
+
+
+library(dplyr)
+library(data.table)
+library(parsedate)
+library(ini)
+
+
+## Initiate SEND package functions and DB connection
+
+# Import parameter file from same folder as program is located
+iniParmsFile <- 'sendDashboard.ini'
+if (! file.exists(iniParmsFile))
+  stop(sprintf('The init file %s cannot be found in %s',iniParmsFile, getwd()))
+       
+iniParms<-read.ini(iniParmsFile)
+iniDbType <- iniParms$`database`$`dbType`   ## add check for valid dbType
+iniDbPath <- iniParms$`database`$`dbPath`
+iniDbSchema <- iniParms$`database`$`dbShema`
+iniCtFile <- iniParms$`ct`$`ctFile`
+if (is.null(iniDbType) | is.null(iniDbPath) | is.null(iniCtFile))
+  stop(sprintf('All of these parameters in %s/%s must have assigned a value: dbType,dbPath, ctFile', 
+               getwd(),iniParmsFile))
+
+# Execute the SEND function initiation
+initEnvironment(dbType = iniDbType, 
+                dbPath = iniDbPath, 
+                ##!! To do: add handling of getting username/password for relevant database types..
+                #dbUser = <db user>, dbPwd= <db password>, 
+                dbSchema = iniDbSchema,
+                ctFile = iniCtFile)
+
+# exhaustive list of domains outlined in 
+# IG 3.1
+domains <- c(
+  'DM', # demographics
+  'SE', # subject elements
+  'CO', # comments
+  'EX', # exposure
+  'DS', # disposition
+  'BW', # body weight
+  'BG', # body weight gain
+  'CL', # clinical observations
+  'DD', # death diagnosis and detaisl
+  'FW', # food water and consumption
+  'LB', # laboratory test results
+  'MA', # macroscopic findings
+  'MI', # microscopic findings
+  'OM', # organ measurements
+  'PM', # palpable masses
+  'PC', # pharmacokinetics concentrations
+  'PP', # pharmacokinetics parameters
+  'SC', # subjects characteristics
+  'TF', # tumor findings
+  'VS', # vital signs
+  'EG', # ECG test results
+  'CV', # cardiovascular test results
+  'RE', # respiratory test results
+  'TE', # trial elements
+  'TX', # trial sets
+  'TA', # trial arms
+  'TS', # trial summary
+  'RELREC', # related records
+  'POOLDEF' # pool definition
+)
+
+supp_domains <- paste("SUPP", domains, sep="")
+all_domains <- c(domains, supp_domains)
+
+
+GetAnimalList <- function(design, species) {
+  # helper function tjust used for troubleshooting
+  # to get a quick list of animals. 
+  species = data.table(genericQuery(sprintf('SELECT STUDYID FROM TS WHERE TSPARMCD == "SPECIES" AND TSVAL == "%s" ', species)))
+  design = data.table(genericQuery(sprintf('SELECT STUDYID FROM TS WHERE TSPARMCD == "SDESIGN" AND TSVAL == "%s" ', design)))
+  
+  studies <- merge(species, design, by='STUDYID')
+  
+  controls <- GetControlAnimals()
+  animals <- merge(studies, controls, by='STUDYID')
+  return(animals)
+}
+
+MiFindings <- function(animalList, mispec) {
+  # given a set of USUBJIDs and and target organ
+  # will return the frequency counts of counts
+  # of the findings
+  
+  # query MI and remove findings not in
+  # our target animals. Convert
+  # all findings to uppercase for
+  # counting.  
+  findings <- data.table(genericQuery(sprintf('SELECT STUDYID, USUBJID, MISTRESC FROM MI WHERE MISPEC == "%s"', mispec)))
+  finalFindings <- merge(animalList, findings, by=c('STUDYID', 'USUBJID'))
+  finalFindings$MISTRESC <- toupper(finalFindings$MISTRESC)
+  
+  # Count findings using dplyr
+  findingsCount <- finalFindings %>%
+    dplyr::distinct(STUDYID, USUBJID, MISTRESC) %>% # only one organ, finding per animal (input errors cause duplications)
+    dplyr::count(MISTRESC) %>%
+    dplyr::arrange(-n)
+  
+  # findings = n / total animals * 100
+  # round to 2 decimal places and 
+  # sort by descending. 
+  findingsCount$Incidence <- (findingsCount$n / length(unique(finalFindings$USUBJID))) * 100
+  findingsCount$Incidence <- paste0(round(findingsCount$Incidence, 2), '%')
+  findingsCount <- dplyr::select(findingsCount, -n)
+  return(findingsCount)
+}
+
+LiverFindings <- function(animalList, lbtestcd, how='max') {
+  # given a set of USUBJIDs and and target LBTESTCD
+  # will return either the max or mean respones
+  # for all the animals. 
+  
+  # set function to either 
+  # max or mean
+  if (tolower(how) == 'max') {
+    fx = max
+  } else {
+    fx = mean
+  }
+  
+  # use a list to filter 
+  # valid test units per 
+  # each LBTESTCD
+  LAB_TEST_UNITS <- list(
+    ALP = c('U/L', 'IU/L'),
+    ALT = c('U/L', 'IU/L'),
+    AST = c('U/L', 'IU/L'),
+    BILEAC = c('umol/L', 'mmol/L'),
+    BILI = c('umol/L', 'mg/dL'),
+    GGT = c('U/L'),
+    GLDH = c('U/L'),
+    SDH = c('U/L')
+  )
+  
+  # only get valid units
+  validUnits <- LAB_TEST_UNITS[[lbtestcd]]
+  
+  # parameters vary per lbtestcd
+  # need to get specific number
+  questionMarks <- paste(rep('?', length(validUnits)), collapse=', ')
+  queryString <- sprintf('SELECT STUDYID, USUBJID, LBSTRESC, LBSTRESU FROM LB WHERE LBTESTCD == ? and LBSTRESU IN (%s)', questionMarks)
+  
+  params <- c(lbtestcd, validUnits)
+  
+  results <- genericQuery(queryString, params)
+  results <- merge(results, animalList, by=c('STUDYID', 'USUBJID'))
+  
+  # strip and remove equality signs
+  results$LBSTRESC <- as.numeric(gsub("[^0-9.-]", "", results$LBSTRESC))
+  results <- results[!is.na(results$LBSTRESC),]
+  
+  # convert BILI to from umol/L 
+  # to ml/dL 
+  if ((lbtestcd == 'BILI') & (any(results$LBSTRESU == 'mg/dL'))) {
+    results[results$LBSTRESU == 'mg/dL',]$LBSTRESC <- results[results$LBSTRESU == 'mg/dL',]$LBSTRESC * 17.1
+    results[results$LBSTRESU == 'mg/dL',]$LBSTRESU <- 'umol/L'
+  }
+  
+  # use dplyr to take max
+  # or mean and return results
+  finalResults <- results %>%
+    group_by(STUDYID, USUBJID) %>% 
+    mutate(LBSTRESC_TRANS = fx(as.numeric(LBSTRESC))) %>%
+    unique()
+  return(finalResults)
+  
+}
+
+# TODO: find a better analysis for 
+# BW or remove. 
+BodyWeight <- function(animalList) {
+
+  results <- data.table(genericQuery('SELECT STUDYID, USUBJID, BWSTRESN, BWSTRESU FROM BW'))
+  
+  
+  results <- merge(results, animalList, by=c('STUDYID', 'USUBJID'))
+  results$BWSTRESN[results$BWSTRESU == 'kg']  <- results$BWSTRESN[results$BWSTRESU == 'kg'] * 1000
+  results$BWSTRESU[results$BWSTRESU == 'kg']  <- 'g'
+  
+  results <- results %>%
+    group_by(STUDYID, USUBJID) %>%
+    mutate(days = 1:n() / n())
+  return(results)
+  
+}
+
+
+# Get the minimum study start date in ts
+getMinStudyStartDate<-function() {
+  min(parse_iso_8601(genericQuery("select distinct tsval
+                                                from ts
+                                               where upper(tsparmcd) == 'STSTDTC'")$TSVAL),
+      na.rm = TRUE)
+}
+
+# series of functions to query the 
+# database to find unique elements. 
+GetUniqueDesign <- function() {
+  uniqueDesigns <- toupper(genericQuery('SELECT DISTINCT TSVAL FROM TS WHERE upper(TSPARMCD) == "SDESIGN"')$TSVAL)
+  return(unique(uniqueDesigns))
+}
+
+
+GetUniqueSpecies <- function() {
+  toupper(genericQuery("select distinct tsval as SPECIES
+                          from ts 
+                         where upper(tsparmcd) == 'SPECIES'
+                        union 
+                        select distinct txval as SPECIES
+                          from tx 
+                         where upper(txparmcd) == 'SPECIES'
+                        union 
+                        select distinct SPECIES
+                          from dm
+                         order by SPECIES")$SPECIES)
+}
+
+GetUniqueStrains <- function(species) {
+    toupper(genericQuery("select distinct ts1.tsval as STRAIN
+                            from ts ts1
+                            join ts ts2
+                              on upper(ts2.tsparmcd) = 'SPECIES'
+                             and upper(ts2.tsval) = :1
+                             and ts1.tsgrpid = ts2.tsgrpid
+                             and ts1.studyid = ts2.studyid
+                           where upper(ts1.tsparmcd) = 'STRAIN'
+                          union
+                         select distinct tx1.txval as STRAIN
+                            from tx tx1
+                            join tx tx2
+                              on upper(tx2.txparmcd) = 'SPECIES'
+                             and upper(tx2.txval) = :1
+                             and tx1.setcd = tx2.setcd
+                             and tx1.studyid = tx2.studyid
+                           where upper(tx1.txparmcd) = 'STRAIN'
+                         union
+                         select distinct strain
+                           from dm
+                          where species = :1",
+                          species)$STRAIN)
+}
+
+
+GetUniqueRoutes <- function() {
+  toupper(genericQuery("select distinct tsval as ROUTE
+                           from ts 
+                          where upper(tsparmcd) = 'ROUTE'
+                         union 
+                         select distinct exroute as ROUTE
+                           from ex
+                          order by ROUTE")$ROUTE)
+}
+
+GetUniqueOrgans <- function() {
+  uniqueOrgans <- toupper(genericQuery('SELECT DISTINCT MISPEC FROM MI')$MISPEC)
+  return(unique(uniqueOrgans))
+}
+
+GetUniqueLBTESTCD <- function(cat) {
+  uniqueLBTESTCD <- toupper(genericQuery('SELECT DISTINCT LBTESTCD FROM LB WHERE LBCAT = ?', c(cat))$LBTESTCD)
+  return(unique(uniqueLBTESTCD))
+}
+
+GetAvailableStudies <- function() {
+  uniqueStudies <- genericQuery('SELECT DISTINCT STUDYID FROM TS')$STUDYID
+  return(uniqueStudies)
+}
+
+GetStudyTS <- function(studyid) {
+  studyInfo <- genericQuery('SELECT * FROM TS WHERE STUDYID == ?', c(studyid))
+  return(studyInfo)
+}
+
+GetAnimalGroupsStudy <- function(studyid) {
+  studyAnimals <- genericQuery('SELECT TX.STUDYID, USUBJID, TX.SETCD, "SET" FROM 
+                               TX  
+                               INNER JOIN DM 
+                               on DM.SETCD == TX.SETCD AND DM.STUDYID == TX.STUDYID   
+                               WHERE DM.STUDYID == ?', c(studyid))
+  return(studyAnimals)
+}
+
