@@ -11,50 +11,7 @@ GetFilteredControlAnimals <- function(pFromDTC,
                                       pStrain, 
                                       pSex, 
                                       pInclUncertain) {
-  ### UNDER CONSTRUCTION ######
-  if (!exists("lastFilterValues")) {
-    # First time the results data are generated
-    execGetStudyData <- TRUE
-    execGetControlAnimals <- TRUE
-    execFilterControlAnimals <- TRUE
-  }
-  else {
-    # Refresh of output data - check changed filter values
-    # to decide how much to be re-executed
-    if (lastFilterValues['pFromDTC'] != pFromDTC)
-    # Study level only filter parameters
-    if (lastFilterValues['pFromDTC'] != pFromDTC
-      | lastFilterValues['pToDTC'] != pToDTC
-      | lastFilterValues['pStudyDesign'] != pStudyDesign) {
-      execGetStudyData <- TRUE
-      # Decide later whether it's needed to extraxct list of all control animals
-      execGetControlAnimals <- as.logical(NA)
-    }
-    else {
-      execGetStudyData <- FALSE
-      execGetControlAnimals <- FALSE
-    }
-    # Animal(/study/set) level filter parameters
-    if (lastFilterValues['pRoute'] != pRoute
-        | lastFilterValues['pSpecies'] != pSpecies
-        | lastFilterValues['pStrain'] != pStrain
-        | lastFilterValues['pSex'] != pSex) {
-      execFilterControlAnimals <- TRUE
-    }
-  }
-  
-  # - Save the current value for each filter value to be used in next refresh 
-  # of data
-  lastFilterValues <<- list(
-    pFromDTC  = pFromDTC,            
-    pToDTC  = pToDTC,
-    pStudyDesign  = pStudyDesign,
-    pRoute  = pRoute, 
-    pSpecies  = pSpecies,
-    pStrain  = pStrain, 
-    pSex  = pSex,
-    pInclUncertain  = pInclUncertain
-  )
+
   ### Ensure all is executed for now...work to be continued...
   execGetStudyData <- TRUE
   execGetControlAnimals <- TRUE
