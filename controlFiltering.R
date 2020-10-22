@@ -182,15 +182,15 @@ GetFilteredControlAnimals <- function(pFromDTC,
     # - save as global table and to be possible avoid unnecessary regeneration in a later execution 
     controlAnimalsAll <<- GetControlAnimals(studyList     = studiesAll, 
                                             inclUncertain = pInclUncertain)
-    # Preload the EX domain with rows for all studies included in the set on control animals
-    # to avoid to reload it if the animal filtering below are re-executed du to changes in 
-    # the route/species/strain/sex filter input values
-    importSENDDomains(c('EX'), unique(controlAnimalsAll[,.(STUDYID)]))
   }
   
   if (execFilterControlAnimals) {
     # Copy to a table used as input/output in the animal filtering tables
     controlAnimals <<- copy(controlAnimalsAll)
+    
+    # If EX exists in workspace - delete it, to ensure correct set output 
+    # animals from the filtering process
+    if (exists("EX")) rm(EX)
     
     print('filterAnimalsSex')
     if (pSex != '')
