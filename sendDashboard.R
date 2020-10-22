@@ -15,14 +15,16 @@ library(shinydashboard)
 library(ggplot2)
 library(MASS)
 
-# Include the SEND functions (to be changed to inclusion of SEND package)
-source("initSENDFunctions.R")
 
 # define the path to R scripts to actual script location
 dummyuseCaseQuestionMiFindings<-function() {
   # dummy function only to be used to get this script's location
 }
 setwd(getSrcDirectory(dummyuseCaseQuestionMiFindings))
+
+# Include the SEND functions (to be changed to inclusion of SEND package)
+source("initSENDFunctions.R")
+
 
 source('sendDB.R')
 source('controlFiltering.R')
@@ -42,9 +44,9 @@ minStudyStartDate <- as.Date(getMinStudyStartDate())
 availableStudies <- GetAvailableStudies()
 availableStudies <- as.list(setNames(availableStudies, availableStudies))
 
-availableSex <- as.list(setNames(c('M', 'F', 'U', 'All'), c('M', 'F', 'U', 'All')))
+availableSex <- c('M', 'F', 'U', 'All')
 
-availablePhases <- as.list(setNames(c('Screening', 'Treatment', 'Recovery'), c('Screening', 'Treatment', 'Recovery')))
+availablePhases <- c('Screening', 'Treatment', 'Recovery')
 
 
 #### Domains-specific filtering selections ####
@@ -92,13 +94,22 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Choose Parameters:", icon = icon("paw"), startExpanded = TRUE,
                
-               sliderInput("STSTDTC",
-                           "Select study start date range:",
-                           min = minStudyStartDate,
-                           max = Sys.Date(),
-                           value=c(minStudyStartDate, Sys.Date()),
-                           timeFormat="%Y-%m", 
-                           dragRange=TRUE),
+               # sliderInput("STSTDTC",
+               #             "Select study start date range:",
+               #             min = minStudyStartDate,
+               #             max = Sys.Date(),
+               #             value=c(minStudyStartDate, Sys.Date()),
+               #             timeFormat="%Y-%m", 
+               #             dragRange=TRUE),
+               
+               dateRangeInput("STSTDTC",
+                              "Select study start date range:",
+                              start = minStudyStartDate,
+                              end = Sys.Date(),
+                              min = minStudyStartDate,
+                              max = Sys.Date(),
+                              format="yyyy-mm-dd",
+                              startview = "year"),
                
                selectInput("SDESIGN",
                            "Select study design:",
@@ -214,7 +225,7 @@ server <- function(input, output, session) {
   # This is the logic for changing 
   # the STRAIN based ON changes SPECIES
   observeEvent(input$SPECIES, {
-    if (length(input$SPECIES) == 1) {
+    if (length(input$SPECIES) != 0) {
       updateSelectInput(session, "STRAIN", 
                         choices = GetUniqueStrains(input$SPECIES))
     }
@@ -222,7 +233,7 @@ server <- function(input, output, session) {
       updateSelectInput(session, "STRAIN", 
                         choices ='')
     }
-  })
+  }, ignoreNULL = FALSE)
   
   # Get the list of studies and animals based on new/changed filter criterion
   animalList<-eventReactive(input$refreshData, {

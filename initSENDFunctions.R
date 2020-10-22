@@ -99,6 +99,7 @@ initEnvironment<-function(dbType=NULL, dbPath=NULL,  dbUser=NULL, dbPwd=NULL, db
     stop(errMsg)
   else if (nrow(dbProperties<-GvalidDbTypes[db_type==tolower(dbType)]) == 0)
     stop(errMsg)
+  GdbType<<-tolower(dbType)
   
   errMsg<-'Parameter %s must be a non-empty string'
   # dbPath
@@ -115,7 +116,7 @@ initEnvironment<-function(dbType=NULL, dbPath=NULL,  dbUser=NULL, dbPwd=NULL, db
   
   # dbSchema
   if (!is.null(dbSchema) & isFALSE(is.na(dbSchema)) & isFALSE(dbSchema==''))
-    GdbSchema<<-paste0(dbSchema,'.')
+    GdbSchema<<-dbSchema
   else
     GdbSchema<<-""
   
@@ -137,11 +138,8 @@ initEnvironment<-function(dbType=NULL, dbPath=NULL,  dbUser=NULL, dbPwd=NULL, db
   GdbHandle<<-eval(parse(text=paste0('connectDB_',dbProperties[,.(db_type)],dbInputParams)))
   
   
-  ## Assign function specific  for db type to execute a generic query
-  genericQueryName<-paste0('genericQuery_', dbProperties[,.(db_type)])
-  if (exists(genericQueryName))
-    genericQuery<<-get(genericQueryName)
-  else
+  ## Verify existence of function specific for db type to execute a generic query
+  if (!exists(paste0('genericQuery_', dbProperties[,.(db_type)])))
     stop(sprintf('A function named %s is missing', disconnectDBName))
   
   ## Assign function specific  for db type to disconnect from db
@@ -215,13 +213,48 @@ disconnectDB_oracle<-function() {
 ## NOTE: Does not currently support 'in' functionality in the where clause !
 ##############################################################################################
 
+## Helper function 
+# Take a SQL statement as input 
+# - if a schema name has been defined, 
+#   return the statement modified in this way:
+#   - substitute lineshifts (\n) with space
+#   - substitute multiple consecutive spaces with one space
+#   - add the schema plus '.' in front of all table names, 
+#     i.e. names following a 'from ' or 'join '
+# - else return the statement unchanged
+selectStmtAddSchema <- function(stmt) {
+  if (GdbSchema != '')
+    return(str_replace_all(str_replace_all(str_replace_all(stmt, 
+                                                           '\n', ' '), 
+                                           ' +', ' '), 
+                           regex('(from |join )', ignore_case = TRUE), 
+                           paste0('\\1', GdbSchema, '.')))
+  else 
+    return(stmt)
+}
+
+##
+# The function to be called by programs
+#  It prepares the given select statement by adding potential schema name 
+#  to all tables and execute the genericQuery funtcion specific for the 
+#  actual db type
+genericQuery <- function(query_string, query_params=NULL) {
+  get(paste0('genericQuery_', GdbType))(selectStmtAddSchema(query_string),
+                                                           query_params)
+}
+
+## DB specific functions:
 # SQLite
-genericQuery_sqlite<-function(query_string, query_params=NULL) {
+genericQuery_sqlite<-function(query_string, query_params) {
+  #print(query_string)
   
   if (is.null(query_params)){
     query_result <- setDT(RSQLite::dbGetQuery(GdbHandle, query_string))
   } else {
-    query_result <- setDT(RSQLite::dbGetQuery(GdbHandle, query_string, query_params))
+    # Input query parameters are converted to a unnamed list used as bind variable 
+    # regardless of the type of input
+    query_result <- setDT(RSQLite::dbGetQuery(GdbHandle, query_string, 
+                                              list(unname(unlist(list(list(query_params)))))))
   }
   
   return(query_result) 
@@ -230,7 +263,7 @@ genericQuery_sqlite<-function(query_string, query_params=NULL) {
 
 # Oracle
 genericQuery_oracle<-function(query_string, query_params=NULL) {
-  
+  #print(query_string)
   if (is.null(query_params)){
     cur <- ROracle::dbSendQuery(GdbHandle, query_string)
   } else {
@@ -254,10 +287,15 @@ doImportDomain_sqlite<-function(domain, studyList=NULL) {
   if (!is.null(studyList)) {
     # Construct the select statement with a filtering of studyid values
     stmt<-sprintf( "select * from %s where studyid in (:1)", domain)
-    
+
     # Parse select statement and bind input list of studyids
-    cur<-RSQLite::dbSendQuery(GdbHandle, stmt) 
+    cur<-RSQLite::dbSendQuery(GdbHandle, stmt)
     RSQLite::dbBind(cur, list(unname(unlist(list(studyList)))))
+
+    # # Save the content of studyList parameter as a temporary table in the database
+    # dbWriteTable(GdbHandle, "temp_studyList", studyList, temporary=TRUE, overwrite=TRUE)
+    # stmt<-sprintf("select t.* from %s t join temp_studyList s on s.studyid = t.studyid", domain)
+    # cur<-RSQLite::dbSendQuery(GdbHandle, stmt)
   }
   else {
     # Construct select statement of all rows and parse it
@@ -289,7 +327,7 @@ doImportDomain_oracle<-function(domain, studyList=NULL) {
                                      connect by level <= regexp_count(studyid, ',') + 1
                                     ) as sys.odcinumberlist))
         )
-        select * from %s%s
+        select * from %s.%s
         where studyid in (select studyid from studylist)", 
       GdbSchema, domain)
     
@@ -299,7 +337,7 @@ doImportDomain_oracle<-function(domain, studyList=NULL) {
   }
   else {
     # Construct select statement of all rows and parse it
-    stmt<-sprintf("select * from %s%s", GdbSchema, domain)
+    stmt<-sprintf("select * from %s.%s", GdbSchema, domain)
     cur<-ROracle::dbSendQuery(GdbHandle, stmt)
   }
   

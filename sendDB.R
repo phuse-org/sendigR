@@ -24,7 +24,7 @@ if (! file.exists(iniParmsFile))
 iniParms<-read.ini(iniParmsFile)
 iniDbType <- iniParms$`database`$`dbType`   ## add check for valid dbType
 iniDbPath <- iniParms$`database`$`dbPath`
-iniDbSchema <- iniParms$`database`$`dbShema`
+iniDbSchema <- iniParms$`database`$`dbSchema`
 iniCtFile <- iniParms$`ct`$`ctFile`
 if (is.null(iniDbType) | is.null(iniDbPath) | is.null(iniCtFile))
   stop(sprintf('All of these parameters in %s/%s must have assigned a value: dbType,dbPath, ctFile', 
@@ -34,7 +34,7 @@ if (is.null(iniDbType) | is.null(iniDbPath) | is.null(iniCtFile))
 initEnvironment(dbType = iniDbType, 
                 dbPath = iniDbPath, 
                 ##!! To do: add handling of getting username/password for relevant database types..
-                #dbUser = <db user>, dbPwd= <db password>, 
+                # dbUser = <user>, dbPwd= <pwd>, 
                 dbSchema = iniDbSchema,
                 ctFile = iniCtFile)
 
@@ -201,14 +201,14 @@ BodyWeight <- function(animalList) {
 getMinStudyStartDate<-function() {
   min(parse_iso_8601(genericQuery("select distinct tsval
                                                 from ts
-                                               where upper(tsparmcd) == 'STSTDTC'")$TSVAL),
+                                               where upper(tsparmcd) = 'STSTDTC'")$TSVAL),
       na.rm = TRUE)
 }
 
 # series of functions to query the 
 # database to find unique elements. 
 GetUniqueDesign <- function() {
-  uniqueDesigns <- toupper(genericQuery('SELECT DISTINCT TSVAL FROM TS WHERE upper(TSPARMCD) == "SDESIGN"')$TSVAL)
+  uniqueDesigns <- toupper(genericQuery('SELECT DISTINCT TSVAL FROM TS WHERE upper(TSPARMCD) = "SDESIGN"')$TSVAL)
   return(unique(uniqueDesigns))
 }
 
@@ -216,40 +216,59 @@ GetUniqueDesign <- function() {
 GetUniqueSpecies <- function() {
   toupper(genericQuery("select distinct tsval as SPECIES
                           from ts 
-                         where upper(tsparmcd) == 'SPECIES'
+                         where upper(tsparmcd) = 'SPECIES'
                         union 
                         select distinct txval as SPECIES
                           from tx 
-                         where upper(txparmcd) == 'SPECIES'
+                         where upper(txparmcd) = 'SPECIES'
                         union 
                         select distinct SPECIES
                           from dm
                          order by SPECIES")$SPECIES)
 }
 
-GetUniqueStrains <- function(species) {
-    toupper(genericQuery("select distinct ts1.tsval as STRAIN
+GetUniqueStrains <- function(species) { 
+  if (length(species) == 1) {
+    # 1 species selected 
+    # - select strain values without any prefixes 
+    selectStrTS <- "ts1.tsval"
+    selectStrTX <- "tx1.txval"
+    selectStrDM <- "strain"
+  }
+  else {
+    # Multiple species selected 
+    # - select strain values prefixed with respective species value
+    selectStrTS <- "ts2.tsval || ': ' || ts1.tsval"
+    selectStrTX <- "tx2.txval || ': ' || tx1.txval"
+    selectStrDM <- "species || ': ' || strain"
+  }
+  
+  return(sort(toupper(
+    genericQuery(sprintf("select distinct %s as STRAIN
                             from ts ts1
                             join ts ts2
                               on upper(ts2.tsparmcd) = 'SPECIES'
-                             and upper(ts2.tsval) = :1
+                             and upper(ts2.tsval) in (:1)
                              and ts1.tsgrpid = ts2.tsgrpid
                              and ts1.studyid = ts2.studyid
                            where upper(ts1.tsparmcd) = 'STRAIN'
                           union
-                         select distinct tx1.txval as STRAIN
+                         select distinct trim(%s) as STRAIN
                             from tx tx1
                             join tx tx2
                               on upper(tx2.txparmcd) = 'SPECIES'
-                             and upper(tx2.txval) = :1
+                             and upper(tx2.txval) in (:1)
                              and tx1.setcd = tx2.setcd
                              and tx1.studyid = tx2.studyid
                            where upper(tx1.txparmcd) = 'STRAIN'
                          union
-                         select distinct strain
+                         select distinct trim(%s)
                            from dm
-                          where species = :1",
-                          species)$STRAIN)
+                          where species in (:1)",
+                         selectStrTS, 
+                         selectStrTX,
+                         selectStrDM),
+                 species)$STRAIN)))
 }
 
 
@@ -279,7 +298,7 @@ GetAvailableStudies <- function() {
 }
 
 GetStudyTS <- function(studyid) {
-  studyInfo <- genericQuery('SELECT * FROM TS WHERE STUDYID == ?', c(studyid))
+  studyInfo <- genericQuery('SELECT * FROM TS WHERE STUDYID = :1', c(studyid))
   return(studyInfo)
 }
 
@@ -287,8 +306,8 @@ GetAnimalGroupsStudy <- function(studyid) {
   studyAnimals <- genericQuery('SELECT TX.STUDYID, USUBJID, TX.SETCD, "SET" FROM 
                                TX  
                                INNER JOIN DM 
-                               on DM.SETCD == TX.SETCD AND DM.STUDYID == TX.STUDYID   
-                               WHERE DM.STUDYID == ?', c(studyid))
+                               on DM.SETCD = TX.SETCD AND DM.STUDYID = TX.STUDYID   
+                               WHERE DM.STUDYID = ?', c(studyid))
   return(studyAnimals)
 }
 
