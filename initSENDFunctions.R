@@ -72,11 +72,11 @@ initEnvironment<-function(dbType=NULL, dbPath=NULL,  dbUser=NULL, dbPwd=NULL, db
   ## Import specified CT file
   importCtFile<-function() {
     # Check file is XLS and exists
-    if (! tolower(file_ext(ctFile)) == 'xls')
-      stop(paste0('The ctFile ' , ctFile, ' is not an XLS file'))
-    if (!file.exists(ctFile)) {
-      stop(paste0('The ctFile ' , ctFile, 'could not be found'))
-    }
+    # if (! tolower(file_ext(ctFile)) == 'xls')
+    #   stop(paste0('The ctFile ' , ctFile, ' is not an XLS file'))
+    # if (!file.exists(ctFile)) {
+    #   stop(paste0('The ctFile ' , ctFile, 'could not be found'))
+    # }
     
     # Import content from worksheet named SEND<sep>Terminology<something> - include relevant columns and all rows
     ctSheets<-excel_sheets(ctFile)
