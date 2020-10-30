@@ -14,6 +14,7 @@ library(shiny)
 library(shinydashboard)
 library(ggplot2)
 library(MASS)
+library(htmltools)
 
 
 # define the path to R scripts to actual script location
@@ -75,6 +76,17 @@ liverEnzymes <- list(
   ALP='ALP'
 )
 
+# add function drag and drop menu ----
+addUIDep <- function(x) {
+  jqueryUIDep <- htmlDependency("jqueryui", "1.10.4", c(href="shared/jqueryui/1.10.4"),
+                                script = "jquery-ui.min.js",
+                                stylesheet = "jquery-ui.min.css")
+  attachDependencies(x, c(htmlDependencies(x), list(jqueryUIDep)))
+}
+
+
+
+
 #### UI ####
 
 
@@ -89,8 +101,8 @@ liverEnzymes <- list(
 
 
 ui <- dashboardPage(
-  dashboardHeader(title = "Historical Control Collator"),
-  dashboardSidebar(
+  dashboardHeader(title = "Historical Control Collator", titleWidth = 300),
+  dashboardSidebar(width = 300,
     sidebarMenu(
       menuItem("Choose Parameters:", icon = icon("paw"), startExpanded = TRUE,
                
@@ -103,7 +115,7 @@ ui <- dashboardPage(
                #             dragRange=TRUE),
                
                dateRangeInput("STSTDTC",
-                              "Select study start date range:",
+                              "Select Study Start Date Range:",
                               start = minStudyStartDate,
                               end = Sys.Date(),
                               min = minStudyStartDate,
@@ -112,33 +124,46 @@ ui <- dashboardPage(
                               startview = "year"),
                
                selectInput("SDESIGN",
-                           "Select study design:",
+                           "Select Study Design:",
                            GetUniqueDesign(), 
                            selected='PARALLEL'),
                
-               selectInput("ROUTE",
-                           "Select route of administration:",
-                           GetUniqueRoutes(),
-                           selected = '', 
-                           multiple=TRUE),
+               # selectInput("ROUTE",
+               #             "Select route of administration:",
+               #             GetUniqueRoutes(),
+               #             selected = '', 
+               #             multiple=TRUE),
                
-               selectInput("SPECIES",
-                           "Select species:",
-                           GetUniqueSpecies(), 
-                           selected='',
-                           multiple=TRUE),
+               addUIDep(selectizeInput("ROUTE",label='Select Route of Administration:',
+                                       choices=GetUniqueRoutes(),
+                                       selected='',
+                                       multiple=TRUE,
+                                       options=list(plugins=list('drag_drop','remove_button')))),
+               
+               addUIDep(selectizeInput("SPECIES",label='Select Species:',
+                                       choices= GetUniqueSpecies(),
+                                       selected='',
+                                       multiple=TRUE,
+                                       options=list(plugins=list('drag_drop','remove_button')))),
+               
+            
                
                # Strain should change based
                # on current SPECIES .  This is 
                # implemented server side. 
-               selectInput("STRAIN",
-                           "Select strain:",
+               addUIDep(selectizeInput("STRAIN",
+                           "Select Strain:",
                            '', 
                            selected='',
-                           multiple=TRUE),
+                           multiple=TRUE,
+                           options=list(plugins=list('drag_drop','remove_button')))),
+               
+               
+               
+               
                
                selectInput("SEX",
-                           "Select sex:",
+                           "Select Sex:",
                            c('', as.character(availableSex)), 
                            selected=''),
                
@@ -153,7 +178,9 @@ ui <- dashboardPage(
                              'Include uncertain rows', 
                              value = FALSE),
                
-               actionButton("refreshData", "Generate/Update data")
+               actionButton("refreshData", "Generate/Update Data"),
+               br()
+           
       ),
       
       # TODO: implement function 
@@ -165,6 +192,11 @@ ui <- dashboardPage(
                selectInput("STUDYID",
                            "Select STUDYID:", 
                            choices=availableStudies)
+      )
+    ), 
+    tags$head(
+      tags$style(
+        HTML(".sidebar {height: 94vh; overflow-y: auto;}")
       )
     )
     # TODO: Get animal age working.
