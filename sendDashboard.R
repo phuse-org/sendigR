@@ -12,9 +12,10 @@
 
 library(shiny)
 library(shinydashboard)
-library(ggplot2)
+library(tidyverse)
 library(MASS)
 library(htmltools)
+library(DT)
 
 
 # define the path to R scripts to actual script location
@@ -220,7 +221,8 @@ ui <- dashboardPage(
                # The id lets us use input$tabset1 on the server to find the current tab
                id = "findingsTab",
                tabPanel('ANIMALS',
-                        fluidRow(box(title = "Filtered control animals", DT::dataTableOutput("animals")))),
+                        fluidRow(title = "Filtered control animals",
+                                     DT::dataTableOutput("animals"))),
                tabPanel("MI", fluidRow(box(selectInput("MISPEC",
                                                        "Select MISPEC:",
                                                        availableOrgans, selected='KIDNEY')),
@@ -282,7 +284,47 @@ server <- function(input, output, session) {
   
   # findings <- reactive({ MiFindings(animalList(), input$MISPEC) })
   
-  output$animals <- DT::renderDataTable(animalList())
+  output$animals <- DT::renderDataTable({
+    
+    animal_df <- animalList()
+    # make last column as date first
+    
+    
+    #convert character to factor
+    animal_df <- animal_df %>% mutate_if(is.character,as.factor)
+   
+
+    
+    # cols <- c('STUDYID','USUBJID','ROUTE','SPECIES','STRAIN','SEX','TCNTRL','SDESIGN')
+    # animal_df %<>% mutate_at(cols, funs(factor(.)))
+    # animal_df[,col] <- lapply(animal_df[,col], as.factor)
+
+    animal_df <- DT::datatable(
+      animal_df,
+      class = "cell-border stripe",
+      filter = list(position = 'top'),
+      extensions = list("Buttons" = NULL,
+                        "ColReorder" = NULL),
+      caption = htmltools::tags$caption(
+        style = "caption-side: top; text-align: center; font-size: 20px; color: black",
+        "Table :", htmltools::strong("Filtered Control Animal")
+      ),
+      options = list(
+        dom = "lfrtipB",
+        buttons = c("csv", "excel", "copy", "print"),
+        colReorder = TRUE,
+        scrollY = TRUE,
+        pageLength = 10,
+        columnDefs = list(list(className = "dt-center", targets = "_all")),
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+          "}")
+        ))
+ 
+    
+    animal_df
+    })
   
   ########################### MI TAB #######################################
   
