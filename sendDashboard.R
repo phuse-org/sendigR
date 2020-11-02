@@ -223,10 +223,15 @@ ui <- dashboardPage(
                tabPanel('ANIMALS',
                         fluidRow(title = "Filtered control animals",
                                      DT::dataTableOutput("animals"))),
-               tabPanel("MI", fluidRow(box(selectInput("MISPEC",
-                                                       "Select MISPEC:",
-                                                       availableOrgans, selected='KIDNEY')),
-                                       box(title = "Organ Findings", DT::dataTableOutput("findingsTable"))) ),
+               tabPanel("MI",
+                        fluidRow(
+                          column(width = 3,
+                          selectInput("MISPEC",
+                                          "Select MISPEC:",
+                                          availableOrgans,
+                                          selected='KIDNEY')),
+                          column(width = 6, offset = 1,
+                                 DT::dataTableOutput("findingsTable")))),
                tabPanel("LB", fluidRow(box(selectInput("LBTESTCD",
                                                        "Select LBTESTCD:",
                                                        availableLBTESTCD),
@@ -287,17 +292,13 @@ server <- function(input, output, session) {
   output$animals <- DT::renderDataTable({
     
     animal_df <- animalList()
-    # make last column as date first
+    # make last column as date
     
     
-    #convert character to factor
+    #convert character to factor to make filter work
     animal_df <- animal_df %>% mutate_if(is.character,as.factor)
    
-
-    
     # cols <- c('STUDYID','USUBJID','ROUTE','SPECIES','STRAIN','SEX','TCNTRL','SDESIGN')
-    # animal_df %<>% mutate_at(cols, funs(factor(.)))
-    # animal_df[,col] <- lapply(animal_df[,col], as.factor)
 
     animal_df <- DT::datatable(
       animal_df,
@@ -311,7 +312,7 @@ server <- function(input, output, session) {
       ),
       options = list(
         dom = "lfrtipB",
-        buttons = c("csv", "excel", "copy", "print"),
+        buttons = c("csv", "excel", "copy", "pdf"),
         colReorder = TRUE,
         scrollY = TRUE,
         pageLength = 10,
@@ -321,8 +322,6 @@ server <- function(input, output, session) {
           "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
           "}")
         ))
- 
-    
     animal_df
     })
   
@@ -343,7 +342,31 @@ server <- function(input, output, session) {
     req(input$STRAIN)
     findings <- MiFindings(animalList(), input$MISPEC)
     
-    return(findings)
+    findings <- findings %>% mutate_if(is.character,as.factor)
+    
+    findings <- DT::datatable(
+      findings,
+      class = "cell-border stripe",
+      filter = list(position = 'top'),
+      extensions = list("Buttons" = NULL,
+                        "ColReorder" = NULL),
+      caption = htmltools::tags$caption(
+        style = "caption-side: top; text-align: center; font-size: 20px; color: black",
+        "Table :", htmltools::strong("Findings")
+      ),
+      options = list(
+        dom = "lfrtipB",
+        buttons = c("csv", "excel", "pdf"),
+        colReorder = TRUE,
+        scrollY = TRUE,
+        pageLength = 10,
+        columnDefs = list(list(className = "dt-left", targets = "_all")),
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+          "}")
+      ))
+    findings
     
   })
   
