@@ -232,14 +232,19 @@ ui <- dashboardPage(
                                           selected='KIDNEY')),
                           column(width = 6, offset = 1,
                                  DT::dataTableOutput("findingsTable")))),
-               tabPanel("LB", fluidRow(box(selectInput("LBTESTCD",
-                                                       "Select LBTESTCD:",
-                                                       availableLBTESTCD),
-                                           radioButtons("dist", "Distribution type:",
-                                                        c("Normal" = "norm",
-                                                          "Log-normal" = "lnorm"))
-               ),
-               box(title = "LBTESTCD", plotOutput("labTestHist"))) )
+               
+               tabPanel("LB",
+                        fluidRow(
+                          column(width = 2,
+                          selectInput("LBTESTCD",
+                                      "Select LBTESTCD:",
+                                      availableLBTESTCD)),
+                          column(width = 2,
+                          radioButtons("dist", "Distribution type:",
+                                       c("Normal" = "norm",
+                                         "Log-normal" = "lnorm"))),
+                          column(width = 7,offset = 1,
+                                 plotOutput("labTestHist"))))
              )
       )
     )
