@@ -85,7 +85,10 @@ addUIDep <- function(x) {
   attachDependencies(x, c(htmlDependencies(x), list(jqueryUIDep)))
 }
 
+#reactive value
+values <- reactiveValues()
 
+values$selected_routes <- NULL
 
 
 #### UI ####
@@ -135,11 +138,19 @@ ui <- dashboardPage(
                #             selected = '', 
                #             multiple=TRUE),
                
-               addUIDep(selectizeInput("ROUTE",label='Select Route of Administration:',
-                                       choices=GetUniqueRoutes(),
-                                       selected='',
-                                       multiple=TRUE,
-                                       options=list(plugins=list('drag_drop','remove_button')))),
+               
+               # addUIDep(selectizeInput("ROUTE",label='Select Route of Administration:',
+               #                         choices=GetUniqueRoutes(),
+               #                         selected=values$selected_routes,
+               #                         multiple=TRUE,
+               #                         options=list(plugins=list('drag_drop','remove_button')))),
+               
+               uiOutput('ROUTE'),
+               actionButton('clear_route',label='Clear All'),
+               actionButton('select_route',label='Display All'),
+               
+               
+               
                
                addUIDep(selectizeInput("SPECIES",label='Select Species:',
                                        choices= GetUniqueSpecies(),
@@ -279,6 +290,19 @@ server <- function(input, output, session) {
     }
   }, ignoreNULL = FALSE)
   
+  
+  # Clear All Functionality
+  observeEvent(ignoreNULL=TRUE,eventExpr=input$clear_route,
+               handlerExpr={values$selected_routes <- NULL})
+  
+  # Display All Functionality
+  observeEvent(ignoreNULL=TRUE,eventExpr=input$select_route,
+               handlerExpr={values$selected_routes <- GetUniqueRoutes()})
+  
+  
+  
+  
+  
   # Get the list of studies and animals based on new/changed filter criterion
   animalList<-eventReactive(input$refreshData, {
     
@@ -294,11 +318,24 @@ server <- function(input, output, session) {
   
   # findings <- reactive({ MiFindings(animalList(), input$MISPEC) })
   
+  
+  
+  output$ROUTE <- renderUI({
+    
+    addUIDep(selectizeInput("ROUTE",label='Select Route of Administration:',
+                            choices=GetUniqueRoutes(),
+                            selected=values$selected_routes,
+                            multiple=TRUE,
+                            options=list(plugins=list('drag_drop','remove_button'))))
+    
+  })
+  
+  
   output$animals <- DT::renderDataTable({
     
     animal_df <- animalList()
     # make last column as date
-    
+
     
     #convert character to factor to make filter work
     animal_df <- animal_df %>% mutate_if(is.character,as.factor)
