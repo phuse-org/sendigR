@@ -233,9 +233,11 @@ ui <- dashboardPage(
                id = "findingsTab",
                tabPanel('ANIMALS',
                         fluidRow(title = "Filtered control animals",
+                                 br(),
                                      DT::dataTableOutput("animals"))),
-               tabPanel("MI",
+               tabPanel("MI", 
                         fluidRow(
+                          br(),
                           column(width = 3,
                           selectInput("MISPEC",
                                           "Select MISPEC:",
@@ -246,6 +248,7 @@ ui <- dashboardPage(
                
                tabPanel("LB",
                         fluidRow(
+                          br(),
                           column(width = 2,
                           selectInput("LBTESTCD",
                                       "Select LBTESTCD:",
@@ -294,6 +297,8 @@ server <- function(input, output, session) {
   # Clear All Functionality
   observeEvent(ignoreNULL=TRUE,eventExpr=input$clear_route,
                handlerExpr={values$selected_routes <- NULL})
+  
+ 
   
   # Display All Functionality
   observeEvent(ignoreNULL=TRUE,eventExpr=input$select_route,
