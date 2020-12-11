@@ -1,0 +1,10 @@
+^sendigR\.Rproj$
+^\.Rproj\.user$
+^myTest$
+^README\.Rmd$
+^.vignettes$
+^R/SAVE_
+^R/getSubjData.R$
+^.doc$
+^.Meta$
+.^LICENSE\.md$
