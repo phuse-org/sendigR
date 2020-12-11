@@ -2,6 +2,7 @@
 
 export(disconnectDB)
 export(genericQuery)
+export(getAnimalsSex)
 export(getControlAnimals)
 export(getStudiesSDESIGN)
 export(getStudiesSTSTDTC)

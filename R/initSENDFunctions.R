@@ -218,6 +218,7 @@ validDbTypes <-
                          req_credentials = c( FALSE,     TRUE),
                          package_name    = c('RSQLite', 'ROracle'))
 
+################################################################################
 ## Import specified CDISC CT file
 # - save extracted code lists and value in temporary Rdata files
 # - return the R data file name
@@ -256,6 +257,7 @@ importCtFile<-function(ctFile) {
   return(CDISCctFile)
 }
 
+################################################################################
 ## Extract values for specific code lists from extracted CDIUS CT code lists/values
 getCTCodListValues<-function(dbToken, pCodeList=NULL) {
   if (is.null(pCodeList) | isTRUE(is.na(pCodeList)) | isTRUE(pCodeList=='')) {
@@ -275,6 +277,7 @@ getCTCodListValues<-function(dbToken, pCodeList=NULL) {
                                       CDISCctCodeValues[!is.na(CodelistCode)])$CDISCSubmissionValue);
 }
 
+################################################################################
 ## Take a SQL statement as input
 #   return the statement modified in this way:
 #   - substitute line shifts (\n) with space
@@ -296,12 +299,69 @@ selectStmtAddSchema <- function(dbSchema, stmt) {
   )
 }
 
+################################################################################
+# Prepare a set of final set rows to be returned from a data extraction
+# function (i.e. the function calling this function).
+#  - merge potential UNCERTAIN_MSG and NOT_VALID_MSG columns originated from
+#       - the data table given as input to the calling extraction function
+#       - generate by extraction function
+#    respectively
+#  - set the column order to be
+#     1 - the columns from the data table given as input to the calling
+#         extraction function excluding potential UNCERTAIN_MSG and/or
+#         NOT_VALID_MSG columns.
+#     2 - the columns added by the calling extraction function
+#     3 - UNCERTAIN_MSG if it exists in the data table with the final set of
+#         rows
+#     4 - NOT_VALID_MSG if it exists in the data table with the final set of rows
+#
+# Parameters:
+#   dt - the data table to process
+#   srcCols - the list of columns (vector) in the data table given as input to the calling
+#      function. May be empty.
+#   addCols - the list of columns (vector) added by the calling function
+prepareFinalResults <- function(dt, srcCols, addCols) {
+  if ('UNCERTAIN_MSG.x' %in% names(dt))
+    # An UNCERTAIN_MSG column is included in both input and extracted list of animals
+    #  - merge the UNCERTAIN_MSG from each of the merged tables into one column
+    #  - non-empty messages are separated by '|'
+    #  - exclude the original UNCERTAIN_MSG columns after the merge
+    dt[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y),
+                                   paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep='|'),
+                                   DescTools::Coalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
+  if ('NOT_VALID_MSG.x' %in% names(dt))
+    # An NOT_VALID_MSG column is included in both input and extracted list of animals
+    #  - merge the NOT_VALID_MSG from each of the merged tables into one column
+    #  - non-empty messages are separated by '|'
+    #  - exclude the original NOT_VALID_MSG columns after the merge
+    dt[,`:=` (NOT_VALID_MSG=ifelse(!is.na(NOT_VALID_MSG.x) & !is.na(NOT_VALID_MSG.y),
+                                   paste(NOT_VALID_MSG.y, NOT_VALID_MSG.x, sep='|'),
+                                   DescTools::Coalesce(NOT_VALID_MSG.x, NOT_VALID_MSG.y)))][, `:=` (NOT_VALID_MSG.x=NULL,NOT_VALID_MSG.y=NULL)]
+
+  if (length(srcCols) == 1 & srcCols[1] == '')
+    # Only columns added by calling function included
+    colList <- addCols
+  else
+    # Add the columns specified in addCols to the list of columns specified in srcCols - excluding any of the two potential MSG columns
+    colList <- append(srcCols[!srcCols %in% 'UNCERTAIN_MSG' & !srcCols %in% 'NOT_VALID_MSG'], addCols)
+
+  if ('UNCERTAIN_MSG' %in% names(dt))
+    # Add UNCERTAIN_MSG to column list
+    colList <- append(colList, 'UNCERTAIN_MSG')
+
+  if ('NOT_VALID_MSG' %in% names(dt))
+    # Add UNCERTAIN_MSG to column list
+    colList <- append(colList, 'NOT_VALID_MSG')
+
+  # Set column order and return
+  return(data.table::setcolorder(dt, colList))
+}
 
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
 db_type <- NULL
 CDISCctCodeLists <- CodeList <- NULL
 CDISCctCodeValues <- CodelistCode <- NULL
-
+NOT_VALID_MSG.x <- NOT_VALID_MSG.y <- NULL
 
 

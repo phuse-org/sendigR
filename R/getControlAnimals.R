@@ -62,11 +62,16 @@
 #'   \item STUDYID       (character)
 #'   \item Additional columns contained in the \code{studyList} table (if such an input
 #'   table is given)
+#' The value of the TX parameter TCNTRL which is used for identification of
+#' whether its a negative control group or not
+#'   \item TCNTRL        (character)
 #'   \item USUBJID       (character)
 #'   \item UNCERTAIN_MSG (character)
-#' Only included when parameter \code{inclUncertain=TRUE}.\cr
+#' Included when parameter \code{inclUncertain=TRUE}.\cr
 #' Contains the reason for an uncertain animal is NA for rows for confident
 #' identified negative control animals.
+#'   \item NOT_VALID_MSG (character)
+#' Included if the column is included in data table specified in \code{studyList},
 #' }
 #'
 #' @export
@@ -192,7 +197,7 @@ getControlAnimals<-function(dbToken,
       # Uncertain groups have been identified
 
       # Set the UNCERTAIN_MSG for the control groups identified as uncertain
-      uncertainCtrlSet[, `:=` (UNCERTAIN_MSG = 'GetControlAnimals: Cannot decide type of control group from TXVAL in TX parameter TCNTRL')]
+      uncertainCtrlSet[, `:=` (UNCERTAIN_MSG = 'ControlAnimals: Cannot decide type of control group from TXVAL in TX parameter TCNTRL')]
 
       # Combine set of negative and uncertain control groups
       foundCtrlSet<-data.table::rbindlist(list(foundCtrlSet, uncertainCtrlSet))
@@ -209,11 +214,6 @@ getControlAnimals<-function(dbToken,
 
     # Merge with the studyList to include all study level attributes and accumulate eventual UNCERTAIN_MSG texts
     dmCtrlSet <- merge(studyList, dmCtrlSet, by='STUDYID')
-    if ('UNCERTAIN_MSG.x' %in% names(dmCtrlSet)) {
-      dmCtrlSet<-dmCtrlSet[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y),
-                                                       paste(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y, sep='|'),
-                                                       DescTools::Coalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
-    }
   }
   else {
     # Get the list of animals belong to the identified control groups
@@ -224,10 +224,11 @@ getControlAnimals<-function(dbToken,
     dmCtrlSet <- data.table::merge.data.table(studyList, dmCtrlSet, by='STUDYID')
   }
 
-  return(dmCtrlSet)
-
+  # Do final preparation of set of found animals and return
+  return(prepareFinalResults(dmCtrlSet, names(studyList), c('TCNTRL', 'USUBJID')))
 }
 
+################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
 UNCERTAIN_MSG.x <- UNCERTAIN_MSG.y  <- NULL
 TCNTRL <- NULL

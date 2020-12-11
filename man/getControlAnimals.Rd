@@ -25,11 +25,16 @@ The function return a data.table with columns:
 \item STUDYID       (character)
 \item Additional columns contained in the \code{studyList} table (if such an input
 table is given)
+The value of the TX parameter TCNTRL which is used for identification of
+whether its a negative control group or not
+\item TCNTRL        (character)
 \item USUBJID       (character)
 \item UNCERTAIN_MSG (character)
-Only included when parameter \code{inclUncertain=TRUE}.\cr
+Included when parameter \code{inclUncertain=TRUE}.\cr
 Contains the reason for an uncertain animal is NA for rows for confident
 identified negative control animals.
+\item NOT_VALID_MSG (character)
+Included if the column is included in data table specified in \code{studyList},
 }
 }
 \description{
