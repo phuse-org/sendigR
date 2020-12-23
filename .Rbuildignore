@@ -4,6 +4,7 @@
 ^README\.Rmd$
 ^R/SAVE_
 ^R/getSubjData.R$
+^R/getAnimalsRoute.R$
 ^doc$
 ^Meta$
 ^LICENSE\.md$

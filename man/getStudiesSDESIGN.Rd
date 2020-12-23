@@ -28,9 +28,9 @@ a vector or a list of multiple strings.}
 \item{exclusively}{Optional.
 \itemize{
 \item TRUE: Include studies only for studies with no other study design
-then included in studyDesignFilter.
-\item FALSE: Include animals for all studies with route matching
-studyDesignFilter.
+then included in \code{studyDesignFilter}.
+\item FALSE: Include animals for all studies with study design matching
+\code{studyDesignFilter}.
 }}
 
 \item{inclUncertain}{Optional, TRUE or FALSE, default: FALSE.\cr
@@ -80,15 +80,16 @@ The comparison of study design values are done case insensitive.\cr
 If a data table with a list of studies is specified in \code{studyList}, only
 the subset of studies included in that set is processed.
 
-If input parameter \code{inclUncertain=TRUE}, uncertain rows are extracted too,
-i.e. studies included in TS
+If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
+in the output set. These uncertain situations are identified and reported (in
+column UNCERTAIN_MSG):
 \itemize{
 \item without any row for TSPARMCD='SDESIGN' or
 \item TSVAL doesn't contain a value included in the  CDISC CT list
 'DESIGN' for TSPARMCD='SDESIGN'
 }
-are included in the returned set of data - including a message telling the
-reason of uncertainty.
+The same checks are performed and reported in column NOT_VALID_MSG if
+\code{studyDesignFilter} is empty and \code{noFilterReportUncertain=TRUE}.
 }
 \examples{
 \dontrun{

@@ -32,12 +32,29 @@
 #' }
 #' Animals are in all cases excluded (i.e. whether \code{inclUncertain=TRUE} or
 #' \code{inclUncertain=FALSE}) from the output set, when they are identified as
-#' psoitive control animals - i.e they are associated with a TX parameter
+#' positive control animals - i.e they are associated with a TX parameter
 #' 'TCNTRL' containing a word from this set of words:
 #' \itemize{
 #'   \item \['positive','reference'\]
 #' }
 #'
+#' The age in days at reference start date is calculated for each animal based
+#' on the age related variables in DM:
+#' \enumerate{
+#'   \item If BRTHDTC is populated compute DM.RFSTDTC – DM.BRTHDTC + 1
+#'   \item Else If AGE is populated convert from units specified in AGEU to days.
+#'   \item Else If AGETXT is populated convert the mid-point of the range from
+#'   units specified in AGEU to days.\cr
+#' These AGEU units are handled with the described conversion from value to
+#' number of days:
+#'     \itemize{
+#'        \item DAYS
+#'        \item WEEKS   : value * 7
+#'        \item MONTHS  : value * 365/12
+#'        \item YEARS   : value * 365
+#'     }
+#' }
+#
 #' If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
 #' in the output set. These uncertain situations are identified and reported (in
 #' column UNCERTAIN_MSG):
@@ -66,6 +83,12 @@
 #' whether its a negative control group or not
 #'   \item TCNTRL        (character)
 #'   \item USUBJID       (character)
+#'   \item DM_AGEDAYS    (integer)
+#' The calculated age in days of the animal at the reference start day - i.e.
+#' the age registered in DM.
+#'   \item NO_AGE_MSG    (character)
+#' Included when parameter \code{inclUncertain=TRUE}.\cr
+#' Contains the reason if a DM_AGEDAYS couldn't be calculated
 #'   \item UNCERTAIN_MSG (character)
 #' Included when parameter \code{inclUncertain=TRUE}.\cr
 #' Contains the reason for an uncertain animal is NA for rows for confident
@@ -83,6 +106,43 @@
 getControlAnimals<-function(dbToken,
                             studyList,
                             inclUncertain=FALSE) {
+
+  ###################################################################################################
+  # calculate the age for an animal at the reference start date in DM to days
+  # - returns either the calculated age or a test with reason why the age couldn't be calculated.
+  ###################################################################################################
+  calcDMAgeDays<-function(RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU) {
+    if (!(RFSTDTC == "" | is.na(RFSTDTC) | BRTHDTC == "" | is.na(BRTHDTC))) {
+      # BRTHDTC is populated
+      return(as.numeric(parsedate::parse_iso_8601(RFSTDTC) - parsedate::parse_iso_8601(BRTHDTC)))
+    } else if (!((AGEU == "" | is.na(AGEU)) | ((AGE == "" | is.na(AGE)) & (AGETXT == "" | is.na(AGETXT))))) {
+      ageCalc<-NA
+      if (!(AGE == "" | is.na(AGE))) {
+        # AGE is populated
+        ageCalc<-as.numeric(AGE)
+      } else if (grepl("^\\d+-\\d+$", AGETXT)) {
+        # AGETXT is populated - use the mid value for calculation
+        ageCalc<-(as.numeric(stringr::word(AGETXT,1,sep = "-")) + as.numeric(stringr::word(AGETXT,2,sep = "-")))/2
+      }
+      # Convert age to number of days:
+      if (AGEU=='DAYS') {
+        return(as.character(round(ageCalc)))
+      } else if (AGEU=='WEEKS') {
+        return(as.character(round(ageCalc*7)))
+      } else if (AGEU=='MONTHS') {
+        return(as.character(round(ageCalc*365/12)))
+      } else if (AGEU=='YEARS') {
+        return(as.character(round(ageCalc*365)))
+      } else {
+        # Not supported AGEU - cannot calculate
+        return("DMAnimalAge: Not supported or missing AGEU value has been populated")
+      }
+    } else {
+      # Not enough variables has been populated to do calculations
+      return("DMAnimalAge: Neither RFSTDTC/BRTHDTC nor AGE/AGETXT/AGEU has been fully populated")
+    }
+  }
+  ###################################################################################################
 
   # Definition of the search words for negative control terms
   negStandAlonesWords <- c('placebo', 'untreated', 'sham')
@@ -153,6 +213,11 @@ getControlAnimals<-function(dbToken,
                                    ,tx.txval as TCNTRL
                                    ,tx.setcd
                                    ,dm.usubjid
+                                   ,dm.rfstdtc
+                                   ,dm.brthdtc
+                                   ,dm.agetxt
+                                   ,dm.age
+                                   ,dm.ageu
                              from (select distinct STUDYID
                                    from ts
                                    where studyid in (:1)) ts
@@ -170,6 +235,15 @@ getControlAnimals<-function(dbToken,
 
   # Extract the unique set of trial sets
   txCtrlSet <- unique(txDmCtrlSet[!is.na(TCNTRL),c('TCNTRL')])
+
+  # Calculate age at RFSTDTC
+  txDmCtrlSet[,AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)]
+  # If an age has been calculated - convert returned value from function to
+  # numeric age in days value - else save returned error message
+  txDmCtrlSet[,`:=` (AGEDAYS=suppressWarnings(as.numeric(AGEDAYStxt)),
+                     NO_AGE_MSG=ifelse(!grepl("^[0-9]+$",AGEDAYStxt),
+                                       AGEDAYStxt,
+                                       as.character(NA)))]
 
 
   # Get set of control groups identified as negative
@@ -204,33 +278,36 @@ getControlAnimals<-function(dbToken,
     }
 
     # Get the list of animals belonging to identified plus uncertain control groups
-    dmCtrlSet <- data.table::merge.data.table(txDmCtrlSet[, c('STUDYID', 'TCNTRL', 'USUBJID')],
-                                              foundCtrlSet, by=c('TCNTRL'),
-                                              all.y=TRUE)[,c('STUDYID', 'TCNTRL', 'USUBJID','UNCERTAIN_MSG')]
+    dmCtrlSet <- data.table::merge.data.table(txDmCtrlSet, foundCtrlSet,
+                                              by=c('TCNTRL'),all.y=TRUE)
     # Add the list of animals which may belong to studies with no TX.TCNTRL defined
     dmCtrlSet <- data.table::rbindlist(list(dmCtrlSet,
-                                            txDmCtrlSet[is.na(TCNTRL), list(STUDYID, TCNTRL, USUBJID,
-                                                                         UNCERTAIN_MSG = 'GetControlAnimals: TX parameter TCNTRL is missing')]))
+                                            txDmCtrlSet[is.na(TCNTRL)][,
+                                                        UNCERTAIN_MSG :='ControlAnimals: TX parameter TCNTRL is missing']),
+                                       use.names = TRUE,
+                                       fill = TRUE)
 
     # Merge with the studyList to include all study level attributes and accumulate eventual UNCERTAIN_MSG texts
     dmCtrlSet <- merge(studyList, dmCtrlSet, by='STUDYID')
   }
   else {
     # Get the list of animals belong to the identified control groups
-    dmCtrlSet <- data.table::merge.data.table(txDmCtrlSet[, c('STUDYID', 'TCNTRL', 'USUBJID')],
-                                              foundCtrlSet, by=c('TCNTRL'),
-                                              all.y=TRUE)[,c('STUDYID', 'TCNTRL', 'USUBJID')]
+    dmCtrlSet <- data.table::merge.data.table(txDmCtrlSet,
+                                              foundCtrlSet,
+                                              by='TCNTRL',all.y=TRUE)
     # Merge with the studyList to include all study level attributes
     dmCtrlSet <- data.table::merge.data.table(studyList, dmCtrlSet, by='STUDYID')
   }
 
   # Do final preparation of set of found animals and return
-  return(prepareFinalResults(dmCtrlSet, names(studyList), c('TCNTRL', 'USUBJID')))
+  return(prepareFinalResults(dmCtrlSet, names(studyList), c('TCNTRL',
+                                                            'USUBJID',
+                                                            'AGEDAYS')))
 }
 
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
-UNCERTAIN_MSG.x <- UNCERTAIN_MSG.y  <- NULL
 TCNTRL <- NULL
 USUBJID <- NULL
-
+STUDYID <- NULL
+AGE <- AGEDAYStxt <- AGETXT <- AGEU <- BRTHDTC <- RFSTDTC <- NULL

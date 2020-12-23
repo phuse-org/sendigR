@@ -29,6 +29,12 @@ The value of the TX parameter TCNTRL which is used for identification of
 whether its a negative control group or not
 \item TCNTRL        (character)
 \item USUBJID       (character)
+\item DM_AGEDAYS    (integer)
+The calculated age in days of the animal at the reference start day - i.e.
+the age registered in DM.
+\item NO_AGE_MSG    (character)
+Included when parameter \code{inclUncertain=TRUE}.\cr
+Contains the reason if a DM_AGEDAYS couldn't be calculated
 \item UNCERTAIN_MSG (character)
 Included when parameter \code{inclUncertain=TRUE}.\cr
 Contains the reason for an uncertain animal is NA for rows for confident
@@ -59,12 +65,28 @@ automatically distinguish it as a negative control:
 }
 Animals are in all cases excluded (i.e. whether \code{inclUncertain=TRUE} or
 \code{inclUncertain=FALSE}) from the output set, when they are identified as
-psoitive control animals - i.e they are associated with a TX parameter
+positive control animals - i.e they are associated with a TX parameter
 'TCNTRL' containing a word from this set of words:
 \itemize{
 \item ['positive','reference']
 }
 
+The age in days at reference start date is calculated for each animal based
+on the age related variables in DM:
+\enumerate{
+\item If BRTHDTC is populated compute DM.RFSTDTC – DM.BRTHDTC + 1
+\item Else If AGE is populated convert from units specified in AGEU to days.
+\item Else If AGETXT is populated convert the mid-point of the range from
+units specified in AGEU to days.\cr
+These AGEU units are handled with the described conversion from value to
+number of days:
+\itemize{
+\item DAYS
+\item WEEKS   : value * 7
+\item MONTHS  : value * 365/12
+\item YEARS   : value * 365
+}
+}
 If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
 in the output set. These uncertain situations are identified and reported (in
 column UNCERTAIN_MSG):

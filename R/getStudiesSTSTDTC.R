@@ -45,6 +45,9 @@
 #' \item TS contains now row for TSPARMCD='STSTDTC'
 #' \item TSVAL contains an invalid ISO8601 date format for TSPARMCD='STSTDTC'
 #' }
+#' The same checks are performed and reported in column NOT_VALID_MSG if
+#' \code{fromDTC} and \code{toDTC} are empty and
+#' \code{noFilterReportUncertain=TRUE}.
 #'
 #' @param dbToken Mandatory - token for the open database connection
 #' @param studyList Optional.\cr
