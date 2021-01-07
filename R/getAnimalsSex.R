@@ -8,7 +8,8 @@
 ## 2020-12-11   Bo Larsen             Initial version
 ################################################################################
 
-#' Extract the set of animals of the specified sex.
+#' Extract the set of animals of the specified sex - or just add the sex of each
+#' animal.
 #'
 #' Returns a data table with the set of animals included in the
 #' \code{animalList} of the sex specified in the \code{sexFilter}.\cr

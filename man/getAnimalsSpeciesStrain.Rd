@@ -2,7 +2,8 @@
 % Please edit documentation in R/getAnimalsSpeciesStrain.R
 \name{getAnimalsSpeciesStrain}
 \alias{getAnimalsSpeciesStrain}
-\title{Extract the set of animals of the specified species and strain.}
+\title{Extract the set of animals of the specified species and strain - or just add
+the species and strain for each animal.}
 \usage{
 getAnimalsSpeciesStrain(
   dbToken,
@@ -35,8 +36,8 @@ value must be prefixed by species and ':' , e.g.
 \code{c('RAT: WISTAR','DOG: BEAGLE')}.}
 
 \item{inclUncertain}{Mandatory, TRUE or FALSE, default: FALSE.\cr
-Indicates whether animals for which the sex cannot be confidently identified
-shall be included or not in the output data table.}
+Indicates whether animals for which the species or strain cannot be
+confidently identified shall be included or not in the output data table.}
 
 \item{exclusively}{Optional.
 \itemize{

@@ -8,7 +8,8 @@
 ## 2020-12-23   Bo Larsen             Initial version
 ################################################################################
 
-#' Extract the set of animals of the specified species and strain.
+#' Extract the set of animals of the specified species and strain - or just add
+#' the species and strain for each animal.
 #'
 #' Returns a data table with the set of animals included in the
 #' \code{animalList} of the species and strain specified in the
@@ -63,8 +64,8 @@
 #'  value must be prefixed by species and ':' , e.g.
 #'  \code{c('RAT: WISTAR','DOG: BEAGLE')}.
 #' @param inclUncertain  Mandatory, TRUE or FALSE, default: FALSE.\cr
-#'  Indicates whether animals for which the sex cannot be confidently identified
-#'  shall be included or not in the output data table.
+#'  Indicates whether animals for which the species or strain cannot be
+#'  confidently identified shall be included or not in the output data table.
 #' @param exclusively Optional.
 #'   \itemize{
 #'   \item TRUE: Include animals only for studies with no other species and

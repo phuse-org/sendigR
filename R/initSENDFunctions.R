@@ -141,6 +141,18 @@ initEnvironment<-function(dbType=NULL,
   if (!exists(disconnectDBName))
     stop(sprintf('A function named %s is missing', disconnectDBName))
 
+  ## Verify existence of function specific for db type to verify existence of
+  #  specific table in database
+  dbExistsTableName <- paste0('dbExistsTable_', dbProperties[,c('db_type')])
+  if (!exists(dbExistsTableName))
+    stop(sprintf('A function named %s is missing', dbExistsTableName))
+
+  ## Verify existence of function specific for db type to list columns in a
+  #  specific table in database
+  dbListFieldsName <- paste0('dbListFields_', dbProperties[,c('db_type')])
+  if (!exists(dbListFieldsName))
+    stop(sprintf('A function named %s is missing', dbListFieldsName))
+
   ## Return a db token to be included in all calls to database related functions.
   #  It includes:
   #   - The temporary RData file containing imported CDISC CT data
@@ -153,7 +165,9 @@ initEnvironment<-function(dbType=NULL,
                dbHandle = dbHandle,
                dbSchema = dbSchema,
                genericQuery = get(genericQueryName),
-               disconnectDB = get(disconnectDBName)
+               disconnectDB = get(disconnectDBName),
+               dbExistsTable = get(dbExistsTableName),
+               dbListFieldsTable = get(dbListFieldsName)
   ))
 }
 
@@ -219,6 +233,25 @@ validDbTypes <-
   data.table::data.table(db_type         = c('sqlite',  'oracle'),
                          req_credentials = c( FALSE,     TRUE),
                          package_name    = c('RSQLite', 'ROracle'))
+
+################################################################################
+##  Check if specified table exists in database
+#  Returns boolean
+dbExistsTable <- function(dbToken, table) {
+  if (dbToken$dbSchema == '')
+    return(dbToken$dbExistsTable(dbToken$dbHandle, table))
+  else
+    return(dbToken$dbExistsTable(dbToken$dbHandle, dbToken$dbSchema ,table))
+}
+
+################################################################################
+##  Return list of columns in specified database table
+dbListFields<- function(dbToken, table) {
+  if (dbToken$dbSchema == '')
+    return(dbToken$dbListFields(dbToken$dbHandle, table))
+  else
+    return(dbToken$dbListFields(dbToken$dbHandle, dbToken$dbSchema, table))
+}
 
 ################################################################################
 ## Import specified CDISC CT file

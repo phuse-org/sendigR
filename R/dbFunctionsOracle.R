@@ -79,3 +79,16 @@ genericQuery_oracle<-function(dbHandle, queryString, queryParams=NULL) {
   return(queryResult)
 }
 
+
+################################################################################
+## Check if specified table exists in database
+#  Returns boolean
+dbExistsTable_oracle <- function(dbHandle, dbSchema, table) {
+  return(ROracle::dbExistsTable(dbHandle, table, schema = dbSchema))
+}
+
+################################################################################
+##  Return list of columns in specified database table
+dbListFields_oracle <- function(dbHandle, dbSchema, table) {
+  return(ROracle::dbListFields(dbHandle, table, schema = dbSchema))
+}

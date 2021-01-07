@@ -35,3 +35,15 @@ genericQuery_sqlite<-function(dbHandle, queryString, queryParams) {
   }
 }
 
+################################################################################
+##  Check if specified table exists in database
+#  Returns boolean
+dbExistsTable_sqlite <- function(dbHandle, table) {
+  table %in% RSQLite::dbListTables(dbHandle)
+}
+
+################################################################################
+##  Return list of columns in specified database table
+dbListFields_sqlite <- function(dbHandle, table) {
+  return(RSQLite::dbListFields(dbHandle, table))
+}

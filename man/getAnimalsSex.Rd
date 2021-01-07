@@ -2,7 +2,8 @@
 % Please edit documentation in R/getAnimalsSex.R
 \name{getAnimalsSex}
 \alias{getAnimalsSex}
-\title{Extract the set of animals of the specified sex.}
+\title{Extract the set of animals of the specified sex - or just add the sex of each
+animal.}
 \usage{
 getAnimalsSex(
   dbToken,

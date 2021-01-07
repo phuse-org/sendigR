@@ -2,6 +2,7 @@
 
 export(disconnectDB)
 export(genericQuery)
+export(getAnimalsRoute)
 export(getAnimalsSex)
 export(getAnimalsSpeciesStrain)
 export(getControlAnimals)
