@@ -238,18 +238,25 @@ ui <- dashboardPage(
                                  br(),
                                      DT::dataTableOutput("animals"))),
                tabPanel("MI", 
-                        fluidRow(
-                          br(),
-                          column(width = 3,
-                          selectInput("MISPEC",
-                                          "Select MISPEC:",
-                                          availableOrgans,
-                                          selected='KIDNEY')),
-                          column(width = 6, offset = 1,
-                                 DT::dataTableOutput("findingsTable"))),
-                        tableOutput('mi_subj')
-                        
-                        ),
+                        tabsetPanel(
+                          tabPanel("MI Findings",
+                                   fluidRow(
+                                     br(),
+                                     column(width = 3,
+                                            selectInput("MISPEC",
+                                                        "Select MISPEC:",
+                                                        availableOrgans,
+                                                        selected='KIDNEY')),
+                                     column(width = 6, offset = 1,
+                                            DT::dataTableOutput("findingsTable")))
+                                   ),
+                          tabPanel("Individual Records",
+                                   DT::dataTableOutput('mi_subj')),
+                          tabPanel("Aggregate Table",
+                                   DT::dataTableOutput('mi_agg_tab'))
+                          
+                          
+                        )),
                
                tabPanel("LB",
                         fluidRow(
@@ -431,9 +438,25 @@ server <- function(input, output, session) {
     mi_sub
   })
   
-  output$mi_subj <- renderTable({
+  output$mi_subj <- DT::renderDataTable({
   
-    MI_subject()
+    tab <- DT::datatable(MI_subject(),
+                          
+                         options = list(
+                           dom = "lfrtipB",
+                           
+                           buttons = c(I('colvis'),"csv", "excel", "pdf"),
+                           #colReorder = TRUE,
+                           scrollY = TRUE,
+                           scrollX=TRUE,
+                           pageLength = 10,
+                           #columnDefs = list(list(className = "dt-center", targets = "_all")),
+                           initComplete = JS(
+                             "function(settings, json) {",
+                             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                             "}")
+                         ))
+    tab
       
   })
   
