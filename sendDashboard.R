@@ -28,6 +28,7 @@ setwd(getSrcDirectory(dummyuseCaseQuestionMiFindings))
 source("initSENDFunctions.R")
 
 
+
 source('sendDB.R')
 source('controlFiltering.R')
 
@@ -225,12 +226,13 @@ ui <- dashboardPage(
   # that particular domain.  
   
   dashboardBody(  
-    fluidRow(
-      column(12, 
-             tabBox(
-               title = "Findings domains", width=NULL,
-               # The id lets us use input$tabset1 on the server to find the current tab
-               id = "findingsTab",
+    # fluidRow(
+    #   column(12, 
+             # tabBox(
+             #   title = "Findings domains", width=NULL,
+             #   # The id lets us use input$tabset1 on the server to find the current tab
+             #   id = "findingsTab",
+    tabsetPanel(type = 'tab',
                tabPanel('ANIMALS',
                         fluidRow(title = "Filtered control animals",
                                  br(),
@@ -244,7 +246,10 @@ ui <- dashboardPage(
                                           availableOrgans,
                                           selected='KIDNEY')),
                           column(width = 6, offset = 1,
-                                 DT::dataTableOutput("findingsTable")))),
+                                 DT::dataTableOutput("findingsTable"))),
+                        tableOutput('mi_subj')
+                        
+                        ),
                
                tabPanel("LB",
                         fluidRow(
@@ -259,11 +264,11 @@ ui <- dashboardPage(
                                          "Log-normal" = "lnorm"))),
                           column(width = 7,offset = 1,
                                  plotOutput("labTestHist"))))
-             )
-      )
-    )
-  )
-)
+             
+    #   )
+    # )
+
+)))
 
 
 
@@ -389,6 +394,7 @@ server <- function(input, output, session) {
     req(input$STRAIN)
     findings <- MiFindings(animalList(), input$MISPEC)
     
+    
     findings <- findings %>% mutate_if(is.character,as.factor)
     
     findings <- DT::datatable(
@@ -416,6 +422,33 @@ server <- function(input, output, session) {
     findings
     
   })
+  
+  
+  
+  MI_subject <- reactive({
+    animal_list <- animalList()
+    mi_sub <- ExtractSubjData('mi', animal_list)
+    mi_sub
+  })
+  
+  output$mi_subj <- renderTable({
+  
+    MI_subject()
+      
+  })
+  
+  # MI_agg <- reactive({
+  #   animal_list <- animalList()
+  #   mi_agg <- MiFindings_agg(animalList(), input$MISPEC)
+  #   print(mi_agg)
+  # })
+  # 
+  # observe({
+  #   animal_list <- animalList()
+  #   mi_agg <- MiFindings_agg(animalList(), input$MISPEC)
+  #   print(mi_agg)
+  #   
+  # })
   
   
   # TODO: Implement function to download 
