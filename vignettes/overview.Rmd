@@ -28,20 +28,26 @@ If you have questions or you're interested in contributing to the scripts, pleas
 The scripts in this repository reply on the following external packages that need to be installed into the R programming environment:
 
 * data.table
-* tidyverse
-* DBI
+* data.table,
+* readxl,
+* magrittr,
+* xfun,
+* stringr,
+* DBI,
+* DescTools,
+* parsedate
 * RSQLite or ROracle
 
 ## Configuration
 
-
+bla bla bla
 
 
 
 ## Function overview.
 
 The following functions for querying the  SEND database. Further documentation and usage can be found within each module. 
-
+...
 
 
 

@@ -3,7 +3,10 @@
 ^myTest$
 ^README\.Rmd$
 ^R/SAVE_
-^R/getSubjData.R$
+^R/.getSubjData.R$
+^R/getFindingsPhase.R$
+^R/getFindingsAnimalAge.R$
+^R/addFindingsAnimalAge.R$
 ^doc$
 ^Meta$
 ^LICENSE\.md$
