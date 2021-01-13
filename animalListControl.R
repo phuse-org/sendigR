@@ -108,7 +108,7 @@ GetControlAnimals<-function(studyList=NULL, inclUncertain=FALSE) {
   ###################################################################################
   
   # Verify input parameter
-  if (is.null(studyList) | isTRUE(is.na(studyList)) | isTRUE(studyList=='')) {
+  if (!is.data.table(studyList)) {
     stop('Input parameter studyList must have assigned a data table ')
   } 
   if (!(inclUncertain %in% c(TRUE,FALSE))) {
@@ -136,14 +136,17 @@ GetControlAnimals<-function(studyList=NULL, inclUncertain=FALSE) {
   }
   
   studyListIncl<-FALSE
-  if ( ! (is.null(studyList) | isTRUE(is.na(studyList)) | isTRUE(studyList==''))) {
+  if ( is.data.table(studyList)) {
     # A list of studies has been specified - limit the list the control sets for these studies
     txCtrlSet<-merge(txCtrlSet, studyList[,.(STUDYID)], by='STUDYID')
     studyListIncl<-TRUE
   }
 
-  # Get set of control groups identified as negative 
-  foundCtrlSet <- txCtrlSet[sapply(txCtrlSet$TCNTRL, HasControlTerms)]
+  # Get set of control groups identified as negative
+  foundCtrlSet <- txCtrlSet[FALSE] 
+  if (txCtrlSet[,.N] > 0)
+    foundCtrlSet <- txCtrlSet[sapply(txCtrlSet$TCNTRL, HasControlTerms)]
+    
   
   if (inclUncertain) {
     ## Include uncertain studies/animals 
@@ -151,9 +154,11 @@ GetControlAnimals<-function(studyList=NULL, inclUncertain=FALSE) {
     # Get the control groups not identified as negative
     notNegCtrlSet <- fsetdiff(txCtrlSet, foundCtrlSet)
     # Get the uncertain control groups  - i.e. control set not identified as negative or positive
-    uncertainCtrlSet<-fsetdiff(notNegCtrlSet, 
-                               # Set of control groups identified as positive
-                               notNegCtrlSet[sapply(notNegCtrlSet$TCNTRL, HasControlTerms,NA,posModifiers)])
+    uncertainCtrlSet <- notNegCtrlSet[FALSE]
+    if (notNegCtrlSet[,.N] > 0)
+      uncertainCtrlSet<-fsetdiff(notNegCtrlSet, 
+                                 # Set of control groups identified as positive
+                                 notNegCtrlSet[sapply(notNegCtrlSet$TCNTRL, HasControlTerms,NA,posModifiers)])
     
     # Set the UNCERTAIN_MSG for the control groups identified as uncertain
     uncertainCtrlSet[, `:=` (UNCERTAIN_MSG = ifelse(is.na(TCNTRL),

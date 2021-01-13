@@ -144,7 +144,7 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
   
   ##################################################################################################################
   
-  if (is.null(animalList) | isTRUE(is.na(animalList)) | isTRUE(animalList=="")) {
+  if (!is.data.table(animalList)) {
     stop("animalList must be be specified with a data table")
   } 
   
@@ -213,7 +213,7 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
     merge(merge(tsSPECIESall,
                 animalList[,.(STUDYID, USUBJID)],
                 by='STUDYID', allow.cartesian = TRUE),
-          DM[,.(STUDYID, USUBJID, SETCD, SPECIES_DM=ifelse(SPECIES=="",as.character(NA),toupper(trimws(SPECIES))))],
+          DM[,.(STUDYID, USUBJID, SETCD, SPECIES_DM=ifelse(SPECIES=="" ,as.character(NA),toupper(trimws(SPECIES))))],
           by=c('STUDYID','USUBJID'), allow.cartesian = TRUE)
   
   # Join the list of studies/animals/species with TX to get all set level SPECIES
@@ -222,7 +222,7 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
   animalSPECIESall<-
     merge(animalSPECIESall, 
           unique(TX[TXPARMCD=='SPECIES',.(STUDYID,SETCD,SPECIES_TX=toupper(trimws(TXVAL)))]), 
-          by=c('STUDYID','SETCD'), all.x=TRUE )[,`:=` (SPECIES=fcoalesce(SPECIES_DM,SPECIES_TX,SPECIES_TS))]
+          by=c('STUDYID','SETCD'), all.x=TRUE )[,`:=` (SPECIES=fcoalesce(as.character(SPECIES_DM),SPECIES_TX,SPECIES_TS))]
   animalSPECIESall[, `:=` (NUM_ANIMALS = .N), by = .(STUDYID, USUBJID)]
   
   # Identify uncertain animals - add variable UNCERTAIN_MSG
@@ -309,7 +309,7 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
     animalSTRAINall<-
       merge(animalSTRAINall, 
             unique(TX[TXPARMCD=='STRAIN',.(STUDYID,SETCD,STRAIN_TX=toupper(trimws(TXVAL)))]), 
-            by=c('STUDYID','SETCD'), all.x=TRUE )[,`:=` (STRAIN=fcoalesce(STRAIN_DM,STRAIN_TX,STRAIN_TS))]
+            by=c('STUDYID','SETCD'), all.x=TRUE )[,`:=` (STRAIN=fcoalesce(as.character(STRAIN_DM),as.character(STRAIN_TX),as.character(STRAIN_TS)))]
     animalSTRAINall[, `:=` (NUM_ANIMALS = .N), by = .(STUDYID, USUBJID)]
     
     # Identify uncertain animals - add variable UNCERTAIN_MGS
@@ -352,10 +352,9 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
         #  - non-empty messages are separated by ' & '
         #  - The function name is included as first part of the combined texts
         #  - exclude the original UNCERTAIN_MSG columns after the merge  
-        uncertainAnimals[,`:=` (UNCERTAIN_MSG=paste('FilterAnimalsSpeciesStrain: ',
-                                                    ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
-                                                           paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep=' & '),
-                                                           fcoalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y))))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
+        uncertainAnimals[,`:=` (UNCERTAIN_MSG = ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
+                                                       paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep=' & '),
+                                                       fcoalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
         # Add the set of uncertain animals to the set of found animals
         foundAnimals<-rbindlist(list(foundAnimals,uncertainAnimals), use.names=TRUE, fill=TRUE)
     }
@@ -375,8 +374,10 @@ FilterAnimalsSpeciesStrain<-function(animalList=NULL, speciesFilter=NULL, strain
       #  - non-empty messages are separated by '|'
       #  - exclude the original UNCERTAIN_MSG columns after the merge  
       foundAnimals<-foundAnimals[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y), 
-                                                              paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep='|'),
-                                                              fcoalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
+                                                              paste(UNCERTAIN_MSG.y, paste0('FilterAnimalsSpeciesStrain: ',UNCERTAIN_MSG.x), sep='|'),
+                                                              fcoalesce(ifelse(!is.na(UNCERTAIN_MSG.x), 
+                                                                               paste0('FilterAnimalsSpeciesStrain: ',UNCERTAIN_MSG.x), as.character(NA) ), 
+                                                                        UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
   }
   # Return list of found animals  
   return(foundAnimals)

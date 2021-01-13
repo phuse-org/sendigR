@@ -78,24 +78,30 @@ library(stringi)
 
 filterFindingsAnimalAge<-function(findings=NULL, fromAge=NULL, toAge=NULL, inclUncertain=FALSE)
 {
-  if (is.null(findings) | isTRUE(is.na(findings)) | isTRUE(findings=='')) {
+  if (!is.data.table(findings)) {
     stop('Input parameter findings must have assigned a data table ')
   }
-  if ((is.null(fromAge) | isTRUE(is.na(fromAge)) | isTRUE(fromAge=="")) & (is.null(toAge) | isTRUE(is.na(toAge)) | isTRUE(toAge==""))) {
-    stop("One or both of the parameters fromAge and toAge must have assigned a non-empty value")
+  else {
+    # Cehck if input table conatins an AGE columns
+    if (! 'AGE' %in% names(findings))
+      stop('Input table is missing the mandatory AGE column')
+  }
+    
+  if ((is.null(fromAge) | isTRUE(is.na(fromAge)) | isTRUE(fromAge=='')) & (is.null(toAge) | isTRUE(is.na(toAge)) | isTRUE(toAge==''))) {
+    stop('One or both of the parameters fromAge and toAge must have assigned a non-empty value')
   } 
   else if (!(inclUncertain %in% c(TRUE,FALSE))) {
-    stop("Parameter inclUncertain must be either TRUE or FALSE")
+    stop('Parameter inclUncertain must be either TRUE or FALSE')
   }
   
   # Regular expr patterns for a valid from/to age input values
-  agePattern<-"^\\d+"
-  ageUnitPattern<-"(d|day|days|w|week|weeks|m|month|months|y|year|years)"
-  validPattern<-paste(paste(paste(agePattern, "\\s*", sep=""), ageUnitPattern, sep=""), "{1}\\s*$", sep="")
+  agePattern<-'^\\d+'
+  ageUnitPattern<-'(d|day|days|w|week|weeks|m|month|months|y|year|years)'
+  validPattern<-paste(paste(paste(agePattern, '\\s*', sep=''), ageUnitPattern, sep=''), '{1}\\s*$', sep='')
   
   # Evaluate age input string and calculate age in days - if possible
   calcAgeDays<-function(ageStr) {
-    if (!(is.null(ageStr) | isTRUE(is.na(ageStr)) | isTRUE(ageStr==""))) {
+    if (!(is.null(ageStr) | isTRUE(is.na(ageStr)) | isTRUE(ageStr==''))) {
       if (grepl(validPattern, ageStr, ignore.case = TRUE )) {
         # Valid age string specified - convert to days an rturn value
         ageVal<-as.numeric(str_extract(ageStr,agePattern))
@@ -120,36 +126,74 @@ filterFindingsAnimalAge<-function(findings=NULL, fromAge=NULL, toAge=NULL, inclU
   toAgeDays<-calcAgeDays(toAge)
   
   if (is.null(fromAgeDays) | is.null(fromAgeDays)) {
-    print("ERROR: Wrong format of specified start and/or an end age")
+    print('ERROR: Wrong format of specified start and/or an end age')
   }
   else {
     # Construct filter to use for extraction
     ageFilter<-NA
     if (!(is.na(fromAgeDays))) {
       # The filter condition for the fromAge
-      ageFilter<-"AGE >= fromAgeDays"
+      ageFilter<-'AGE >= fromAgeDays'
     }
     if (!(is.na(toAgeDays))) {
       if (is.na(ageFilter)) {
         # only toAge filter part
-        ageFilter<-"AGE <= toAgeDays"
+        ageFilter<-'AGE <= toAgeDays'
       }
       else {
         # Add this filter part to the frodmAge filter part
-        ageFilter<-paste(ageFilter," & AGE <= toAgeDays",sep="")
+        ageFilter<-paste(ageFilter,' & AGE <= toAgeDays',sep='')
       }
     }
     # Build statement to execute the extraction
-    if (inclUncertain)
+    if (inclUncertain) {
       # Include findings with empty AGE value (i.e. AGE could not be calculated)
-      stmt=paste("findings[(", ageFilter, ") | is.na(AGE)]",sep="")
-    else
+      foundFindings<-eval(parse(text=paste('findings[(', ageFilter, ') | is.na(AGE)]',sep='')))
+      if (nrow(foundFindings[is.na(AGE)]) > 0) {
+        # We have rows with missing AGE
+        if ('NO_AGE_MSG' %in% names(foundFindings)) { 
+          # There exists explanations for missing AGE
+          if ('UNCERTAIN_MSG' %in% names(foundFindings)) {
+            # Copy the NO_AGE_MSG to UNCERTAIN_MSG (add to potential existing text) - and remove NO_AGE_MSG
+            # setnames(foundFIndings, 'UNCERTAIN_MSG', 'PREV_UNCERTAIN_MSG')
+            foundFindings[is.na(AGE), UNCERTAIN_MSG := ifelse(is.na(UNCERTAIN_MSG), 
+                                                    NO_AGE_MSG,
+                                                    paste(UNCERTAIN_MSG, NO_AGE_MSG, sep='|'))]
+            foundFindings[, NO_AGE_MSG := NULL]
+          }
+          else {
+            # Rename NO_AGE_MSG to UNCERTAIN_MSG
+            setnames(foundFindings, 'NO_AGE_MSG','UNCERTAIN_MSG')
+          }
+        }
+        else {
+          # No reason for missing AGE is included - we add a message saying the reason for no AGE is unknown 
+          msg<-'filterFindingsAnimalAge: Unknown reason for missing AGE'
+          if ('UNCERTAIN_MSG' %in% names(foundFindings)) {
+            # Add  message to potential existing text)
+            foundFindings[is.na(AGE), UNCERTAIN_MSG := ifelse(is.na(UNCERTAIN_MSG), 
+                                                              msg,
+                                                              paste(UNCERTAIN_MSG, msg, sep='|'))]
+          }
+          else
+            # Add UNCERTAIN_MSG
+            foundFindings[, UNCERTAIN_MSG := ifelse(is.na(AGE),msg, as.character(NA))]
+        }
+      }
+      if ('UNCERTAIN_MSG' %in% names(foundFindings)) {
+        # Ensure UNCERTAIN_MSG is places as the last column
+        cols<-names(foundFindings)
+        setcolorder(foundFindings,cols[!grepl('UNCERTAIN_MSG',cols)])
+      }
+    }
+    else {
       # Exclude findings with empty AGE value and where - if col exists - UNCERTAIN_MSG is non-empty
-      if ("UNCERTAIN_MSG" %in% names(findings)) 
-        ageFilter<-paste(ageFilter, " & is.na(UNCERTAIN_MSG)")
-      stmt=paste("findings[", ageFilter, "]", sep="")
+      if ('UNCERTAIN_MSG' %in% names(findings)) 
+        ageFilter<-paste(ageFilter, ' & is.na(UNCERTAIN_MSG)')
+      foundFindings<-eval(parse(text=paste('findings[', ageFilter, ']', sep='')))
+    }
     
     # Execute extraction and return rows
-    return(eval(parse(text=stmt)))
+    return(foundFindings)
   }
 }

@@ -91,7 +91,7 @@ GetStudyListSTSTDTC<-function(fromDTC=NULL, toDTC=NULL, studyList=NULL, inclUnce
   }
   
   studyListIncl<-FALSE
-  if (!(is.null(studyList) | isTRUE(is.na(studyList)) | isTRUE(studyList==''))) {
+  if (is.data.table(studyList)) {
     # An initial list of studies is included
     studyListIncl<-TRUE
   }

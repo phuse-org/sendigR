@@ -11,7 +11,7 @@
 # -------------------------------------------------------------------------------
 # Purpose       : Import a set of specified SEND domains from an SQLite database 
 #
-# Description   : Import each domain from the given list of domains from an SQLite
+# Description   : Import each domain from the given list of domains from a
 #                 database into a data table in the global environment.
 #                 Each data table are named equal to the domain in uppercase.
 #                 All variables are included for each domain.
@@ -19,11 +19,11 @@
 #                 parameter is included, a subset of rows for these studies are 
 #                 imported from each domain - else all rows are imported from each 
 #                 domain.
+#                 The actual import of data from the database is done by a function 
+#                 named doImportDomain which points at a function specific for the
+#                 databases type used in the actual environment
 #
-# Input         : A SQLite database including SEND data for a pooled set of studies
-#                 A R script file sysParameters.R located in working directory is sourced
-#                 sourced - that script defines the location and name of the SQLite 
-#                 database (in variable dbFullName)
+# Input         : A database including SEND data for a pooled set of studies.
 #
 # Output        : A data table for each domain to be imported
 #
@@ -35,56 +35,24 @@
 #                                 from the database.
 #                                 This parameter is optional.
 #
-# Usage notes   : If necessary, modify sysParameters.R with location and name
-#                 of the database to match the actual environment.
-#                 Source the this script.
-#                 Execute function importSENDDomains for each set of domains to 
-#                 be imported.
-#                 Examples 
-#                 - import the trial design domains for all studies: 
-#                     importSENDDomains(c("TX","TS", "TA", "TE"))
-#                 - import clinical signs for list of studies:
-#                     importSENDDomains(c("CL"), studyIdList)
-#
-#                 NB: If the actual pooled SEND store is not located in SQLite database 
-#                 - substitue this version of the script with a new script accessing 
-#                   the actual data store
-#                 - ensure that function name, input parameter and output table format 
-#                   are equal to the function defined in this script.
-#
 ###################################################################################
 
-library(RSQLite)
 library(data.table)
 
 # Import all specified SEND domains
 importSENDDomains<-function(domainList, studyList=NULL) {
   
   ############################################################
-  # Import one domain
+  # Import one domain - assign output into a global table 
   importDomain<-function(domain) {
-    stmt<-paste("select t.* from ", domain, " t", sep="")
-    if (!is.null(studyList)) {
-      # Add a join to the specified set of studyids to limit the set of imported rows
-      stmt<-paste(stmt, " join temp_studyList s on s.studyid = t.studyid", sep="")
-    }
-    assign(toupper(domain),data.table(dbGetQuery(db, stmt)), envir=.GlobalEnv)
+    assign(toupper(domain),doImportDomain(domain, studyList), envir=.GlobalEnv)
+    return()
   }
   ############################################################
-  source("sysParameters.R")
-  
-  # connect to database
-  db<-dbConnect(RSQLite::SQLite(), dbFullName)
-  
-  if (!is.null(studyList)) {
-    # Save the content of studyList parameter as a temporary table in the database
-    dbWriteTable(db, "temp_studyList", studyList, temporary=TRUE)
-  }
-  
-  
-  # Import each domain from the specifed list
+
+
+  # Import each domain from the specified list
   lapply(domainList, importDomain)
   
-  dbDisconnect(db)
 }
 
