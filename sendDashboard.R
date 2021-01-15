@@ -98,13 +98,14 @@ values$selected_routes <- NULL
 # 'MIREASND','MINAM','MIANTREG','MIMETHOD','MILAT','MIDIR','MIEVAL','MICHRON','MIDISTR',
 # 'ROUTE','SPECIES','STRAIN','SEX','TCNTRL','SDESIGN','STSTDTC')
 
+#order of column in MI individual records table to match with excel file or sendig
 mi_col_names <- c('STUDYID','DOMAIN','USUBJID','MISEQ','MIGRPID','MIREFID','MISPID','MITESTCD','MITEST','MIBODSYS',
-                  'MIORRES','MISTRESC','MIRESCAT','MICHRON','MIDISTR','MISTAT','MIREASND','MINAM',
-                  'MISPEC','MIANTREG','MISPCCND','MISPCUFL','MILAT','MIDIR','MIMETHOD','MIEVAL',
-                  'MISEV',
-                  'MIDTHREL','MIDTC','MIDY','SEX',
-                  
+                  'MIORRES','MISTRESC','MIRESCAT','MICHRON','MIDISTR','MISTAT','MIREASND','MINAM','MISPEC','MIANTREG',
+                  'MISPCCND','MISPCUFL','MILAT','MIDIR','MIMETHOD','MIEVAL','MISEV','MIDTHREL','MIDTC','MIDY','SEX',
                   'ROUTE','TCNTRL','SPECIES','STRAIN','SDESIGN','STSTDTC')
+# list of column that by default selected in MI individual records table
+mi_col_names_selected <- c('STUDYID','USUBJID','MIBODSYS', 'MISTRESC','MIRESCAT','MICHRON','MIDISTR','MISPEC',
+                           'MISEV','MIDTC','MIDY','SEX','ROUTE','TCNTRL','SPECIES','STRAIN')
 #### UI ####
 
 
@@ -183,11 +184,7 @@ ui <- dashboardPage(
                            selected='WISTAR HAN',
                            multiple=TRUE,
                            options=list(plugins=list('drag_drop','remove_button')))),
-               
-               
-               
-               
-               
+    
                selectInput("SEX",
                            "Select Sex:",
                            c('', as.character(availableSex)), 
@@ -263,25 +260,15 @@ ui <- dashboardPage(
                                                         availableOrgans,
                                                         selected='KIDNEY')),
                                      column(width = 6, offset = 1,
-                                            DT::dataTableOutput("findingsTable")))
-                                   ),
-                          
+                                            DT::dataTableOutput("findingsTable")))),     
                           
                           tabPanel("Individual Records",
-                                   fluidRow(
-                                     br(),
-                                     
-                                   column(width = 1,
-                                     checkboxGroupInput(inputId = 'filter_column', label = "Filter Column",
-                                                        choices = mi_col_names)),
-                                   
-                                  column(width = 11,
-                                    DT::dataTableOutput('mi_subj')))),
+                                  checkboxInput('hide_check_column', label = 'Show only Table', value = 0),
+                                  br(),
+                                     uiOutput('mi_indiv_table')),
+    
                           tabPanel("Aggregate Table",
-                                   DT::dataTableOutput('mi_agg_tab'))
-                          
-                          
-                        )),
+                                   DT::dataTableOutput('mi_agg_tab')))),
                
                tabPanel("LB",
                         fluidRow(
@@ -296,11 +283,7 @@ ui <- dashboardPage(
                                          "Log-normal" = "lnorm"))),
                           column(width = 7,offset = 1,
                                  plotOutput("labTestHist"))))
-             
-    #   )
-    # )
-
-)))
+               )))
 
 
 
@@ -372,13 +355,12 @@ server <- function(input, output, session) {
     
   })
   
+  # Control Animal Table ----
   
   output$animals <- DT::renderDataTable({
-    
     animal_df <- animalList()
     # make last column as date
 
-    
     #convert character to factor to make filter work
     animal_df <- animal_df %>% mutate_if(is.character,as.factor)
    
@@ -421,16 +403,15 @@ server <- function(input, output, session) {
   # the function called MiFindings()
   # defined in sendDB.R
   
+  #### MI findings table UI ---- 
+  
   output$findingsTable <- DT::renderDataTable({
     
     req(input$STRAIN)
     findings <- MiFindings(animalList(), input$MISPEC)
-    
-    
     findings <- findings %>% mutate_if(is.character,as.factor)
     
-    findings <- DT::datatable(
-      findings,
+    findings <- DT::datatable(findings,
       class = "cell-border stripe",
       filter = list(position = 'top'),
       extensions = list("Buttons" = NULL,
@@ -456,31 +437,51 @@ server <- function(input, output, session) {
   })
   
   
-  
+  #### get MI individual records table ----
   MI_subject <- reactive({
     animal_list <- animalList()
     mi_sub <- ExtractSubjData('mi', animal_list)
-    #print(colnames(mi_sub))
-
-    mi_sub
+    mi_sub_2 <- subset(mi_sub, select= input$filter_column)
+    mi_sub_2
+  })
+ 
+  
+  
+  #### MI individual record table UI with hide/show side column ----
+  
+  output$mi_indiv_table <- renderUI({
+    
+    if (input$hide_check_column==0) {
+      fluidRow(
+        br(),
+        column(width = 1,
+               checkboxGroupInput(inputId = 'filter_column', label = "Display Column",
+                                  choices = mi_col_names,
+                                  selected = mi_col_names_selected)),
+        column(width = 11,
+               DT::dataTableOutput('mi_subj')))
+    } else {
+      fluidRow(
+        br(),
+        column(width = 12,
+               DT::dataTableOutput('mi_subj')))
+       }
   })
   
-  column_name <- reactive({
-    name <- colnames(MI_subject())
-    name
-
+  #### update selected column in MI individual table
+  observe({
+    updateCheckboxGroupInput(session = session, inputId = 'filter_column',
+                             selected = input$filter_column)
   })
   
   
-  
+  #### output rendertable for MI individual table
   output$mi_subj <- DT::renderDataTable({
-  
+    
     tab <- DT::datatable(MI_subject(),
-                          
                          options = list(
                            dom = "lfrtipB",
-                           
-                           buttons = c(I('colvis'),"csv", "excel", "pdf"),
+                           buttons = c("csv", "excel", "pdf"),
                            #colReorder = TRUE,
                            scrollY = TRUE,
                            scrollX=TRUE,
@@ -489,46 +490,14 @@ server <- function(input, output, session) {
                            initComplete = JS(
                              "function(settings, json) {",
                              "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                             "}")
-                         ))
+                             "}")))
+    
     tab
       
   })
   
-  # MI_agg <- reactive({
-  #   animal_list <- animalList()
-  #   mi_agg <- MiFindings_agg(animalList(), input$MISPEC)
-  #   print(mi_agg)
-  # })
-  # 
-  # observe({
-  #   animal_list <- animalList()
-  #   mi_agg <- MiFindings_agg(animalList(), input$MISPEC)
-  #   print(mi_agg)
-  #   
-  # })
-  
-  
-  # TODO: Implement function to download 
-  # Findings in MI
-  # output$ExportMI <- downloadHandler(
-  #   filename = function() {
-  #     paste(input$SDESIGN, '-' ,input$SPECIES, '-', input$MISPEC, ".csv", sep = "")
-  #   },
-  #   content = function(file) {
-  #     
-  #     findingsToFile <- findings()
-  #     
-  #     findingsToFile$SDESIGN <- rep(input$SDESIGN, nrow(findingsToFile))
-  #     findingsToFile$SPECIES <- rep(input$SPECIES, nrow(findingsToFile))
-  #     findingsToFile$MISPEC <- rep(input$MISPEC, nrow(findingsToFile))
-  #     
-  #     print(findingsToFile)
-  #     write.csv(findingsToFile, file, row.names = FALSE)
-  #   }
-  # )
-  
-  
+ #### MI aggregate table
+
   
   ########################### LB TAB #######################################
   
