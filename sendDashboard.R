@@ -91,7 +91,20 @@ values <- reactiveValues()
 
 values$selected_routes <- NULL
 
+# 
+# mi_col_names <- c('STUDYID','USUBJID','DOMAIN','MISEQ','MITESTCD','MITEST',
+# 'MIORRES','MISTRESC','MIRESCAT','MISPEC','MISPCCND','MISPCUFL','MISEV',
+# 'MIDTHREL','MIDTC','MIDY','MIGRPID','MIREFID','MISPID','MIBODSYS','MISTAT',
+# 'MIREASND','MINAM','MIANTREG','MIMETHOD','MILAT','MIDIR','MIEVAL','MICHRON','MIDISTR',
+# 'ROUTE','SPECIES','STRAIN','SEX','TCNTRL','SDESIGN','STSTDTC')
 
+mi_col_names <- c('STUDYID','DOMAIN','USUBJID','MISEQ','MIGRPID','MIREFID','MISPID','MITESTCD','MITEST','MIBODSYS',
+                  'MIORRES','MISTRESC','MIRESCAT','MICHRON','MIDISTR','MISTAT','MIREASND','MINAM',
+                  'MISPEC','MIANTREG','MISPCCND','MISPCUFL','MILAT','MIDIR','MIMETHOD','MIEVAL',
+                  'MISEV',
+                  'MIDTHREL','MIDTC','MIDY','SEX',
+                  
+                  'ROUTE','TCNTRL','SPECIES','STRAIN','SDESIGN','STSTDTC')
 #### UI ####
 
 
@@ -155,7 +168,7 @@ ui <- dashboardPage(
                
                addUIDep(selectizeInput("SPECIES",label='Select Species:',
                                        choices= GetUniqueSpecies(),
-                                       selected='',
+                                       selected='RAT',
                                        multiple=TRUE,
                                        options=list(plugins=list('drag_drop','remove_button')))),
                
@@ -167,7 +180,7 @@ ui <- dashboardPage(
                addUIDep(selectizeInput("STRAIN",
                            "Select Strain:",
                            '', 
-                           selected='',
+                           selected='WISTAR HAN',
                            multiple=TRUE,
                            options=list(plugins=list('drag_drop','remove_button')))),
                
@@ -178,7 +191,7 @@ ui <- dashboardPage(
                selectInput("SEX",
                            "Select Sex:",
                            c('', as.character(availableSex)), 
-                           selected=''),
+                           selected='M'),
                
                # TODO: Get phase of study working.
                # 
@@ -207,6 +220,8 @@ ui <- dashboardPage(
                            choices=availableStudies)
       )
     ), 
+    
+    # left side scroller
     tags$head(
       tags$style(
         HTML(".sidebar {height: 94vh; overflow-y: auto;}")
@@ -250,8 +265,18 @@ ui <- dashboardPage(
                                      column(width = 6, offset = 1,
                                             DT::dataTableOutput("findingsTable")))
                                    ),
+                          
+                          
                           tabPanel("Individual Records",
-                                   DT::dataTableOutput('mi_subj')),
+                                   fluidRow(
+                                     br(),
+                                     
+                                   column(width = 1,
+                                     checkboxGroupInput(inputId = 'filter_column', label = "Filter Column",
+                                                        choices = mi_col_names)),
+                                   
+                                  column(width = 11,
+                                    DT::dataTableOutput('mi_subj')))),
                           tabPanel("Aggregate Table",
                                    DT::dataTableOutput('mi_agg_tab'))
                           
@@ -435,8 +460,18 @@ server <- function(input, output, session) {
   MI_subject <- reactive({
     animal_list <- animalList()
     mi_sub <- ExtractSubjData('mi', animal_list)
+    #print(colnames(mi_sub))
+
     mi_sub
   })
+  
+  column_name <- reactive({
+    name <- colnames(MI_subject())
+    name
+
+  })
+  
+  
   
   output$mi_subj <- DT::renderDataTable({
   
