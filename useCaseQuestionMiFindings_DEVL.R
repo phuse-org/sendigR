@@ -38,6 +38,19 @@ start<-Sys.time()
 
 ###################################################################################
 # Input parameter values
+<<<<<<< HEAD
+pStudyDesign      <-  "PARALLEL" # CT: DESIGN
+pSpecies          <-  "DOG" # CT: SPECIES (extensible)
+pStrain           <- "BEAGLE" # CT: STRAIN  (extensible)
+pRoute        <-c("ORAL", "ORAL GAVAGE")
+pFromDTC          <-  "2017"
+pToDTC            <-  "2020"
+pSex              <-  "M"                # CT: SEX
+pStudyPhase       <-  "Treatment"        # Valid: "Screening", "Treatment", "Recovery"
+pStudyPhaseInclUncertain <- FALSE    # Valid: TRUE, FALSE
+pFindingsFromAge  <-  "12m"
+pFindingsToAge    <-  "18m"
+=======
 pStudyDesign      <-  "PARALLEL"         # CT: DESIGN
 #pSpecies          <-  "Rat"              # CT: SPECIES (extensible)
 #pStrain           <-  "SPRAGUE-DAWLEY"   # CT: STRAIN  (extensible)
@@ -66,6 +79,7 @@ pFindingsToAge    <-  "6m"
 pInclUncertain    <-  TRUE
 pExclusively      <-  FALSE
 pMatchAll         <-  FALSE
+>>>>>>> devl_bo
 ###################################################################################
 
 library(data.table)
@@ -110,6 +124,7 @@ controlAnimals<-FilterAnimalListRoute(animalList    = controlAnimals,
                                       matchAll      = pMatchAll)
 
 # Extract all MI findings for the control animals
+
 allMI<-ExtractSubjData(domain     = "MI", 
                        animalList = controlAnimals)
 
