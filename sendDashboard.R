@@ -441,12 +441,32 @@ server <- function(input, output, session) {
   MI_subject <- reactive({
     animal_list <- animalList()
     mi_sub <- ExtractSubjData('mi', animal_list)
-    mi_sub_2 <- subset(mi_sub, select= input$filter_column)
-    mi_sub_2
+    #mi_sub_2 <- subset(mi_sub, select= input$filter_column)
+    mi_sub
   })
  
   
+  MI_column <- reactive({
+    if (nrow(MI_subject())>0) {
+      get_col_name <- colnames(MI_subject())
+      order_to_match <- get_col_name[order(match(get_col_name, mi_col_names))]
+    } else{
+      order_to_match <- mi_col_names
+    }
+    order_to_match
+  })
   
+  table_to_show <- reactive({
+    tabl <- MI_subject()
+    tabl <- subset(tabl, select=input$filter_column)
+    tabl
+  })
+  
+  selected_column_to_show <- reactive({
+    col_selected <- intersect(mi_col_names_selected,MI_column())
+    col_selected
+    
+  })
   #### MI individual record table UI with hide/show side column ----
   
   output$mi_indiv_table <- renderUI({
@@ -456,8 +476,8 @@ server <- function(input, output, session) {
         br(),
         column(width = 1,
                checkboxGroupInput(inputId = 'filter_column', label = "Display Column",
-                                  choices = mi_col_names,
-                                  selected = mi_col_names_selected)),
+                                  choices = MI_column(),
+                                  selected = selected_column_to_show())),
         column(width = 11,
                DT::dataTableOutput('mi_subj')))
     } else {
@@ -469,7 +489,7 @@ server <- function(input, output, session) {
   })
   
   #### update selected column in MI individual table
-  observe({
+  observeEvent(input$hide_check_column,{
     updateCheckboxGroupInput(session = session, inputId = 'filter_column',
                              selected = input$filter_column)
   })
@@ -478,7 +498,7 @@ server <- function(input, output, session) {
   #### output rendertable for MI individual table
   output$mi_subj <- DT::renderDataTable({
     
-    tab <- DT::datatable(MI_subject(),
+    tab <- DT::datatable(table_to_show(),
                          options = list(
                            dom = "lfrtipB",
                            buttons = c("csv", "excel", "pdf"),
