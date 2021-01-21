@@ -1,5 +1,5 @@
 ################################################################################
-## The function getAnimalsSpeciesStrain.
+## The function getSubjSpeciesStrain.
 ##
 ## History:
 ## -----------------------------------------------------------------------------
@@ -109,28 +109,28 @@
 #' @examples
 #' \dontrun{
 #' # Extract rats and mice plus uncertain animals
-#' getAnimalsSpeciesStrain(dbToken, controlAnimals,
+#' getSubjSpeciesStrain(dbToken, controlAnimals,
 #'                         speciesFilter = c('RAT', 'MOUSE')
 #'                         inclUncertain = TRUE)
 #' # Extract Spargue-Dawley rats plus uncertain animals.
 #' # Include only animals from studies which do not contain other species or
 #' # strains
-#' getAnimalsSpeciesStrain(dbToken, controlAnimals,
+#' getSubjSpeciesStrain(dbToken, controlAnimals,
 #'                         speciesFilter = 'RAT'
 #'                         strainFilter = 'SPRAGUE-DAWLEY',
 #'                         inclUncertain = TRUE,
 #'                         exclusively = TRUE,
 #'                         noFilterReportUncertain = TRUE)
 #' # Extract Wistar rats and and Beagle dogs - and no uncertain animals
-#' getAnimalsSpeciesStrain(dbToken, controlAnimals,
+#' getSubjSpeciesStrain(dbToken, controlAnimals,
 #'                         speciesFilter = c('RAT', 'DOG'),
 #'                         strainFilter = c('RAT: WISTAR', 'DOG: BEAGLE'))
 #' # No filtering, just add SPECIES and STRAIN - do not include messages when
 #' # these values cannot be confidently found
-#' getAnimalsSpeciesStrain(dbToken, controlAnimals,
+#' getSubjSpeciesStrain(dbToken, controlAnimals,
 #'                         noFilterReportUncertain = FALSE)
 #' }
-getAnimalsSpeciesStrain<-function(dbToken,
+getSubjSpeciesStrain<-function(dbToken,
                                   animalList,
                                   speciesFilter = NULL,
                                   strainFilter = NULL,

@@ -1,5 +1,5 @@
 ################################################################################
-## The function getAnimalsRoute.
+## The function getSubjRoute.
 ##
 ## History:
 ## -----------------------------------------------------------------------------
@@ -128,26 +128,26 @@
 #' @examples
 #' \dontrun{
 #' # Extract animals administered oral or oral gavage plus uncertain animals
-#' getAnimalsRoute(dbToken, controlAnimals,
+#' getSubjRoute(dbToken, controlAnimals,
 #'                 routeFilter = c('ORAL', 'ORAL GAVAGE')
 #'                 inclUncertain = TRUE)
 #' # Extract animals administered oral or oral gavage.
 #' # Do only include studies which include but route values
-#' getAnimalsRoute(dbToken, controlAnimals,
+#' getSubjRoute(dbToken, controlAnimals,
 #'                 routeFilter = c('ORAL', 'ORAL GAVAGE')
 #'                 matchAll = TRUE)
 #' # Extract animals administered subcutaneous.
 #' # Include only animals from studies which do not contain other route values
-#' getAnimalsRoute(dbToken, controlAnimals,
+#' getSubjRoute(dbToken, controlAnimals,
 #'                 routeFilter = 'subcutaneous',
 #'                 exclusively = TRUE)
 #' # No filtering, just add ROUTE - do not include messages when
 #' # these values cannot be confidently found
-#' getAnimalsRoute(dbToken, controlAnimals,
+#' getSubjRoute(dbToken, controlAnimals,
 #'                 noFilterReportUncertain = FALSE)
 #' }
 #'
-getAnimalsRoute <- function(dbToken,
+getSubjRoute <- function(dbToken,
                             animalList,
                             routeFilter = NULL,
                             inclUncertain = FALSE,

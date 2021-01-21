@@ -1,7 +1,7 @@
 # ADD calculation of animal age
 
 ################################################################################
-## The function getControlAnimals
+## The function getControlSubj
 ##
 ## History:
 ## -----------------------------------------------------------------------------
@@ -101,9 +101,9 @@
 #'
 #' @examples
 #' \dontrun{
-#' controlAnimals <- getControlAnimals(myDbToken, allSTudies)
+#' controlAnimals <- getControlSubj(myDbToken, allSTudies)
 #' }
-getControlAnimals<-function(dbToken,
+getControlSubj<-function(dbToken,
                             studyList,
                             inclUncertain=FALSE) {
 

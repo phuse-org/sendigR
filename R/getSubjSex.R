@@ -1,5 +1,5 @@
 ################################################################################
-## The function getAnimalsSex.
+## The function getSubjSex.
 ##
 ## History:
 ## -----------------------------------------------------------------------------
@@ -72,9 +72,9 @@
 #'
 #' @examples
 #' \dontrun{
-#' getAnimalsSex(myDbToken, controlAnimals, 'M')
+#' getSubjSex(myDbToken, controlAnimals, 'M')
 #' }
-getAnimalsSex<-function(dbToken,
+getSubjSex<-function(dbToken,
                         animalList,
                         sexFilter = NULL,
                         inclUncertain = FALSE,
