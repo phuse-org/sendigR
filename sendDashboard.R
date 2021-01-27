@@ -331,6 +331,15 @@ server <- function(input, output, session) {
   # Get the list of studies and animals based on new/changed filter criterion
   animalList<-eventReactive(input$refreshData, {
     
+    print(c(as.character(input$STSTDTC[1]), 
+          as.character(input$STSTDTC[2]),
+          input$SDESIGN,
+          input$ROUTE,
+          input$SPECIES,
+          input$STRAIN,
+          input$SEX,
+          input$INCL_UNCERTAIN))
+    
     GetFilteredControlAnimals(as.character(input$STSTDTC[1]), 
                               as.character(input$STSTDTC[2]),
                               input$SDESIGN,
@@ -445,6 +454,8 @@ server <- function(input, output, session) {
     mi_sub
   })
  
+  # call MI subject 
+  # merge with conf/non conf reocrds 
   
   MI_column <- reactive({
     if (nrow(MI_subject())>0) {

@@ -84,7 +84,7 @@ GetAnimalList <- function(design, species) {
   
   studies <- merge(species, design, by='STUDYID')
   
-  controls <- GetControlAnimals()
+  controls <- GetControlAnimals(studyList = studies)
   animals <- merge(studies, controls, by='STUDYID')
   return(animals)
 }
@@ -116,6 +116,7 @@ MiFindings <- function(animalList, mispec) {
   findingsCount <- dplyr::select(findingsCount, -n)
   return(findingsCount)
 }
+
 
 LiverFindings <- function(animalList, lbtestcd, how='max') {
   # given a set of USUBJIDs and and target LBTESTCD

@@ -138,13 +138,19 @@ GetFilteredControlAnimals <- function(pFromDTC,
       # We save the current set of selected studies...
       studiesAllPrev <- studiesAll[,.(STUDYID)]
     
-    # Extract list of studies based on study-only filter parameters
-    studiesAll <<- GetStudyListSDESIGN(studyDesignFilter = pStudyDesign, 
-                                       studyList         = GetStudyListSTSTDTC(fromDTC       = pFromDTC, 
-                                                                               toDTC         = pToDTC, 
-                                                                               inclUncertain = pInclUncertain), 
-                                       inclUncertain     = pInclUncertain)
+    studiesList <- GetStudyListSTSTDTC(fromDTC       = pFromDTC, 
+                                   toDTC         = pToDTC, 
+                                   inclUncertain = pInclUncertain)
     
+    print(studiesList)
+    # Extract list of studies based on study-only filter parameters
+    #TODO: this is where the issue is for the test database
+    studiesAll <<- GetStudyListSDESIGN(studyDesignFilter = pStudyDesign, 
+                                       #studyList         = studiesList, 
+                                       inclUncertain     = pInclUncertain)
+    studiesAll <- merge(studiesAll, studiesList)
+    
+    print(studiesAll)
     if (exists("studiesAllPrev"))
       if (nrow(setdiff(studiesAll[,.(STUDYID)], studiesAllPrev)) > 0) {
         # The new set of filtered studies contains studies not included 
@@ -183,38 +189,42 @@ GetFilteredControlAnimals <- function(pFromDTC,
     controlAnimalsAll <<- GetControlAnimals(studyList     = studiesAll, 
                                             inclUncertain = pInclUncertain)
   }
-  
+  print(controlAnimalsAll)
   if (execFilterControlAnimals) {
     # Copy to a table used as input/output in the animal filtering tables
     controlAnimals <<- copy(controlAnimalsAll)
     
     # If EX exists in workspace - delete it, to ensure correct set output 
     # animals from the filtering process
-    if (exists("EX")) rm(EX)
+    #if (exists("EX")) {rm(EX)}
     
     print('filterAnimalsSex')
-    if (pSex != '')
+    if (pSex != '') {
       # Limit to set of animals to relevant sex
       controlAnimals <<- filterAnimalsSex(animalList    = controlAnimals, 
                                           sexFilter     = pSex, 
-                                          inclUncertain = pInclUncertain)    
+                                          inclUncertain = pInclUncertain)
+      print(controlAnimals)
+    }
     print('FilterAnimalsSpeciesStrain')
-    if (!is.null(pSpecies))
+    if (!is.null(pSpecies)) {
       # Limit to set of animals to relevant species/strain(s)
       controlAnimals <<- doFilterAnimalsSpeciesStrain(controlAnimals, 
                                                       pSpecies, 
                                                       pStrain, 
                                                       pInclUncertain)
-    
+    }
     print('FilterAnimalListRoute')
-    if (!is.null(pRoute))
+    if (!is.null(pRoute)) {
       # Limit to set of animals to relevant route(s) of administration
       controlAnimals<<-FilterAnimalListRoute(animalList    = controlAnimals, 
                                              routeFilter   = pRoute, 
                                              inclUncertain = pInclUncertain)
+    }
     print('Animal filtering done!')
 
   }
+  print(controlAnimals)
 
   return(controlAnimals)
 }
