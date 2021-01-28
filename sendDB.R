@@ -31,7 +31,10 @@ if (is.null(iniDbType) | is.null(iniDbPath) | is.null(iniCtFile))
                getwd(),iniParmsFile))
 
 # Execute the SEND function initiation
-initEnvironment(dbType = iniDbType, 
+# TODO: Is is okay to have an open DB connection
+# throughout the app?  Is there a way to ensure
+# it gets closed?
+dbToken <- sendigR::initEnvironment(dbType = iniDbType, 
                 dbPath = iniDbPath, 
                 ##!! To do: add handling of getting username/password for relevant database types..
                 # dbUser = <user>, dbPwd= <pwd>, 
@@ -79,8 +82,8 @@ all_domains <- c(domains, supp_domains)
 GetAnimalList <- function(design, species) {
   # helper function tjust used for troubleshooting
   # to get a quick list of animals. 
-  species = data.table(genericQuery(sprintf('SELECT STUDYID FROM TS WHERE TSPARMCD == "SPECIES" AND TSVAL == "%s" ', species)))
-  design = data.table(genericQuery(sprintf('SELECT STUDYID FROM TS WHERE TSPARMCD == "SDESIGN" AND TSVAL == "%s" ', design)))
+  species = data.table(sendigR::genericQuery(dbToken, sprintf('SELECT STUDYID FROM TS WHERE TSPARMCD == "SPECIES" AND TSVAL == "%s" ', species)))
+  design = data.table(sendigR::genericQuery(dbToken, sprintf('SELECT STUDYID FROM TS WHERE TSPARMCD == "SDESIGN" AND TSVAL == "%s" ', design)))
   
   studies <- merge(species, design, by='STUDYID')
   
@@ -98,7 +101,7 @@ MiFindings <- function(animalList, mispec) {
   # our target animals. Convert
   # all findings to uppercase for
   # counting.  
-  findings <- data.table(genericQuery(sprintf('SELECT STUDYID, USUBJID, MISTRESC FROM MI WHERE MISPEC == "%s"', mispec)))
+  findings <- data.table(sendigR::genericQuery(dbToken, sprintf('SELECT STUDYID, USUBJID, MISTRESC FROM MI WHERE MISPEC == "%s"', mispec)))
   finalFindings <- merge(animalList, findings, by=c('STUDYID', 'USUBJID'))
   finalFindings$MISTRESC <- toupper(finalFindings$MISTRESC)
   
@@ -155,7 +158,7 @@ LiverFindings <- function(animalList, lbtestcd, how='max') {
   
   params <- c(lbtestcd, validUnits)
   
-  results <- genericQuery(queryString, params)
+  results <- sendigR::genericQuery(dbToken, queryString, params)
   results <- merge(results, animalList, by=c('STUDYID', 'USUBJID'))
   
   # strip and remove equality signs
@@ -183,7 +186,7 @@ LiverFindings <- function(animalList, lbtestcd, how='max') {
 # BW or remove. 
 BodyWeight <- function(animalList) {
 
-  results <- data.table(genericQuery('SELECT STUDYID, USUBJID, BWSTRESN, BWSTRESU FROM BW'))
+  results <- data.table(sendigR::genericQuery(dbToken, 'SELECT STUDYID, USUBJID, BWSTRESN, BWSTRESU FROM BW'))
   
   
   results <- merge(results, animalList, by=c('STUDYID', 'USUBJID'))
@@ -200,7 +203,7 @@ BodyWeight <- function(animalList) {
 
 # Get the minimum study start date in ts
 getMinStudyStartDate<-function() {
-  min(parse_iso_8601(genericQuery("select distinct tsval
+  min(parse_iso_8601(sendigR::genericQuery(dbToken, "select distinct tsval
                                                 from ts
                                                where upper(tsparmcd) = 'STSTDTC'")$TSVAL),
       na.rm = TRUE)
@@ -209,13 +212,13 @@ getMinStudyStartDate<-function() {
 # series of functions to query the 
 # database to find unique elements. 
 GetUniqueDesign <- function() {
-  uniqueDesigns <- toupper(genericQuery('SELECT DISTINCT TSVAL FROM TS WHERE upper(TSPARMCD) = "SDESIGN"')$TSVAL)
+  uniqueDesigns <- toupper(sendigR::genericQuery(dbToken, 'SELECT DISTINCT TSVAL FROM TS WHERE upper(TSPARMCD) = "SDESIGN"')$TSVAL)
   return(unique(uniqueDesigns))
 }
 
 
 GetUniqueSpecies <- function() {
-  toupper(genericQuery("select distinct tsval as SPECIES
+  toupper(sendigR::genericQuery(dbToken, "select distinct tsval as SPECIES
                           from ts 
                          where upper(tsparmcd) = 'SPECIES'
                         union 
@@ -245,7 +248,7 @@ GetUniqueStrains <- function(species) {
   }
   
   return(sort(toupper(
-    genericQuery(sprintf("select distinct %s as STRAIN
+    sendigR::genericQuery(dbToken, sprintf("select distinct %s as STRAIN
                             from ts ts1
                             join ts ts2
                               on upper(ts2.tsparmcd) = 'SPECIES'
@@ -274,7 +277,7 @@ GetUniqueStrains <- function(species) {
 
 
 GetUniqueRoutes <- function() {
-  toupper(genericQuery("select distinct tsval as ROUTE
+  toupper(sendigR::genericQuery(dbToken, "select distinct tsval as ROUTE
                            from ts 
                           where upper(tsparmcd) = 'ROUTE'
                          union 
@@ -284,27 +287,27 @@ GetUniqueRoutes <- function() {
 }
 
 GetUniqueOrgans <- function() {
-  uniqueOrgans <- toupper(genericQuery('SELECT DISTINCT MISPEC FROM MI')$MISPEC)
+  uniqueOrgans <- toupper(sendigR::genericQuery(dbToken, 'SELECT DISTINCT MISPEC FROM MI')$MISPEC)
   return(unique(uniqueOrgans))
 }
 
 GetUniqueLBTESTCD <- function(cat) {
-  uniqueLBTESTCD <- toupper(genericQuery('SELECT DISTINCT LBTESTCD FROM LB WHERE LBCAT = ?', c(cat))$LBTESTCD)
+  uniqueLBTESTCD <- toupper(sendigR::genericQuery(dbToken, 'SELECT DISTINCT LBTESTCD FROM LB WHERE LBCAT = ?', c(cat))$LBTESTCD)
   return(unique(uniqueLBTESTCD))
 }
 
 GetAvailableStudies <- function() {
-  uniqueStudies <- genericQuery('SELECT DISTINCT STUDYID FROM TS')$STUDYID
+  uniqueStudies <- sendigR::genericQuery(dbToken, 'SELECT DISTINCT STUDYID FROM TS')$STUDYID
   return(uniqueStudies)
 }
 
 GetStudyTS <- function(studyid) {
-  studyInfo <- genericQuery('SELECT * FROM TS WHERE STUDYID = :1', c(studyid))
+  studyInfo <- sendigR::genericQuery(dbToken, 'SELECT * FROM TS WHERE STUDYID = :1', c(studyid))
   return(studyInfo)
 }
 
 GetAnimalGroupsStudy <- function(studyid) {
-  studyAnimals <- genericQuery('SELECT TX.STUDYID, USUBJID, TX.SETCD, "SET" FROM 
+  studyAnimals <- sendigR::genericQuery(dbToken, 'SELECT TX.STUDYID, USUBJID, TX.SETCD, "SET" FROM 
                                TX  
                                INNER JOIN DM 
                                on DM.SETCD = TX.SETCD AND DM.STUDYID = TX.STUDYID   
