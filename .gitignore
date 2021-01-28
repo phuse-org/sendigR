@@ -7,6 +7,11 @@
 
 # ignore sysParameters*.R for now
 sysParameters*.R
+sendDashboard.ini
 
 # data folders
 /data
+/old_files
+/metadata
+
+*.DS_Store
