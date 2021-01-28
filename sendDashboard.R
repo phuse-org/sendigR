@@ -25,7 +25,7 @@ dummyuseCaseQuestionMiFindings<-function() {
 setwd(getSrcDirectory(dummyuseCaseQuestionMiFindings))
 
 # Include the SEND functions (to be changed to inclusion of SEND package)
-source("initSENDFunctions.R")
+#source("initSENDFunctions.R")
 
 
 
@@ -657,7 +657,7 @@ server <- function(input, output, session) {
   
   # CLose connection to database at end of execution
   onSessionEnded(function() {
-    disconnectDB()
+    sendigR::disconnectDB()
   })
   
 }

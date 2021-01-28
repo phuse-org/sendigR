@@ -2,6 +2,7 @@
 # This module is just a wrapper 
 # for calling all the functions 
 # available in the SEND package
+source("sendDB.R")
 
 doFilterAnimalsSpeciesStrain <- function(controlAnimals, 
                                          pSpecies, 
@@ -27,10 +28,11 @@ doFilterAnimalsSpeciesStrain <- function(controlAnimals,
     # One species selected - just execute  the filtering of the species/strain
     # and return result
     return(
-      FilterAnimalsSpeciesStrain(animalList    = controlAnimals, 
-                                 speciesFilter = pSpecies, 
-                                 strainFilter  = pStrain, 
-                                 inclUncertain = pInclUncertain))
+      sendigR::getSubjSpeciesStrain(dbToken,
+                                    animalList    = controlAnimals, 
+                                    speciesFilter = pSpecies, 
+                                    strainFilter  = pStrain, 
+                                    inclUncertain = pInclUncertain))
   else 
     # Multiple species selected - execute filtering for species/strain per species
     # - combine all outputs into one table and return
@@ -134,24 +136,26 @@ GetFilteredControlAnimals <- function(pFromDTC,
   
   if (execGetStudyData) {
     print('get study info')
-    if (exists("studiesAll"))
+    if (exists("studiesAll")) {
       # We save the current set of selected studies...
       studiesAllPrev <- studiesAll[,.(STUDYID)]
-    
-    studiesList <- GetStudyListSTSTDTC(fromDTC       = pFromDTC, 
-                                   toDTC         = pToDTC, 
-                                   inclUncertain = pInclUncertain)
+    }
+    studiesList <- sendigR::getStudiesSTSTDTC(dbToken,
+                                              fromDTC       = pFromDTC, 
+                                              toDTC         = pToDTC, 
+                                              inclUncertain = pInclUncertain)
     
     print(studiesList)
     # Extract list of studies based on study-only filter parameters
     #TODO: this is where the issue is for the test database
-    studiesAll <<- GetStudyListSDESIGN(studyDesignFilter = pStudyDesign, 
-                                       #studyList         = studiesList, 
-                                       inclUncertain     = pInclUncertain)
+    studiesAll <<- sendigR::getStudiesSDESIGN(dbToken, 
+                                              studyDesignFilter = pStudyDesign, 
+                                              #studyList         = studiesList, 
+                                              inclUncertain     = pInclUncertain)
     studiesAll <- merge(studiesAll, studiesList)
     
     print(studiesAll)
-    if (exists("studiesAllPrev"))
+    if (exists("studiesAllPrev")) {
       if (nrow(setdiff(studiesAll[,.(STUDYID)], studiesAllPrev)) > 0) {
         # The new set of filtered studies contains studies not included 
         # in previous set - delete all domain data fetched from database 
@@ -165,7 +169,7 @@ GetFilteredControlAnimals <- function(pFromDTC,
         execGetControlAnimals <- TRUE
         execFilterControlAnimals <- TRUE
       }
-        
+    }
     if (is.na(execGetControlAnimals)) {
       # Check if the new set of studies contans fewer studies than the previous set
       if (nrow(setdiff(studiesAllPrev, studiesAll[,.(STUDYID)])) > 0) {
@@ -186,8 +190,9 @@ GetFilteredControlAnimals <- function(pFromDTC,
     print('GetControlAnimals')
     # Get list of all control animals 
     # - save as global table and to be possible avoid unnecessary regeneration in a later execution 
-    controlAnimalsAll <<- GetControlAnimals(studyList     = studiesAll, 
-                                            inclUncertain = pInclUncertain)
+    controlAnimalsAll <<- sendigR::getControlSubj(dbToken,
+                                                  studyList     = studiesAll, 
+                                                  inclUncertain = pInclUncertain)
   }
   print(controlAnimalsAll)
   if (execFilterControlAnimals) {
@@ -201,9 +206,10 @@ GetFilteredControlAnimals <- function(pFromDTC,
     print('filterAnimalsSex')
     if (pSex != '') {
       # Limit to set of animals to relevant sex
-      controlAnimals <<- filterAnimalsSex(animalList    = controlAnimals, 
-                                          sexFilter     = pSex, 
-                                          inclUncertain = pInclUncertain)
+      controlAnimals <<- sendigR::getSubjSex(dbToken,
+                                             animalList    = controlAnimals, 
+                                             sexFilter     = pSex, 
+                                             inclUncertain = pInclUncertain)
       print(controlAnimals)
     }
     print('FilterAnimalsSpeciesStrain')
@@ -217,9 +223,10 @@ GetFilteredControlAnimals <- function(pFromDTC,
     print('FilterAnimalListRoute')
     if (!is.null(pRoute)) {
       # Limit to set of animals to relevant route(s) of administration
-      controlAnimals<<-FilterAnimalListRoute(animalList    = controlAnimals, 
-                                             routeFilter   = pRoute, 
-                                             inclUncertain = pInclUncertain)
+      controlAnimals<<- sendigR::getSubjRoute(dbToken,
+                                              animalList    = controlAnimals, 
+                                              routeFilter   = pRoute, 
+                                              inclUncertain = pInclUncertain)
     }
     print('Animal filtering done!')
 
