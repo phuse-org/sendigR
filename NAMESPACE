@@ -3,6 +3,7 @@
 export(disconnectDB)
 export(genericQuery)
 export(getControlSubj)
+export(getFindingsPhase)
 export(getStudiesSDESIGN)
 export(getStudiesSTSTDTC)
 export(getSubjData)

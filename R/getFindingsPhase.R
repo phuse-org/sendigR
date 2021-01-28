@@ -1,93 +1,124 @@
-###################################################################################
-# Script name   : filterFindingsPhase.R
-# Date Created  : 25-Feb-2020
-# Programmer    : Bo Larsen
-# --------------------------------------------------------------------------------
-# Change log:
-# Programmer/date       Description
-# --------------------- ------------------------------------------------------------
-# <init/dd-Mon-yyyy>    <description>
-#
-# -------------------------------------------------------------------------------
-# Purpose       : Extract a set of findings for a specified study phase
-#
-# Description   : The function FilterFindingsPhase extracts and return a set of
-#                 findings from a input set of findings which is located within a
-#                 specified study phaseFilter.
-#                 The logic for the extraction is based on the subject elements and
-#                 the trial design domains - for each finding row:
-#                 - The related subject element is found in SE as the row where the
-#                   value of <domain>DTC is within the intervala SESTDTC-SEENDTC
-#                 - The actual EPOCH is found in TA in the row matching the found
-#                   element (via the ETCD value)
-#                 - The actual study phase is derived from the EPOCH value matching
-#                   at set of text patterns
-#                 If the inclUncertain parameter is enabled, unceratin findings rows
-#                 are include in the output set including an explanation of the
-#                 reason for the uncertainty.
-#                 A row is registered as uncertain if:
-#                 - One of the date/time values SESTDTC, SEENDTC or <domain>DTC is
-#                   empty or contains an invalid ISO 8601 value
-#                 - The value of <domain>DTC is included in more one SESTDTC/SEENDTC
-#                   interval
-#                 - The EPOCH value does not match any of the patterns identifying
-#                   the set of possible study phases.
-#
-# Input         : - A data table containing the input set of findings (input parameter
-#                   findings) - the minimum set of variables in the table are:
-#                     - STUDYID       - character
-#                     - USUBJID       - character
-#                     - <domain>SEQ   - integer
-#                     - <domain>DTC   - character
-#                       where <domain> is the value of input parameter domain
-#                 - Domains (imported from the pooled SEND data store if they don't
-#                   exist in workspace):
-#                     - DM
-#                     - SE
-#                     - TA
-#
-# Output        : A data table containing the rows for the specified study phase
-#                 (input parameter phaseFilter).
-#                 If the input parameter inclUncertain is specified as TRUE,
-#                 a set of rows where a study phase couldn't be identified is also
-#                 included.
-#                 The data table contains the same variables as the input data table
-#                 and these additional variables:
-#                     - PHASE   - character
-#                       The identified study phase. The value is 'Uncertain' if a phase
-#                       couldn't be identified
-#                     - UNCERTAIN_MSG - character
-#                       Only included if the input parameter 'inclUncertain' is
-#                       specified as TRUE.
-#                 plus any additional columns which may be included in the input data findings
-#
-# Parameters    : The function FilterFindingsPhase is defined with four input
-#                 parameters:
-#                   domain:   Mandatory, character
-#                             The name of the actual findings domain.
-#                   findings: Mandatory, data table
-#                             The table with the findings to filter
-#                   phaseFilter:    Mandatory, character
-#                             The study phaseFilter to filter for.
-#                             It can be a single string, a vector or a list of multiple strings.
-#                             Valid values of phase included in the filter (case insensitive):
-#                               Screening, Treatment, Recovery
-#                   inclUncertain:
-#                             Optional, boolean (TRUE or FALSE)
-#                             Indicates whether findings where the study phaseFilter cannot
-#                             be identified by some reason shall be included or not
-#                             in the output data table
-#
-###################################################################################
+################################################################################
+## The function getFindingsPhase.
+##
+## History:
+## -----------------------------------------------------------------------------
+## Date         Programmer            Note
+## ----------   --------------------  ------------------------------------------
+## 2021-01-28   Bo Larsen             Initial version
+################################################################################
 
-FilterFindingsPhase<-function(dbToken,
-                              findings,
-                              phaseFilter = NULL,
-                              inclUncertain = FALSE,
-                              noFilterReportUncertain = TRUE) {
+#' Extract a set of findings for a specified study phase - or just add phase
+#' for each animal.
+#'
+#' Returns a data table with the set of findings rows included in the
+#' \code{findings} of the phase(s) specified in the \code{phaseFilter}.\cr
+#' If the \code{phaseFilter} is empty (null, na or empty string), all rows from
+#' \code{findings} are returned with the a PHASE added.
+#'
+#' The logic for the extraction is based on the subject elements and the trial
+#' design domains - for each finding row:
+#' \itemize{
+#'    \item The related subject element is found in SE as the row where the
+#'    value of domainDTC is within the interval from SESTDTC to SEENDTC
+#'    \item The actual EPOCH is found in TA in the row matching the found
+#'    element (via the ETCD value)
+#'    \item The actual study phase is derived from the EPOCH value matching at
+#'    set of text patterns
+#' }
+#' For pooled findings rows - i.e. POOLID is populated instead of USUBJID - the
+#' phase is identified per animal included in the each pool and finding, and if all
+#' identified phases are equal per pool and finding, the identified phase are
+#' returned per pool and finding.
+#'
+#' If input parameter \code{inclUncertain=TRUE}, findings rows where the phase
+#' cannot be confidently identified are included in the output set. These
+#' uncertain situations are identified and reported (in column UNCERTAIN_MSG):
+#' \itemize{
+#'   \item One of the date/time values SESTDTC, SEENDTC or domainDTC is empty
+#'   or contains an invalid ISO 8601 value
+#'   \item The value of domainDTC is included in more one SESTDTC/SEENDTC
+#'   interval
+#'   \item The EPOCH value does not match any of the patterns identifying the
+#'   set of possible study phases.
+#'   \item Different phases have been identified for individual subjects in a
+#'   pool for a given finding
+#' }
+#' The same checks are performed and reported in column NOT_VALID_MSG if
+#' \code{sexFilter} is empty and \code{noFilterReportUncertain=TRUE}.
+#'
+#' @param dbToken Mandatory - token for the open database connection
+#' @param findings Mandatory.\cr
+#'  A data.table with the set of finding rows to process.\cr
+#'  The table must include at least columns named
+#'  \itemize{
+#'     \item STUDYID
+#'     \item USUBJID
+#'     \item DOMAIN
+#'     \item domainSEQ
+#'     \item domainDTC
+#'  }
+#'  where domain is the name of the actuel findings domain - e.g. LBSEQ and
+#'  LBDTC
+#' @param phaseFilter Optional, character.\cr
+#'  The sex value criterion to be used for filtering of the list of animals.\cr
+#'  It can be a single string, a vector or a list of multiple strings.
+#' @param inclUncertain  Mandatory, TRUE or FALSE, default: FALSE.\cr
+#'  Only relevant if the \code{phaseFilter} is not empty.\cr
+#'  Indicates whether finding rows for which the phase cannot be confidently
+#'  identified shall be included or not in the output data table.
+#' @param noFilterReportUncertain  Optional, TRUE or FALSE, default: TRUE\cr
+#'  Only relevant if the \code{phaseFilter} is empty.\cr
+#'  Indicates if the reason should be included if the phase cannot be
+#'  confidently decided for an animal.
+#'
+#' @return The function returns a data.table with columns in this order:
+#'   \itemize{
+#'   \item All columns contained in the \code{findings} input table (original
+#'   order except optional UNCERTAIN_MSG and NOT_VALID_MSG)
+#'   \item PHASE          (character)
+#'   \item UNCERTAIN_MSG  (character)\cr
+#' Included when parameter \code{inclUncertain=TRUE}.\cr
+#' In case the phase cannot be confidently matched during the
+#' filtering of data, the column contains an indication of the reason.\cr
+#' If any uncertainties have been identified for individual subjects included in
+#' pools for pooled finding rows, all messages for subjects per pool/findings
+#' are merged together and reported as one message per pool/finding.\cr
+#' Is NA for rows where phase can be confidently matched.\cr
+#' A non-empty UNCERTAIN_MSG value generated by this function is merged with
+#' non-empty UNCERTAIN_MSG values which may exist in the input set of findings
+#' specified in \code{findings} - separated by '|'.
+#'   \item NOT_VALID_MSG (character)\cr
+#' Included when parameter \code{noFilterReportUncertain=TRUE}.\cr
+#' In case the phase cannot be confidently decided, the column
+#' contains an indication of the reason.\cr
+#' Is NA for rows where phase can be confidently decided.\cr
+#' A non-empty NOT_VALID_MSG value generated by this function is merged with
+#' non-empty NOT_VALID_MSG values which may exist in the input set of findings
+#' \code{findings} - separated by '|'.
+#'}
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Extract LB rows for the Treatment phase - include uncertain rows
+#' getFindingsPhase(dbToken, lb,
+#'                  phaseFilter = 'Treatment',
+#'                  inclUncertain = TRUE)
+#'  No filtering, just add PHASE to FW rows - do not include messages when
+#' # the phase cannot be confidently identified
+#' getFindingsPhase(dbToken, fw,
+#'                  noFilterReportUncertain = FALSE)
+#' }
+getFindingsPhase <-function(dbToken,
+                            findings,
+                            phaseFilter = NULL,
+                            inclUncertain = FALSE,
+                            noFilterReportUncertain = TRUE) {
 
   ################################################################################
-  # Derive the phaseFilter for a given epoch text - using regular expressions
+  # Derive the phase for a given epoch text - using regular expressions
   getPhase<-function(epoch) {
     if (is.na(epoch) ) {
       'Uncertain'
@@ -113,16 +144,15 @@ FilterFindingsPhase<-function(dbToken,
   #####################################################################################
 
   # Evaluate input parameters
-  if (is.null(domain) | isTRUE(is.na(domain)) | isTRUE(domain==''))
-    stop('Input parameter domain must have assigned a domain name ')
 
-  if (!is.data.table(findings))
+  if (!data.table::is.data.table(findings))
     stop('Input parameter findings must have assigned a data table ')
 
-  if (is.null(phaseFilter) | isTRUE(is.na(phaseFilter)) | isTRUE(phaseFilter==''))
+  if (is.null(phaseFilter) | isTRUE(is.na(phaseFilter)) | isTRUE(phaseFilter=='')) {
     execFilter <- FALSE
-  else
+  } else
     execFilter <- TRUE
+
 
   if (!(inclUncertain %in% c(TRUE,FALSE)))
     stop("Parameter inclUncertain must be either TRUE or FALSE")
@@ -130,76 +160,112 @@ FilterFindingsPhase<-function(dbToken,
   if (!execFilter & !(noFilterReportUncertain %in% c(TRUE,FALSE)))
     stop("Parameter noFilterReportUncertain must be either TRUE or FALSE")
 
+  # Get the domain name of findings table
+  domain = utils::head(findings, n=1)[,c('DOMAIN')]
+
+  # The specific --SEQ and --DTC variable names for the domain
+  domainSEQ <- paste(toupper(domain), "SEQ", sep="")
+  domainDTC <- paste(toupper(domain), "DTC", sep="")
+
+  # Get list of relevant studies
   studyList <- unique(findings[,c('STUDYID')])
-  studyAnimalList <- unique(findings[isTRUE(nchar(POOLID) == 0),
+  # Get list of relevant animals - exclude potential pooled rows
+  studyAnimalList <- unique(findings[nchar(USUBJID) > 0,
                                      c('STUDYID', 'USUBJID')])
+  pooledFindings <- FALSE
   if ('POOLID' %in% names(findings)) {
     # Get list of pools included in input findings
     poolList <-
-      unique(findings[isTRUE(nchar(POOLID) > 0),c('STUDYID', 'POOLID')])
-    if (length(poolList) > 0) {
+      unique(findings[nchar(POOLID) > 0,c('STUDYID', 'POOLID')])
+    if (nrow(poolList) > 0) {
       # Input data contains pooled data
-      # - get relevant POOLDEF rows
+      pooledFindings <- TRUE
+
+      # Extract subset of columns to be used for identification of study phase
+      # - including POOLID
+      subjFindings <- subset(findings, TRUE,
+                             c("STUDYID",
+                             "USUBJID",
+                             "POOLID",
+                             domainSEQ,
+                             domainDTC))
+
+      # Get subjects included in the pools
       studyAnimalList <-
         (genericQuery(dbToken,
                      "select * from pooldef
                        where studyid in (:1)",
                      studyList) %>%
-        data.table::merge.data.tale(poolList,
-                                    by = c('STUDYID', 'POOLID')))[,c('STUDYID','USUBJID')] %>%
+        data.table::merge.data.table(poolList,
+                                    by = c('STUDYID', 'POOLID'))) %>%
         # - add list of pooled subjects to list of subjects
         {data.table::rbindlist(list(studyAnimalList, .),
                                use.names=TRUE,
                                fill=TRUE)} %>%
         # Ensure the list is unique
         unique()
+
+      subjFindings <-
+        # Expand the pooled findings rows to subject level - i.e. each pooled
+        # row is expanded to one row per subject included in the pool
+        data.table::merge.data.table(studyAnimalList, subjFindings[nchar(POOLID) > 0,!"USUBJID"],
+                                     by=c('STUDYID', 'POOLID'),
+                                     allow.cartesian = TRUE) %>%
+        # Add the subject level rows
+        {data.table::rbindlist(list(subjFindings[nchar(USUBJID) > 0], .),
+                               use.names=TRUE,
+                               fill=TRUE)}
     }
   }
+  if (!pooledFindings)
+    # Extract subset of columns to be used for identification of study phase
+    # - excluding POOLID
+    subjFindings <- subset(findings, TRUE,
+                           c("STUDYID",
+                             "USUBJID",
+                             domainSEQ,
+                             domainDTC))
+
+  # Rename --SEQ and --DTC variable names to fixed names
+  data.table::setnames(subjFindings,
+                       c(domainSEQ,domainDTC),
+                       c("SEQ","DTC"))
 
   # Get related DM rows
   DM <- getSubjData(dbToken,
-                    studyAnimalList,
-                    'DM',c('ARMCD'))
-
+                    studyAnimalList, 'DM',c('ARMCD'))[,c('STUDYID',
+                                                         'USUBJID',
+                                                         'ARMCD')]
   # Get related SE rows
-  DM <- getSubjData(dbToken,
-                    studyAnimalList, 'SE')
-
+  SE <- getSubjData(dbToken,
+                    studyAnimalList, 'SE')[,c('STUDYID',
+                                              'USUBJID',
+                                              'ETCD',
+                                              'SESTDTC',
+                                              'SEENDTC')]
   # Get related TA rows
   TA <- genericQuery(dbToken,
                      "select * from ta
                       where studyid in (:1)",
                      studyList)
 
-  # Get the domain name of findings table
-  domain = head(findings, n=1)[,c('DOMAIN')]
-
-  # The specific --seq and --dtc variable names for the domain
-  seq<-paste(toupper(domain), "SEQ", sep="")
-  dtc<-paste(toupper(domain), "DTC", sep="")
 
   # Join DM with TA to get a list off all possible epochs per animal
                           # Extract DM rows for animals in the input list of findings
   dmEpoch <-
     data.table::merge.data.table(DM[,c('STUDYID','USUBJID','ARMCD')],
-                                 TA[,list(STUDYID,ARMCD,ETCD,EPOCH=tolower(EPOCH))],
+                                 TA[,list(STUDYID,
+                                          ARMCD,
+                                          ETCD,
+                                          EPOCH=tolower(EPOCH))],
                                  by = c('STUDYID', 'ARMCD'),
                                  allow.cartesian=TRUE)[,!"ARMCD"]
 
-# <<<<<<<< NÅET HERTIL <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   # Join findings keys with Subject Elements to get all possible element(s) per subject
   findElementAll <-
-    #
-    setnames(subset(findings, TRUE, c("STUDYID","USUBJID", "POOLID", seq, dtc)),
-             c(seq,dtc),c("SEQ","DTC")) %>%
-
-
-
-    data.table::merge.data.table(setnames(subset(findings, TRUE, c("STUDYID","USUBJID", seq, dtc)),c(seq,dtc),c("SEQ","DTC")),
-                                # Extract SE rows for animals in the input list of findings
-                                ExtractSubjData("SE",unique(findings[,.(STUDYID,USUBJID)]))[,.(STUDYID,USUBJID,ETCD,SESTDTC,SEENDTC)],
-                        by = c('STUDYID', 'USUBJID'),
-                        allow.cartesian=TRUE)
+    data.table::merge.data.table(subjFindings, SE,
+                                 by = c('STUDYID', 'USUBJID'),
+                                 allow.cartesian=TRUE)
 
   # Extract rows where the finding --DTC is within the data interval in one or two
   # elements start/end dates
@@ -209,104 +275,198 @@ FilterFindingsPhase<-function(dbToken,
   # If a --DTC or SESTDTC value misses the timepart
   # - it's automatically calculated as 00:00:00
   # If a SEENDTC values misses the timepart - it's calculated as 23:59:59
-  if (!inclUncertain) {
-    # Include only rows where all involved ISO date values are non-empty and valid
-    findElement<-findElementAll[!is.na(parse_iso_8601(DTC))     &
-                                !is.na(parse_iso_8601(SESTDTC)) &
-                                !is.na(parse_iso_8601(SEENDTC)) &
-                                data.table::between(parse_iso_8601(DTC),
-                                                    parse_iso_8601(SESTDTC),
-                                                    parse_iso_8601(ifelse(grepl("T",SEENDTC),SEENDTC,paste(SEENDTC,"T23:59:59",sep=""))))]
-    # Exclude rows where more then one element fits the finding date
-    # - Remove the DTC column (MIDTC is included later on)
-    findElement<-findElement[,NUM_ELEMENT := .N, by = .(STUDYID,USUBJID,SEQ)][NUM_ELEMENT == 1][, `:=` (DTC = NULL, NUM_ELEMENT=NULL) ]
-  }
-  else {
-    # Include additional rows where one or more involved ISO date values are empty or invalid
-    # - add an message for these uncertain rows
-    findElement<-findElementAll[is.na(parse_iso_8601(DTC))     |
-                                is.na(parse_iso_8601(SESTDTC)) |
-                                is.na(parse_iso_8601(SEENDTC)) |
-                                data.table::between(parse_iso_8601(DTC),
-                                                    parse_iso_8601(SESTDTC),
-                                                    parse_iso_8601(ifelse(grepl("T",SEENDTC),SEENDTC,paste(SEENDTC,"T23:59:59",sep=""))))][,
-                                INVAL_ISO_DT_MSG := ifelse(is.na(parse_iso_8601(DTC))     |
-                                                           is.na(parse_iso_8601(SESTDTC)) |
-                                                           is.na(parse_iso_8601(SEENDTC)),
-                                                           paste0('Empty or invalid ISO8601 date/time value in: ', dtc, ', SESTDTC or SEENDTC'),
-                                                           as.character(NA))]
+  # Include additional rows where one or more involved ISO date values are empty or invalid
+  # - add an message for these uncertain rows
+  findElement <-
+    findElementAll[is.na(parsedate::parse_iso_8601(DTC))     |
+                   is.na(parsedate::parse_iso_8601(SESTDTC)) |
+                   is.na(parsedate::parse_iso_8601(SEENDTC)) |
+                   data.table::between(parsedate::parse_iso_8601(DTC),
+                                       parsedate::parse_iso_8601(SESTDTC),
+                                       parsedate::parse_iso_8601(ifelse(grepl("T",SEENDTC),SEENDTC,paste(SEENDTC,"T23:59:59",sep=""))))][,
+                   INVAL_ISO_DT_MSG := ifelse(is.na(parsedate::parse_iso_8601(DTC))     |
+                                              is.na(parsedate::parse_iso_8601(SESTDTC)) |
+                                              is.na(parsedate::parse_iso_8601(SEENDTC)),
+                                              paste0('Empty or invalid ISO8601 date/time value in: ', domainDTC, ', SESTDTC or SEENDTC'),
+                                              as.character(NA))]
 
-    # Add number of distinct elements per finding to identify if more then one element fits the finding date
-    # - Remove the DTC column (MIDTC is included later on)
-    findElement[,NUM_ELEMENT := .N, by = .(STUDYID,USUBJID,SEQ)][,DTC := NULL]
-  }
+  # Add number of distinct elements per finding to identify if more then one element fits the finding date
+  # - Remove the DTC column (--DTC is included later on)
+  findElement[,NUM_ELEMENT := .N, by = c('STUDYID','USUBJID','SEQ')][,DTC := NULL]
 
   # Merge epochs per animal with findings keys/elements to get the epoch(s) per finding
   # Keep each element whether an epoch is found or not (left join)
   # - Derive the study phase based on the epoch
-  findEpoch<-merge(setkeyv(findElement, c('STUDYID', 'USUBJID', 'ETCD')),
-                   setkeyv(dmEpoch,c('STUDYID', 'USUBJID', 'ETCD')),
-                   all.x = TRUE)[,
-             PHASE := mapply(getPhase,EPOCH )]
+  findPhaseAll <-
+    data.table::merge.data.table(findElement, dmEpoch,
+                                 by = c('STUDYID', 'USUBJID', 'ETCD'),
+                                 all.x = TRUE)[, PHASE := mapply(getPhase,EPOCH)]
+  # If any PHASE values are 'Uncertain', include an explanation
+  findPhaseAll[PHASE == 'Uncertain', MISS_PHASE_MSG := 'Could not decide PHASE based on EPOCH value']
 
-  if (!inclUncertain) {
-    # Remove rows with 'Uncertain' PHASE value
-    findEpoch<-findEpoch[PHASE!='Uncertain']
+  # For findings with multiple elements  which is not due to missing or invalid ISO date(s)
+  # - collect all phases per finding in a message string
+  findPhaseAll[NUM_ELEMENT > 1 & is.na(INVAL_ISO_DT_MSG),
+            `:=` (MULTI_ELEM_MSG = paste0('Phase could not be decided due to date overlap - possibly: ',
+                                          paste(PHASE, collapse=', '),
+                                          ' (EPOCH: ', paste(EPOCH, collapse=', '),')',
+                                          ' (ETCD: ', paste(ETCD, collapse=', '),')',
+                                          ' (SESTDTC/SEENDTC: ',
+                                          paste(paste(SESTDTC,SEENDTC,sep='/'),
+                                                collapse=', '),')'),
+                  ETCD = 'UNCERTAIN',
+                  SESTDTC = 'UNCERTAIN',
+                  SEENDTC = 'UNCERTAIN',
+                  EPOCH = 'UNCERTAIN',
+                  PHASE = 'Uncertain'),
+            by = c('STUDYID','USUBJID','SEQ')][, `:=` (NUM_ELEMENT = NULL)]
+
+
+
+  # Remove duplicates generated by multiple found elements
+  # - collects all uncertainty messages in one column separated by ';'
+  findPhaseAll <- unique(findPhaseAll)[,
+    MSG := ifelse(!is.na(INVAL_ISO_DT_MSG) | !is.na(MISS_PHASE_MSG) | !is.na(MULTI_ELEM_MSG),
+                  # Ensure only one ';' in between messages
+                  gsub("^;|$;", "", gsub(";+", ";",
+                    paste(ifelse(is.na(INVAL_ISO_DT_MSG),
+                                 "", INVAL_ISO_DT_MSG),
+                          ifelse(is.na(MISS_PHASE_MSG),
+                                 "", MISS_PHASE_MSG),
+                          ifelse(is.na(MULTI_ELEM_MSG),
+                                 "", MULTI_ELEM_MSG),
+                          sep = ";"))),
+            # Remove individual message columns
+            as.character(NA))][,`:=` (INVAL_ISO_DT_MSG = NULL,
+                                      MISS_PHASE_MSG = NULL,
+                                      MULTI_ELEM_MSG = NULL)]
+
+  if (!pooledFindings)
+    findPhase <- findPhaseAll[, c('STUDYID','USUBJID','SEQ','PHASE','MSG')]
+  else {
+    # Collapse subject level rows for pooled findings to pool level
+
+    findPhasePools <-
+      unique(findPhaseAll[!is.na(POOLID),!c('USUBJID')])[,
+                # Add count of distinct subject level rows per pooled finding
+                N := .N, by = c('STUDYID', 'POOLID', 'SEQ')]
+
+    # Look into pooled findings with multiple subject level rows
+    findPhasePoolsMulti <- findPhasePools[N > 1]
+
+    # Check for different identified  phases per pooled finding (with multiple
+    # subj level rows)
+    findPoolMultiPhase <-
+      unique(findPhasePoolsMulti[,c('STUDYID',
+                                    'POOLID',
+                                    'SEQ',
+                                    'PHASE')])[,
+                            N_PHASE := .N, by = c('STUDYID', 'POOLID', 'SEQ')]
+
+    # Extract pooled findings with a distinct identified phase
+    findPoolMultiPhaseOK <-
+      data.table::merge.data.table(findPhasePools, findPoolMultiPhase[N_PHASE == 1])
+    # Merge each non empty MSG per pool per finding into one string and remove
+    # duplicated rows
+    findPoolMultiPhaseOK <-
+      data.table::merge.data.table(
+        unique(findPoolMultiPhaseOK[,c('STUDYID', 'POOLID', 'SEQ', 'PHASE')]),
+        unique(unique(
+          findPoolMultiPhaseOK[!is.na(MSG),
+                                c('STUDYID',
+                                  'POOLID',
+                                  'SEQ',
+                                  'MSG')])[, MSG_ALL := paste0('[',paste(unlist(list(.SD)), collapse = '],['),']'),
+                                           by = c('STUDYID', 'POOLID', 'SEQ'),
+                                           .SDcols='MSG'][,MSG := NULL]),
+        by = c('STUDYID', 'POOLID', 'SEQ'),
+        all.x = TRUE)
+    data.table::setnames(findPoolMultiPhaseOK, 'MSG_ALL', 'MSG')
+
+    # Extract pooled findings with multiple identified phases
+    findPoolMultiPhaseDiff <- unique(
+      findPoolMultiPhase[N_PHASE > 1][,
+        MSG := paste0('Different phases identified for individual subjects in pool: ',
+                      paste(unlist(list(.SD)), collapse = ', ')),
+        by = c('STUDYID', 'POOLID', 'SEQ'),
+        .SDcols='PHASE'][,PHASE := 'Uncertain'])[,N_PHASE := NULL]
+
+    # Stack all finding rows
+    #  - subject level rows
+    #  - pool level rows with equal identified phase for for all subjects per
+    #    pool and all related subject level attributes equal
+    #  - pool level rows with equal identified phase for for all subjects per
+    #    pool but differences in some related subject level attributes
+    #  - pool level rows with different identified phases for subjects per pool
+    findPhase <-
+      data.table::rbindlist(list(findPhaseAll[is.na(POOLID)],
+                                 findPhasePools[N == 1][,N := NULL],
+                                 findPoolMultiPhaseOK,
+                                 findPoolMultiPhaseDiff),
+                            use.names = TRUE, fill=TRUE)[, c('STUDYID','USUBJID','POOLID','SEQ','PHASE','MSG')]
+
+  }
+
+  if (execFilter) {
     # Apply the given PHASE filter
-    findIDs<-findEpoch[toupper(PHASE) %in% toupper(phaseFilter)]
+    if (inclUncertain)
+      # - include the uncertain rows, finalize UNCERTAIN_MSG
+      findPhase <- findPhase[toupper(PHASE) %in% toupper(phaseFilter) | !is.na(MSG)][,
+                           `:=` (UNCERTAIN_MSG = ifelse(is.na(MSG),
+                                                        as.character(NA),
+                                                        paste0('FindingsPhase: ',
+                                                               MSG)))][,MSG := NULL]
+    else
+      # - exclude the uncertain rows and message column
+      findPhase <- findPhase[is.na(MSG)
+                           & toupper(PHASE) %in% toupper(phaseFilter)][,MSG := NULL]
   }
   else {
-    # If any PHASE values are 'Uncertain', include an explanation
-    findEpoch[PHASE == 'Uncertain', MISS_PHASE_MSG := 'Could not decide PHASE based on EPOCH value']
-    # For findings with multiple elements - collect all phases per finding in a message string
-    findEpoch[NUM_ELEMENT>1,
-              `:=` (MULTI_ELEM_MSG = paste0('Phase could not be decided due to date overlap - possibly: ',
-                                     paste(PHASE, collapse=','),
-                                     ' (EPOCH: ', paste(EPOCH, collapse=','),')',
-                                     ' (ETCD: ', paste(ETCD, collapse=','),')',
-                                     ' (SESTDTC/SEENDTC: ', paste(paste(SESTDTC,SEENDTC,sep='/'), collapse=','),')'),
-                    ETCD = 'UNCERTAIN',
-                    SESTDTC = 'UNCERTAIN',
-                    SEENDTC = 'UNCERTAIN',
-                    EPOCH = 'UNCERTAIN',
-                    PHASE = 'Uncertain'),
-              by = .(STUDYID,USUBJID,SEQ)]
-    # Remove duplicates generated by multiple found elements
-    # - collects all uncertainty messages in one column
-    findEpoch<-unique(findEpoch)[,UNCERTAIN_MSG := ifelse(!is.na(INVAL_ISO_DT_MSG) | !is.na(MISS_PHASE_MSG) | !is.na(MULTI_ELEM_MSG),
-                                                           gsub(";$", "", paste0('FilterFindingsPhase: ',
-                                                                                 paste(ifelse(is.na(INVAL_ISO_DT_MSG), "", INVAL_ISO_DT_MSG),
-                                                                                       ifelse(is.na(MISS_PHASE_MSG), "", MISS_PHASE_MSG),
-                                                                                       ifelse(is.na(MULTI_ELEM_MSG), "", MULTI_ELEM_MSG), sep = ";"))),
-                                                           as.character(NA))][,
-                                `:=` (INVAL_ISO_DT_MSG = NULL,
-                                      MISS_PHASE_MSG = NULL,
-                                      MULTI_ELEM_MSG = NULL,
-                                      NUM_ELEMENT = NULL)]
-    # Apply the given PHASE filter - include the uncertain rows
-    findIDs<-findEpoch[toupper(PHASE) %in% toupper(phaseFilter) | !is.na(UNCERTAIN_MSG)]
+    # No PHASE filter - include all rows
+    if (noFilterReportUncertain)
+      # - finalize NOT_VALID_MSG
+      findPhase[, `:=` (NOT_VALID_MSG = ifelse(is.na(MSG),
+                                               as.character(NA),
+                                               paste0('FindingsPhase: ',
+                                                      MSG)))][,MSG := NULL]
+    else
+      # - exclude message column
+      findPhase[,MSG := NULL]
+  }
+  # Rename the SEQ variable to the real --SEQ variable name
+  data.table::setnames(findPhase, "SEQ",domainSEQ)
+
+
+
+  # Merge the set of finding ids with identified (and potential filtered) phases
+  # and related variables with the input set of findings to include all variables
+  if ( ! pooledFindings)
+    # Only subject level data
+    foundFindings <-
+      merge(findings, findPhase,
+            by = c("STUDYID", "USUBJID",domainSEQ))
+  else {
+    # Join pooled level and subject level data and stack rows
+    foundFindings <-
+      data.table::rbindlist(list(
+        merge(findings[!is.na(USUBJID), !c("POOLID")],
+              findPhase[!is.na(USUBJID), !c("POOLID")],
+              by = c("STUDYID", "USUBJID",domainSEQ)),
+        merge(findings[!is.na(POOLID), !c("USUBJID")],
+              findPhase[!is.na(POOLID), !c("USUBJID")],
+              by = c("STUDYID", "POOLID",domainSEQ))),
+        use.names = TRUE, fill = TRUE)
   }
 
-
-    # Merge the list of finding IDs with the input list of findings to include all variables
-  foundFindings<-
-    merge(setkeyv(findings,c("STUDYID", "USUBJID", seq)),
-                  # Rename the SEQ variable to the real --SEQ variable name
-          setkeyv(setnames(findIDs, "SEQ",seq),c("STUDYID", "USUBJID",seq)))
-
-  if ("UNCERTAIN_MSG.y" %in% names(foundFindings))
-    # An UNCERTAIN_MSG column is included in both input and calculated set of findings
-    #  - merge the UNCERTAIN_MSG from each of the merged tables into one column
-    #  - non-empty messages are separated by '|'
-    #  - exclude the original UNCERTAIN_MSG columns after the merge
-    foundFindings<-foundFindings[,`:=` (UNCERTAIN_MSG=ifelse(!is.na(UNCERTAIN_MSG.x) & !is.na(UNCERTAIN_MSG.y),
-                                                             paste(UNCERTAIN_MSG.y, UNCERTAIN_MSG.x, sep='|'),
-                                                             Coalesce(UNCERTAIN_MSG.x, UNCERTAIN_MSG.y)))][, `:=` (UNCERTAIN_MSG.x=NULL,UNCERTAIN_MSG.y=NULL)]
-
-  # return final data set
-  return(foundFindings)
+  # Do final preparation of set of found animals and return
+  return(prepareFinalResults(foundFindings,
+                             names(findings),
+                             c('PHASE')) )
 }
 
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
-. <- NULL
+MSG_ALL <- ARMCD <- DTC <- EPOCH <- ETCD <- NULL
+INVAL_ISO_DT_MSG <- MISS_PHASE_MSG <- MULTI_ELEM_MSG <- NULL
+N <- NUM_ELEMENT <- N_EPOCH <- N_ETCD <- N_PHASE <- N_SEENDTC <- NULL
+N_SESTDTC <- PHASE <- SEENDTC <- SEQ <- SESTDTC <- NULL
