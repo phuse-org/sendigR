@@ -207,26 +207,27 @@ GetFilteredControlAnimals <- function(pFromDTC,
     print('filterAnimalsSex')
     if (pSex != '') {
       # Limit to set of animals to relevant sex
+
       controlAnimals <<- sendigR::getSubjSex(dbToken,
-                                             animalList    = controlAnimals, 
-                                             sexFilter     = pSex, 
+                                             animalList    = controlAnimals,
+                                             sexFilter     = pSex,
                                              inclUncertain = pInclUncertain)
       print(controlAnimals)
     }
     print('FilterAnimalsSpeciesStrain')
     if (!is.null(pSpecies)) {
       # Limit to set of animals to relevant species/strain(s)
-      controlAnimals <<- doFilterAnimalsSpeciesStrain(controlAnimals, 
-                                                      pSpecies, 
-                                                      pStrain, 
+      controlAnimals <<- doFilterAnimalsSpeciesStrain(controlAnimals,
+                                                      pSpecies,
+                                                      pStrain,
                                                       pInclUncertain)
     }
     print('FilterAnimalListRoute')
     if (!is.null(pRoute)) {
       # Limit to set of animals to relevant route(s) of administration
       controlAnimals<<- sendigR::getSubjRoute(dbToken,
-                                              animalList    = controlAnimals, 
-                                              routeFilter   = pRoute, 
+                                              animalList    = controlAnimals,
+                                              routeFilter   = pRoute,
                                               inclUncertain = pInclUncertain)
     }
     print('Animal filtering done!')
