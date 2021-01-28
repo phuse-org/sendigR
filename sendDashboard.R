@@ -657,7 +657,7 @@ server <- function(input, output, session) {
   
   # CLose connection to database at end of execution
   onSessionEnded(function() {
-    sendigR::disconnectDB()
+    sendigR::disconnectDB(dbToken)
   })
   
 }

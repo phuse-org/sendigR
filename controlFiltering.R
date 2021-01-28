@@ -18,10 +18,11 @@ doFilterAnimalsSpeciesStrain <- function(controlAnimals,
     
     # Execute species/strain filtering for current species/strain(s)
     return(
-      FilterAnimalsSpeciesStrain(animalList    = controlAnimals, 
-                                 speciesFilter = species, 
-                                 strainFilter  = strain, 
-                                 inclUncertain = pInclUncertain))
+      sendigR::getSubjSpeciesStrain(dbToken,
+                                    animalList    = controlAnimals, 
+                                    speciesFilter = species, 
+                                    strainFilter  = strain, 
+                                    inclUncertain = pInclUncertain))
   }
   
   if (length(pSpecies) == 1) 
