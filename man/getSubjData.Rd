@@ -19,7 +19,7 @@ The name must be a subject level domain - i.e. a table including a 'USUBJID'
 column.}
 
 \item{colList}{Optional, character, not case sensitive.\cr
-The list of columns to be extracted from the specied domain table.\cr
+The list of columns to be extracted from the specified domain table.\cr
 It can be a single string, a vector or a list of multiple strings.}
 }
 \value{
@@ -46,8 +46,8 @@ study phase:
 \item domainDY
 }
 }
-The order of the columns are as they are defined in the domain table in the
-database.\cr
+The order of the columns are as they are defined for the domain in the
+SEND IG.\cr
 The data table contains both
 \itemize{
 \item subject level data - i.e. rows where USUBJID is not empty

@@ -12,7 +12,7 @@
 #' The name must be a subject level domain - i.e. a table including a 'USUBJID'
 #' column.
 #' @param colList Optional, character, not case sensitive.\cr
-#'  The list of columns to be extracted from the specied domain table.\cr
+#'  The list of columns to be extracted from the specified domain table.\cr
 #'  It can be a single string, a vector or a list of multiple strings.
 #'
 #' @return The function returns a data.table with all the rows for the animals
@@ -38,8 +38,8 @@
 #'        \item domainDY
 #'     }
 #'   }
-#'   The order of the columns are as they are defined in the domain table in the
-#'   database.\cr
+#'   The order of the columns are as they are defined for the domain in the
+#'   SEND IG.\cr
 #'   The data table contains both
 #'   \itemize{
 #'      \item subject level data - i.e. rows where USUBJID is not empty
@@ -163,13 +163,15 @@ getSubjData<-function(dbToken,
       {data.table::rbindlist(list(foundData, .), use.names=TRUE, fill=TRUE)}
   }
 
-  # Merge the extracted findings with the input set of animals to keep
-  # any additional columns from the input table - return rows
-  return(foundData)
+  # Return the found rows with columns order as define in SEND IG
+  data.table::setorderv(sendIGcolumns[TABLE_NAME == domain &
+                                        COLUMN_NAME %in% names(foundData)],
+                        "SEQ")$COLUMN_NAME %>%
+    data.table::setcolorder(foundData, .) %>%
+    return()
 }
 
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
-POOLID <- NULL
-. <- NULL
+. <- POOLID <- COLUMN_NAME <- TABLE_NAME <- NULL
 
