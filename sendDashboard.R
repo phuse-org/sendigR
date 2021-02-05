@@ -16,6 +16,7 @@ library(tidyverse)
 library(MASS)
 library(htmltools)
 library(DT)
+library(sendigR)
 
 
 # define the path to R scripts to actual script location
@@ -332,14 +333,14 @@ server <- function(input, output, session) {
   # Get the list of studies and animals based on new/changed filter criterion
   animalList<-eventReactive(input$refreshData, {
     
-    print(c(as.character(input$STSTDTC[1]), 
-          as.character(input$STSTDTC[2]),
-          input$SDESIGN,
-          input$ROUTE,
-          input$SPECIES,
-          input$STRAIN,
-          input$SEX,
-          input$INCL_UNCERTAIN))
+    # print(c(as.character(input$STSTDTC[1]), 
+    #       as.character(input$STSTDTC[2]),
+    #       input$SDESIGN,
+    #       input$ROUTE,
+    #       input$SPECIES,
+    #       input$STRAIN,
+    #       input$SEX,
+    #       input$INCL_UNCERTAIN))
     
     GetFilteredControlAnimals(as.character(input$STSTDTC[1]), 
                               as.character(input$STSTDTC[2]),
@@ -450,8 +451,10 @@ server <- function(input, output, session) {
   #### get MI individual records table ----
   MI_subject <- reactive({
     animal_list <- animalList()
-    mi_sub <- ExtractSubjData('mi', animal_list)
+    mi_sub <- sendigR::getSubjData(dbToken = dbToken, domain = 'mi', animalList =  animal_list)
     #mi_sub_2 <- subset(mi_sub, select= input$filter_column)
+    print(str(mi_sub))
+    #print(head(mi_sub))
     mi_sub
   })
  
@@ -625,9 +628,9 @@ server <- function(input, output, session) {
     speciesControls1 <- studyAnimalList()
     
     xTest <- LiverFindings(speciesControls1, input$x_axis_LBTESTCD)
-    print(xTest)
+    #print(xTest)
     yTest <- LiverFindings(speciesControls1, input$y_axis_LBTESTCD)
-    print(yTest)
+    #print(yTest)
     data  <- unique(merge(xTest, yTest, by='USUBJID'))
     
     xAvg <- mean(data$LBSTRESC_TRANS.x)
@@ -639,7 +642,7 @@ server <- function(input, output, session) {
     thisStudyAnimals <- GetAnimalGroupsStudy(input$STUDYID)
     
     studyx <- LiverFindings(thisStudyAnimals, input$x_axis_LBTESTCD)
-    print(studyx)
+    #print(studyx)
     studyy <- LiverFindings(thisStudyAnimals, input$y_axis_LBTESTCD)
     
     
