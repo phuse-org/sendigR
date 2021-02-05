@@ -263,7 +263,8 @@ ui <- dashboardPage(
                                             DT::dataTableOutput("findingsTable")))),     
                           
                           tabPanel("Individual Records",
-                                  checkboxInput('hide_check_column', label = 'Show only Table', value = 0),
+                                  checkboxInput('hide_check_column', label = 'Show only Table', 
+                                                value = 0),
                                   br(),
                                      uiOutput('mi_indiv_table')),
     
