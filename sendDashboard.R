@@ -25,7 +25,7 @@ dummyuseCaseQuestionMiFindings<-function() {
 setwd(getSrcDirectory(dummyuseCaseQuestionMiFindings))
 
 # Include the SEND functions (to be changed to inclusion of SEND package)
-source("initSENDFunctions.R")
+#source("initSENDFunctions.R")
 
 
 
@@ -332,6 +332,15 @@ server <- function(input, output, session) {
   # Get the list of studies and animals based on new/changed filter criterion
   animalList<-eventReactive(input$refreshData, {
     
+    print(c(as.character(input$STSTDTC[1]), 
+          as.character(input$STSTDTC[2]),
+          input$SDESIGN,
+          input$ROUTE,
+          input$SPECIES,
+          input$STRAIN,
+          input$SEX,
+          input$INCL_UNCERTAIN))
+    
     GetFilteredControlAnimals(as.character(input$STSTDTC[1]), 
                               as.character(input$STSTDTC[2]),
                               input$SDESIGN,
@@ -446,6 +455,8 @@ server <- function(input, output, session) {
     mi_sub
   })
  
+  # call MI subject 
+  # merge with conf/non conf reocrds 
   
   MI_column <- reactive({
     if (nrow(MI_subject())>0) {
@@ -647,7 +658,7 @@ server <- function(input, output, session) {
   
   # CLose connection to database at end of execution
   onSessionEnded(function() {
-    disconnectDB()
+    sendigR::disconnectDB(dbToken)
   })
   
 }
