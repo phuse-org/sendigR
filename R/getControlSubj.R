@@ -83,6 +83,7 @@
 #' whether its a negative control group or not
 #'   \item TCNTRL        (character)
 #'   \item USUBJID       (character)
+#'   \item RFSTDTC       (character)
 #'   \item DM_AGEDAYS    (integer)
 #' The calculated age in days of the animal at the reference start day - i.e.
 #' the age registered in DM.
@@ -302,6 +303,7 @@ getControlSubj<-function(dbToken,
   # Do final preparation of set of found animals and return
   return(prepareFinalResults(dmCtrlSet, names(studyList), c('TCNTRL',
                                                             'USUBJID',
+                                                            'RFSTDTC',
                                                             'AGEDAYS')))
 }
 

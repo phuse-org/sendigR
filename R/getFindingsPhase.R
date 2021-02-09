@@ -45,7 +45,7 @@
 #'   pool for a given finding
 #' }
 #' The same checks are performed and reported in column NOT_VALID_MSG if
-#' \code{sexFilter} is empty and \code{noFilterReportUncertain=TRUE}.
+#' \code{phaseFilter} is empty and \code{noFilterReportUncertain=TRUE}.
 #'
 #' @param dbToken Mandatory - token for the open database connection
 #' @param findings Mandatory.\cr

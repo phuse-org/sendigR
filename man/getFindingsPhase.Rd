@@ -106,7 +106,7 @@ set of possible study phases.
 pool for a given finding
 }
 The same checks are performed and reported in column NOT_VALID_MSG if
-\code{sexFilter} is empty and \code{noFilterReportUncertain=TRUE}.
+\code{phaseFilter} is empty and \code{noFilterReportUncertain=TRUE}.
 }
 \examples{
 \dontrun{

@@ -3,8 +3,6 @@
 ^myTest$
 ^README\.Rmd$
 ^R/SAVE_
-^R/getFindingsSubjAge.R$
-^R/addFindingsAnimalAge.R$
 ^doc$
 ^Meta$
 ^LICENSE\.md$

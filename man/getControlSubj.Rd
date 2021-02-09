@@ -29,6 +29,7 @@ The value of the TX parameter TCNTRL which is used for identification of
 whether its a negative control group or not
 \item TCNTRL        (character)
 \item USUBJID       (character)
+\item RFSTDTC       (character)
 \item DM_AGEDAYS    (integer)
 The calculated age in days of the animal at the reference start day - i.e.
 the age registered in DM.

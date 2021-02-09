@@ -1,6 +1,6 @@
 Package: sendigR
 Title: Extract control data from a CDISC SEND study data repository
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: 
     person(given = "First",
            family = "Last",
@@ -21,7 +21,8 @@ Imports:
     stringr,
     DBI,
     DescTools,
-    parsedate
+    parsedate,
+    stringi
 Suggests: 
     RSQLite,
     ROracle,
