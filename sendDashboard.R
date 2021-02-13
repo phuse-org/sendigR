@@ -104,9 +104,21 @@ mi_col_names <- c('STUDYID','DOMAIN','USUBJID','MISEQ','MIGRPID','MIREFID','MISP
                   'MIORRES','MISTRESC','MIRESCAT','MICHRON','MIDISTR','MISTAT','MIREASND','MINAM','MISPEC','MIANTREG',
                   'MISPCCND','MISPCUFL','MILAT','MIDIR','MIMETHOD','MIEVAL','MISEV','MIDTHREL','MIDTC','MIDY','SEX',
                   'ROUTE','TCNTRL','SPECIES','STRAIN','SDESIGN','STSTDTC')
+
+sub_mi_col_names <- c('STUDYID','DOMAIN','USUBJID','MISEQ','MIGRPID','MIREFID','MISPID','MITESTCD','MITEST','MIBODSYS',
+                  'MIORRES','MIRESCAT','MISTAT','MIREASND','MINAM','MISPEC','MIANTREG',
+                  'MISPCCND','MISPCUFL','MILAT','MIDIR','MIMETHOD','MIEVAL','MISEV','MIDTHREL','MIDTC','MIDY')
 # list of column that by default selected in MI individual records table
 mi_col_names_selected <- c('STUDYID','USUBJID','MIBODSYS', 'MISTRESC','MIRESCAT','MICHRON','MIDISTR','MISPEC',
                            'MISEV','MIDTC','MIDY','SEX','ROUTE','TCNTRL','SPECIES','STRAIN')
+
+lb_col_names_selected <- c('STUDYID','USUBJID','LBTEST','LBTESTCD','LBORRES','LBORRESU',
+                           'LBSTRESC','LBSTRESN','LBSTRESU','LBSPEC')
+cl_col_names_selected <- c('STUDYID','USUBJID','CLTESTCD','CLTEST','CLCAT','CLORRES','CLSTRESC','CLRESCAT')
+bw_col_names_selected <- c('STUDYID','USUBJID','BWTEST','BWSTRESN','BWSTRESU','VISITDY')
+
+
+
 #### UI ####
 
 
@@ -250,7 +262,7 @@ ui <- dashboardPage(
                         fluidRow(title = "Filtered control animals",
                                  br(),
                                      DT::dataTableOutput("animals"))),
-               tabPanel("MI", 
+               tabPanel("MI", # MI ----
                         tabsetPanel(
                           tabPanel("MI Findings",
                                    fluidRow(
@@ -264,7 +276,7 @@ ui <- dashboardPage(
                                             DT::dataTableOutput("findingsTable")))),     
                           
                           tabPanel("Individual Records",
-                                  checkboxInput('hide_check_column', label = 'Show only Table', 
+                                  checkboxInput('hide_check_column', label = 'Show Only Table', 
                                                 value = 0),
                                   br(),
                                      uiOutput('mi_indiv_table')),
@@ -272,19 +284,51 @@ ui <- dashboardPage(
                           tabPanel("Aggregate Table",
                                    DT::dataTableOutput('mi_agg_tab')))),
                
-               tabPanel("LB",
-                        fluidRow(
-                          br(),
-                          column(width = 2,
-                          selectInput("LBTESTCD",
-                                      "Select LBTESTCD:",
-                                      availableLBTESTCD)),
-                          column(width = 2,
-                          radioButtons("dist", "Distribution type:",
-                                       c("Normal" = "norm",
-                                         "Log-normal" = "lnorm"))),
-                          column(width = 7,offset = 1,
-                                 plotOutput("labTestHist"))))
+               tabPanel("LB", #LB ----
+                        tabsetPanel(
+                          tabPanel("LB Findings",
+                                   fluidRow(
+                                     br(),
+                                     column(width = 2,
+                                            selectInput("LBTESTCD",
+                                                        "Select LBTESTCD:",
+                                                        availableLBTESTCD)),
+                                     column(width = 2,
+                                            radioButtons("dist", "Distribution type:",
+                                                         c("Normal" = "norm",
+                                                           "Log-normal" = "lnorm"))),
+                                     column(width = 7,offset = 1,
+                                            plotOutput("labTestHist")))),
+                          tabPanel("Individual Records",
+                                   checkboxInput('lb_hide_check_column', label = 'Show Only Table', 
+                                                 value = 0),
+                                   br(),
+                                   uiOutput('lb_indiv_table')),
+                          
+                          tabPanel("Aggregate Table",
+                                   DT::dataTableOutput('lb_agg_tab'))
+                          
+                        )
+                        ),
+               tabPanel("CL",
+                        tabsetPanel(
+                          tabPanel("Individual Records",
+                                   checkboxInput("cl_hide_check_column", label = "Show Only Table",
+                                                 value = 0),
+                                   br(),
+                                   uiOutput("cl_indiv_table")),
+                          tabPanel("Aggregate Table",
+                                   DT::dataTableOutput('cl_agg_tab')))),
+               tabPanel("BW",
+                        tabsetPanel(
+                          tabPanel("Individual Records",
+                                   checkboxInput("bw_hide_check_column", label = "Show Only Table",
+                                                 value = 0),
+                                   br(),
+                                   uiOutput("bw_indiv_table")),
+                          tabPanel("Aggregate Table",
+                                   DT::dataTableOutput('bw_agg_tab'))))
+               
                )))
 
 
@@ -451,10 +495,9 @@ server <- function(input, output, session) {
   #### get MI individual records table ----
   MI_subject <- reactive({
     animal_list <- animalList()
-    mi_sub <- sendigR::getSubjData(dbToken = dbToken, domain = 'mi', animalList =  animal_list)
-    #mi_sub_2 <- subset(mi_sub, select= input$filter_column)
-    print(str(mi_sub))
-    #print(head(mi_sub))
+    mi_sub <- sendigR::getSubjData(dbToken = dbToken, domain = 'mi',
+                                   animalList =  animal_list,
+                                   colList = sub_mi_col_names)
     mi_sub
   })
  
@@ -514,6 +557,7 @@ server <- function(input, output, session) {
   output$mi_subj <- DT::renderDataTable({
     
     tab <- DT::datatable(table_to_show(),
+                         filter = list(position = 'top'),
                          options = list(
                            dom = "lfrtipB",
                            buttons = c("csv", "excel", "pdf"),
@@ -535,6 +579,90 @@ server <- function(input, output, session) {
 
   
   ########################### LB TAB #######################################
+  
+  #### get LB individual records table ----
+  LB_subject <- reactive({
+    animal_list <- animalList()
+    lb_sub <- sendigR::getSubjData(dbToken = dbToken, domain = 'lb',
+                                   animalList =  animal_list)
+    lb_sub
+  })
+  
+
+  
+  LB_column <- reactive({
+    if (nrow(LB_subject())>0) {
+      get_col_name <- colnames(LB_subject())
+      
+    } 
+    get_col_name
+  })
+  
+  lb_table_to_show <- reactive({
+    tabl <- LB_subject()
+    tabl <- subset(tabl, select=input$lb_filter_column)
+    tabl
+  })
+  
+  
+  lb_selected_column_to_show <- reactive({
+    col_selected <- intersect(lb_col_names_selected,LB_column())
+    col_selected
+    
+  })
+  #### MI individual record table UI with hide/show side column ----
+  
+  output$lb_indiv_table <- renderUI({
+    
+    if (input$lb_hide_check_column==0) {
+      fluidRow(
+        br(),
+        column(width = 1,
+               checkboxGroupInput(inputId = 'lb_filter_column', label = "Display Column",
+                                  choices = LB_column(),
+                                  selected = lb_selected_column_to_show())),
+        column(width = 11,
+               DT::dataTableOutput('lb_subj')))
+    } else {
+      fluidRow(
+        br(),
+        column(width = 12,
+               DT::dataTableOutput('lb_subj')))
+    }
+  })
+  
+  #### update selected column in LB individual table
+  observeEvent(input$lb_hide_check_column,{
+    updateCheckboxGroupInput(session = session, inputId = 'lb_filter_column',
+                             selected = input$lb_filter_column)
+  })
+  
+  
+  #### output rendertable for LB individual table
+  output$lb_subj <- DT::renderDataTable({
+  
+    tab <- DT::datatable(lb_table_to_show(),
+                         filter = list(position = 'top'),
+                         options = list(
+                           dom = "lfrtipB",
+                           buttons = c("csv", "excel", "pdf"),
+                           #colReorder = TRUE,
+                           scrollY = TRUE,
+                           scrollX=TRUE,
+                           pageLength = 10,
+                           #columnDefs = list(list(className = "dt-center", targets = "_all")),
+                           initComplete = JS(
+                             "function(settings, json) {",
+                             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                             "}")))
+    
+    tab
+    
+  })
+  
+  #### MI aggregate table
+  
+  
   
   # LB displays a histogram 
   # and probability density
@@ -593,6 +721,92 @@ server <- function(input, output, session) {
   # user selected x and y 
   # axis as liver enzyme
   # responses. 
+ 
+  
+  ################### CL TAB ########################
+  
+  #### get CL individual records table ----
+  CL_subject <- reactive({
+    animal_list <- animalList()
+    cl_sub <- sendigR::getSubjData(dbToken = dbToken, domain = 'cl',
+                                   animalList =  animal_list)
+    cl_sub
+  })
+  
+  
+  
+  CL_column <- reactive({
+    if (nrow(CL_subject())>0) {
+      get_col_name <- colnames(CL_subject())
+      
+    } 
+    get_col_name
+  })
+  
+  cl_table_to_show <- reactive({
+    tabl <- CL_subject()
+    tabl <- subset(tabl, select=input$cl_filter_column)
+    tabl
+  })
+  
+  
+  cl_selected_column_to_show <- reactive({
+    col_selected <- intersect(cl_col_names_selected,CL_column())
+    col_selected
+    
+  })
+  #### MI individual record table UI with hide/show side column ----
+  
+  output$cl_indiv_table <- renderUI({
+    
+    if (input$cl_hide_check_column==0) {
+      fluidRow(
+        br(),
+        column(width = 1,
+               checkboxGroupInput(inputId = 'cl_filter_column', label = "Display Column",
+                                  choices = CL_column(),
+                                  selected = cl_selected_column_to_show())),
+        column(width = 11,
+               DT::dataTableOutput('cl_subj')))
+    } else {
+      fluidRow(
+        br(),
+        column(width = 12,
+               DT::dataTableOutput('cl_subj')))
+    }
+  })
+  
+  #### update selected column in cl individual table
+  observeEvent(input$cl_hide_check_column,{
+    updateCheckboxGroupInput(session = session, inputId = 'cl_filter_column',
+                             selected = input$cl_filter_column)
+  })
+  
+  
+  #### output rendertable for cl individual table
+  output$cl_subj <- DT::renderDataTable({
+    
+    tab <- DT::datatable(cl_table_to_show(),
+                         filter = list(position = 'top'),
+                         options = list(
+                           dom = "lfrtipB",
+                           buttons = c("csv", "excel", "pdf"),
+                           #colReorder = TRUE,
+                           scrollY = TRUE,
+                           scrollX=TRUE,
+                           pageLength = 10,
+                           #columnDefs = list(list(className = "dt-center", targets = "_all")),
+                           initComplete = JS(
+                             "function(settings, json) {",
+                             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                             "}")))
+    
+    tab
+    
+  })
+  
+  #### MI aggregate table
+  
   
   #################### BW Tab ###############################
   
@@ -608,6 +822,92 @@ server <- function(input, output, session) {
       geom_line()
     
   })
+  
+  
+  #### get BW individual records table ----
+  BW_subject <- reactive({
+    animal_list <- animalList()
+    bw_sub <- sendigR::getSubjData(dbToken = dbToken, domain = 'bw',
+                                   animalList =  animal_list)
+    bw_sub
+  })
+  
+  
+  
+  BW_column <- reactive({
+    if (nrow(BW_subject())>0) {
+      get_col_name <- colnames(BW_subject())
+      
+    } 
+    get_col_name
+  })
+  
+  bw_table_to_show <- reactive({
+    tabl <- BW_subject()
+    tabl <- subset(tabl, select=input$bw_filter_column)
+    tabl
+  })
+  
+  
+  bw_selected_column_to_show <- reactive({
+    col_selected <- intersect(bw_col_names_selected,BW_column())
+    col_selected
+    
+  })
+  #### MI individual record table UI with hide/show side column ----
+  
+  output$bw_indiv_table <- renderUI({
+    
+    if (input$bw_hide_check_column==0) {
+      fluidRow(
+        br(),
+        column(width = 1,
+               checkboxGroupInput(inputId = 'bw_filter_column', label = "Display Column",
+                                  choices = BW_column(),
+                                  selected = bw_selected_column_to_show())),
+        column(width = 11,
+               DT::dataTableOutput('bw_subj')))
+    } else {
+      fluidRow(
+        br(),
+        column(width = 12,
+               DT::dataTableOutput('bw_subj')))
+    }
+  })
+  
+  #### update selected column in bw individual table
+  observeEvent(input$bw_hide_check_column,{
+    updateCheckboxGroupInput(session = session, inputId = 'bw_filter_column',
+                             selected = input$bw_filter_column)
+  })
+  
+  
+  #### output rendertable for bw individual table
+  output$bw_subj <- DT::renderDataTable({
+    
+    tab <- DT::datatable(bw_table_to_show(),
+                         filter = list(position = 'top'),
+                         options = list(
+                           dom = "lfrtipB",
+                           buttons = c("csv", "excel", "pdf"),
+                           #colReorder = TRUE,
+                           scrollY = TRUE,
+                           scrollX=TRUE,
+                           pageLength = 10,
+                           #columnDefs = list(list(className = "dt-center", targets = "_all")),
+                           initComplete = JS(
+                             "function(settings, json) {",
+                             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                             "}")))
+    
+    tab
+    
+  })
+  
+  #### BW aggregate table
+  
+  
+  
   
   ################## eDish #############################
   
