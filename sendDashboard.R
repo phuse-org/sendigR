@@ -555,8 +555,10 @@ server <- function(input, output, session) {
   
   #### output rendertable for MI individual table
   output$mi_subj <- DT::renderDataTable({
+    tab <- table_to_show()
+    tab <- tab %>% mutate_if(is.character,as.factor)
     
-    tab <- DT::datatable(table_to_show(),
+    tab <- DT::datatable(tab,
                          filter = list(position = 'top'),
                          options = list(
                            dom = "lfrtipB",
@@ -640,8 +642,10 @@ server <- function(input, output, session) {
   
   #### output rendertable for LB individual table
   output$lb_subj <- DT::renderDataTable({
+    tab <- lb_table_to_show()
+    tab <- tab %>% mutate_if(is.character,as.factor)
   
-    tab <- DT::datatable(lb_table_to_show(),
+    tab <- DT::datatable(tab,
                          filter = list(position = 'top'),
                          options = list(
                            dom = "lfrtipB",
@@ -785,8 +789,10 @@ server <- function(input, output, session) {
   
   #### output rendertable for cl individual table
   output$cl_subj <- DT::renderDataTable({
+    tab <- cl_table_to_show()
+    tab <- tab %>% mutate_if(is.character,as.factor)
     
-    tab <- DT::datatable(cl_table_to_show(),
+    tab <- DT::datatable(tab,
                          filter = list(position = 'top'),
                          options = list(
                            dom = "lfrtipB",
@@ -805,7 +811,7 @@ server <- function(input, output, session) {
     
   })
   
-  #### MI aggregate table
+  #### CL aggregate table
   
   
   #################### BW Tab ###############################
@@ -884,8 +890,10 @@ server <- function(input, output, session) {
   
   #### output rendertable for bw individual table
   output$bw_subj <- DT::renderDataTable({
+    tab <- bw_table_to_show()
+    tab <- tab %>% mutate_if(is.character,as.factor)
     
-    tab <- DT::datatable(bw_table_to_show(),
+    tab <- DT::datatable(tab,
                          filter = list(position = 'top'),
                          options = list(
                            dom = "lfrtipB",
