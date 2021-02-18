@@ -105,9 +105,6 @@ mi_col_names <- c('STUDYID','DOMAIN','USUBJID','MISEQ','MIGRPID','MIREFID','MISP
                   'MISPCCND','MISPCUFL','MILAT','MIDIR','MIMETHOD','MIEVAL','MISEV','MIDTHREL','MIDTC','MIDY','SEX',
                   'ROUTE','TCNTRL','SPECIES','STRAIN','SDESIGN','STSTDTC')
 
-sub_mi_col_names <- c('STUDYID','DOMAIN','USUBJID','MISEQ','MIGRPID','MIREFID','MISPID','MITESTCD','MITEST','MIBODSYS',
-                  'MIORRES','MIRESCAT','MISTAT','MIREASND','MINAM','MISPEC','MIANTREG',
-                  'MISPCCND','MISPCUFL','MILAT','MIDIR','MIMETHOD','MIEVAL','MISEV','MIDTHREL','MIDTC','MIDY')
 # list of column that by default selected in MI individual records table
 mi_col_names_selected <- c('STUDYID','USUBJID','MIBODSYS', 'MISTRESC','MIRESCAT','MICHRON','MIDISTR','MISPEC',
                            'MISEV','MIDTC','MIDY','SEX','ROUTE','TCNTRL','SPECIES','STRAIN')
@@ -496,8 +493,7 @@ server <- function(input, output, session) {
   MI_subject <- reactive({
     animal_list <- animalList()
     mi_sub <- sendigR::getSubjData(dbToken = dbToken, domain = 'mi',
-                                   animalList =  animal_list,
-                                   colList = sub_mi_col_names)
+                                   animalList =  animal_list)
     mi_sub
   })
  
