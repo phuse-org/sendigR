@@ -100,19 +100,24 @@ values$selected_routes <- NULL
 # 'ROUTE','SPECIES','STRAIN','SEX','TCNTRL','SDESIGN','STSTDTC')
 
 #order of column in MI individual records table to match with excel file or sendig
-mi_col_names <- c('STUDYID','DOMAIN','USUBJID','MISEQ','MIGRPID','MIREFID','MISPID','MITESTCD','MITEST','MIBODSYS',
-                  'MIORRES','MISTRESC','MIRESCAT','MICHRON','MIDISTR','MISTAT','MIREASND','MINAM','MISPEC','MIANTREG',
-                  'MISPCCND','MISPCUFL','MILAT','MIDIR','MIMETHOD','MIEVAL','MISEV','MIDTHREL','MIDTC','MIDY','SEX',
+mi_col_names <- c('STUDYID','DOMAIN','USUBJID','MISEQ','MIGRPID','MIREFID',
+                  'MISPID','MITESTCD','MITEST','MIBODSYS','MIORRES','MISTRESC',
+                  'MIRESCAT','MICHRON','MIDISTR','MISTAT','MIREASND','MINAM',
+                  'MISPEC','MIANTREG','MISPCCND','MISPCUFL','MILAT','MIDIR',
+                  'MIMETHOD','MIEVAL','MISEV','MIDTHREL','MIDTC','MIDY','SEX',
                   'ROUTE','TCNTRL','SPECIES','STRAIN','SDESIGN','STSTDTC')
 
 # list of column that by default selected in MI individual records table
-mi_col_names_selected <- c('STUDYID','USUBJID','MIBODSYS', 'MISTRESC','MIRESCAT','MICHRON','MIDISTR','MISPEC',
-                           'MISEV','MIDTC','MIDY','SEX','ROUTE','TCNTRL','SPECIES','STRAIN')
+mi_col_names_selected <- c('STUDYID','USUBJID','MIBODSYS', 'MISTRESC','MIRESCAT',
+                           'MICHRON','MIDISTR','MISPEC','MISEV','MIDTC','MIDY',
+                           'SEX','ROUTE','TCNTRL','SPECIES','STRAIN')
 
-lb_col_names_selected <- c('STUDYID','USUBJID','LBTEST','LBTESTCD','LBORRES','LBORRESU',
-                           'LBSTRESC','LBSTRESN','LBSTRESU','LBSPEC')
-cl_col_names_selected <- c('STUDYID','USUBJID','CLTESTCD','CLTEST','CLCAT','CLORRES','CLSTRESC','CLRESCAT')
-bw_col_names_selected <- c('STUDYID','USUBJID','BWTEST','BWSTRESN','BWSTRESU','VISITDY')
+lb_col_names_selected <- c('STUDYID','USUBJID','LBTEST','LBTESTCD','LBORRES',
+                           'LBORRESU','LBSTRESC','LBSTRESN','LBSTRESU','LBSPEC')
+cl_col_names_selected <- c('STUDYID','USUBJID','CLTESTCD','CLTEST','CLCAT',
+                           'CLORRES','CLSTRESC','CLRESCAT')
+bw_col_names_selected <- c('STUDYID','USUBJID','BWTEST','BWSTRESN'
+                           ,'BWSTRESU','VISITDY')
 
 
 
