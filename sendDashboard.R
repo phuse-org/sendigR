@@ -579,7 +579,43 @@ server <- function(input, output, session) {
   })
   
  #### MI aggregate table
-
+  
+  output$mi_agg_tab <- DT::renderDataTable({
+    
+    animal_list <- animalList()
+    mi_sub <- MI_subject()
+    
+    grpByCols <- c('SPECIES', 'STRAIN', 'ROUTE', 'MISPEC', 'MISTRESC', 'MISEV')
+    
+    domainData <- merge(animal_list, mi_sub, on = c('STUDYID', 'USUBJID'))
+    
+    domainData$MISPEC <- toupper(domainData$MISPEC)
+    domainData$MISTRESC <- toupper(domainData$MISTRESC)
+    
+    tab <- aggDomain(domainData, grpByCols)
+    
+    print(tab)
+    
+    tab <- DT::datatable(tab,
+                         filter = list(position = 'top'),
+                         options = list(
+                           dom = "lfrtipB",
+                           buttons = c("csv", "excel", "pdf"),
+                           #colReorder = TRUE,
+                           scrollY = TRUE,
+                           scrollX=TRUE,
+                           pageLength = 10,
+                           #columnDefs = list(list(className = "dt-center", targets = "_all")),
+                           initComplete = JS(
+                             "function(settings, json) {",
+                             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                             "}")))
+    
+    tab
+    
+  })
+  
+  
   
   ########################### LB TAB #######################################
   
@@ -666,7 +702,8 @@ server <- function(input, output, session) {
   })
   
   #### MI aggregate table
-  
+
+
   
   
   # LB displays a histogram 

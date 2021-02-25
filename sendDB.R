@@ -315,3 +315,47 @@ GetAnimalGroupsStudy <- function(studyid) {
   return(studyAnimals)
 }
 
+aggDomain <- function(domainData, grpByCols) {
+  # creates an aggregate table from domainData
+  # domainData: should be a data.table that with
+  # both domain data (e.g., MI) merged with animal
+  # meta data.  In the case of the R Shiny App
+  # this is the result of the animalList() reactive
+  # groByCols is a vector of column names in 
+  # domainData for which to summarize stats. 
+  
+  # group by counts and get 
+  # the number of incidence per
+  # group
+  aggData <- domainData %>%
+    group_by_at(grpByCols) %>%
+    summarize(N = n())
+  
+  # do the same for non confident
+  # matches, which are rows with 
+  # no UNCERTAIN_MSG
+  aggDataNonConf <- domainData %>% 
+    filter(!is.na(UNCERTAIN_MSG)) %>%
+    group_by_at(grpByCols) %>%
+    summarize(NonConF = n())
+  
+  # if no UNCERTAIN_MSG, that is
+  # a confident match. 
+  
+  aggDataConf <- domainData %>% 
+    filter(is.na(UNCERTAIN_MSG)) %>%
+    group_by_at(grpByCols) %>%
+    summarize(ConfN = n())  
+  
+  # some groups by have no or all confidence
+  # mataches.  Need to to an outer join and 
+  # replace these as 0s
+  df <- merge(aggData, aggDataConf, by=grpByCols, all=TRUE)
+  df <- merge(df, aggDataNonConf, by=grpByCols, all=TRUE)
+  for(j in seq_along(df)){
+    set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
+  }
+  
+  return(df)
+  
+}
