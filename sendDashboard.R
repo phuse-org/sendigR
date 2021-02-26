@@ -585,18 +585,30 @@ server <- function(input, output, session) {
     animal_list <- animalList()
     mi_sub <- MI_subject()
     
+    
+    # TODO: The columns to display/aggregate 
+    # should be chosen by the user, however
+    # I think the sendigR package always 
+    # return certain columns, e.g., EPOCH
     grpByCols <- c('SPECIES', 'STRAIN', 'ROUTE', 'MISPEC', 'MISTRESC', 'MISEV')
     
     domainData <- merge(animal_list, mi_sub, on = c('STUDYID', 'USUBJID'))
     
     domainData$MISPEC <- toupper(domainData$MISPEC)
     domainData$MISTRESC <- toupper(domainData$MISTRESC)
+
+    # replace Null values with NORMAL
+    domainData$MISTRESC[domainData$MISTRESC == ''] <- 'NORMAL'
     
-    tab <- aggDomain(domainData, grpByCols)
+    # TODO: Do we account for animals that do not have
+    # MI (or maybe other domains?) for which there is 
+    # no record? I know sometimes if result is normal
+    # they will not get recorded.  Maybe this could be
+    # a flag to toggle.
     
-    print(tab)
+    tableData <- aggDomain(domainData, grpByCols)
     
-    tab <- DT::datatable(tab,
+    tab <- DT::datatable(tableData,
                          filter = list(position = 'top'),
                          options = list(
                            dom = "lfrtipB",
