@@ -33,17 +33,27 @@
 #'   \item function to import data for a SEND domain from the specific database
 #' }
 #'
-#' @param dbType Mandatory - type of database
-#' @param dbPath Mandatory - the pointer to the database (path to file or db
-#'   name)
-#' @param dbUser Username - mandatory if login credentials are required for the
-#'   specific db type
-#' @param dbPwd Password - Mandatory if login credentials are required for the
-#'   specific db type
-#' @param dbSchema Optional - The table owner of the SEND table in the specific
-#'   database
-#' @param ctFile Mandatory - name (full path) of CDISC CT file in Excel xls
-#'   format to be imported
+#' @param dbType Mandatory\cr
+#'   The type of database, valid values (case insensitive):
+#'   \itemize{
+#'     \item sqlite
+#'     \iten oracle
+#'   }
+#' @param dbPath Mandatory\cr
+#'   The path to the database (path to file or another kind of db reference)
+#' @param dbCreate Mandatory\cr
+#'   If \code{TRUE}, a new database is to be created.\cr
+#'   Only valid for \code{dbType} sqlite
+#' @param dbUser Mandatory if login credentials are required for the
+#'   specific db type\cr
+#'   The user name to be used for log in to database.
+#' @param dbPwd Mandatory if login credentials are required for the
+#'   specific db type\cr
+#'   The user name to be used for log in to database.
+#' @param dbSchema Optional\cr
+#'   The table owner of the SEND table in the specific database
+#' @param ctFile Mandatory.\cr
+#'   Name (full path) of CDISC CT file in Excel xls format to be imported
 #'
 #' @return Token for the open database connection
 #'
@@ -76,6 +86,7 @@
 #'
 initEnvironment<-function(dbType=NULL,
                           dbPath=NULL,
+                          dbCreate=FALSE,
                           dbUser=NULL,
                           dbPwd=NULL,
                           dbSchema=NULL,
@@ -114,6 +125,12 @@ initEnvironment<-function(dbType=NULL,
   else
     ctDataFile <- importCtFile(ctFile)
 
+  # dbCreate
+  if (isTRUE(is.na(dbCreate)) | isFALSE(typeof(dbCreate) == 'logical'))
+    stop('Parameter dbCreate must be TRUE or FALSE')
+  if (dbCreate & dbType != 'sqlite')
+    stop('Parameter dbCreate=TRUE only allowed for SQLite database')
+
   ## Check for existence of package for the specified db type
   ##
   if (!requireNamespace(as.character(dbProperties[,c('package_name')]), quietly = TRUE))
@@ -121,6 +138,15 @@ initEnvironment<-function(dbType=NULL,
                    as.character(dbProperties[,c('package_name')]),
                    as.character(dbProperties[,c('db_type')])),
           call. = FALSE)
+
+  ## if file based db type - check for existence of db file
+  if (dbType == 'sqlite') {
+    dbFileExists <-file.exists(dbPath)
+    if (!dbFileExists & !dbCreate)
+      stop(paste0('The database file ' , dbPath, ' could not be found'))
+    if (dbCreate & dbFileExists)
+      stop(paste0('Cannot create a new database because the database file ' , dbPath, ' exists.'))
+  }
 
   ## Connect to the database
   #  - execute the function specific for the db type to create the connections
@@ -162,6 +188,7 @@ initEnvironment<-function(dbType=NULL,
   #     - execution of a generic SQL query
   #     - disconnect from database
   return (list(ctDataFile = ctDataFile,
+               dbType = dbType,
                dbHandle = dbHandle,
                dbSchema = dbSchema,
                genericQuery = get(genericQueryName),
@@ -225,14 +252,8 @@ genericQuery <- function(dbToken, queryString, queryParams=NULL) {
 }
 
 ################################################################################
-## Helper functions and metadata
+## Helper functions
 ################################################################################
-
-## The currently supported database types
-validDbTypes <-
-  data.table::data.table(db_type         = c('sqlite',  'oracle'),
-                         req_credentials = c( FALSE,     TRUE),
-                         package_name    = c('RSQLite', 'ROracle'))
 
 ################################################################################
 ##  Check if specified table exists in database

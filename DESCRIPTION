@@ -26,6 +26,8 @@ Imports:
 Suggests: 
     RSQLite,
     ROracle,
+    SASxport,
+    sjlabelled,
     knitr,
     rmarkdown
 VignetteBuilder: knitr

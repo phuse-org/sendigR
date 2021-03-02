@@ -7,6 +7,7 @@
 initEnvironment(
   dbType = NULL,
   dbPath = NULL,
+  dbCreate = FALSE,
   dbUser = NULL,
   dbPwd = NULL,
   dbSchema = NULL,
@@ -14,22 +15,33 @@ initEnvironment(
 )
 }
 \arguments{
-\item{dbType}{Mandatory - type of database}
+\item{dbType}{Mandatory\cr
+The type of database, valid values (case insensitive):
+\itemize{
+\item sqlite
+\iten oracle
+}}
 
-\item{dbPath}{Mandatory - the pointer to the database (path to file or db
-name)}
+\item{dbPath}{Mandatory\cr
+The path to the database (path to file or another kind of db reference)}
 
-\item{dbUser}{Username - mandatory if login credentials are required for the
-specific db type}
+\item{dbCreate}{Mandatory\cr
+If \code{TRUE}, a new database is to be created.\cr
+Only valid for \code{dbType} sqlite}
 
-\item{dbPwd}{Password - Mandatory if login credentials are required for the
-specific db type}
+\item{dbUser}{Mandatory if login credentials are required for the
+specific db type\cr
+The user name to be used for log in to database.}
 
-\item{dbSchema}{Optional - The table owner of the SEND table in the specific
-database}
+\item{dbPwd}{Mandatory if login credentials are required for the
+specific db type\cr
+The user name to be used for log in to database.}
 
-\item{ctFile}{Mandatory - name (full path) of CDISC CT file in Excel xls
-format to be imported}
+\item{dbSchema}{Optional\cr
+The table owner of the SEND table in the specific database}
+
+\item{ctFile}{Mandatory.\cr
+Name (full path) of CDISC CT file in Excel xls format to be imported}
 }
 \value{
 Token for the open database connection
