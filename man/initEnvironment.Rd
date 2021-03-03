@@ -19,7 +19,7 @@ initEnvironment(
 The type of database, valid values (case insensitive):
 \itemize{
 \item sqlite
-\iten oracle
+\item oracle
 }}
 
 \item{dbPath}{Mandatory\cr
@@ -40,8 +40,12 @@ The user name to be used for log in to database.}
 \item{dbSchema}{Optional\cr
 The table owner of the SEND table in the specific database}
 
-\item{ctFile}{Mandatory.\cr
-Name (full path) of CDISC CT file in Excel xls format to be imported}
+\item{ctFile}{Optional.\cr
+Name (full path) of CDISC CT file in Excel xls format to be imported.\cr
+If a values is not specified, a set of SEND CT values included in the
+packages is used by the package's functions. It's the newest CDISC SEND CT
+version at the time of the build of the current version of the package
+which is included.}
 }
 \value{
 Token for the open database connection

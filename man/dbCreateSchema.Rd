@@ -7,14 +7,24 @@
 dbCreateSchema(dbToken)
 }
 \arguments{
-\item{dbToken}{Mandatory - token for the open database connection}
+\item{dbToken}{Mandatory\cr
+Token for the open database connection}
 }
 \description{
-Create all the tables and variables which are described in the SEND ID
-versions 3.0 and 3.1 in the database.
+Create all the domains and variables which are described in the SEND IG
+versions 3.0 and 3.1 in the database - i.e. a union of domains from the
+SEND IG versions and in each domain a union of variables from the the
+SEND IG versions.
+}
+\details{
+The database must be a SQLite database
 }
 \examples{
 \dontrun{
-create DBSchema(myDbToken)
+# Create an empty SQLite database and create the SEND schema
+myDbToken <- initEnvironment(dbType = 'sqlite',
+                             dbPath ='/mydatapath/db/send.db',
+                             dbCreate = TRUE)
+dbCreateSchema(myDbToken)
 }
 }

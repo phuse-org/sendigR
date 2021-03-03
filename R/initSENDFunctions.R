@@ -37,7 +37,7 @@
 #'   The type of database, valid values (case insensitive):
 #'   \itemize{
 #'     \item sqlite
-#'     \iten oracle
+#'     \item oracle
 #'   }
 #' @param dbPath Mandatory\cr
 #'   The path to the database (path to file or another kind of db reference)
@@ -52,8 +52,12 @@
 #'   The user name to be used for log in to database.
 #' @param dbSchema Optional\cr
 #'   The table owner of the SEND table in the specific database
-#' @param ctFile Mandatory.\cr
-#'   Name (full path) of CDISC CT file in Excel xls format to be imported
+#' @param ctFile Optional.\cr
+#'   Name (full path) of CDISC CT file in Excel xls format to be imported.\cr
+#'   If a values is not specified, a set of SEND CT values included in the
+#'   packages is used by the package's functions. It's the newest CDISC SEND CT
+#'   version at the time of the build of the current version of the package
+#'   which is included.
 #'
 #' @return Token for the open database connection
 #'
@@ -120,10 +124,7 @@ initEnvironment<-function(dbType=NULL,
     dbSchema<-""
 
   ## Verifying specified CT file - and import
-  if (is.null(ctFile) | isTRUE(is.na(ctFile)) | isTRUE(ctFile==''))
-    stop(sprintf(errMsg,'ctFile'))
-  else
-    ctDataFile <- importCtFile(ctFile)
+  ctDataFile <- prepareCtMetadata(ctFile)
 
   # dbCreate
   if (isTRUE(is.na(dbCreate)) | isFALSE(typeof(dbCreate) == 'logical'))
@@ -275,37 +276,42 @@ dbListFields<- function(dbToken, table) {
 }
 
 ################################################################################
-## Import specified CDISC CT file
-# - save extracted code lists and value in temporary Rdata files
-# - return the R data file name
-importCtFile<-function(ctFile) {
-  CodelistCode <- NULL
+## Prepare the SEND CT metadata to be used in functions which checks data
+## against specific CDISC code lists.
+# If a CT file is specified
+#  - import code list and values from CT file
+# Else use the CT code lists and value metadata included in package
+# Save code lists and value in temporary Rdata files
+# Return the R data file name
+prepareCtMetadata<-function(ctFile) {
 
-  # Check file is XLS and exists
-  if (! tolower(xfun::file_ext(ctFile)) == 'xls')
-    stop(paste0('The ctFile ' , ctFile, ' is not an XLS file'))
-  if (!file.exists(ctFile)) {
-    stop(paste0('The ctFile ' , ctFile, 'could not be found'))
+  if (!is.null(ctFile) & isFALSE(is.na(ctFile)) & isFALSE(ctFile==''))
+  {
+    # Check file is XLS and exists
+    if (! tolower(xfun::file_ext(ctFile)) == 'xls')
+      stop(paste0('The ctFile ' , ctFile, ' is not an XLS file'))
+    if (!file.exists(ctFile)) {
+      stop(paste0('The ctFile ' , ctFile, 'could not be found'))
+    }
+
+    # Import content from worksheet named SEND<sep>Terminology<something>
+    # - include relevant columns and all rows
+    ctSheets<-readxl::excel_sheets(ctFile)
+    ctAll<-data.table::as.data.table(readxl::read_xls(ctFile,
+                                                      sheet=ctSheets[grepl('send[_ ]terminology',
+                                                                           tolower(ctSheets) )]))[,c("Code", "Codelist Code", "CDISC Submission Value")]
+    data.table::setnames(ctAll, c("Codelist Code","CDISC Submission Value"),
+                         c("CodelistCode","CDISCSubmissionValue"))
+
+    # Extract all code list names
+    CDISCctCodeLists = ctAll[is.na(CodelistCode), c('Code', 'CDISCSubmissionValue')]
+    data.table::setnames(CDISCctCodeLists, c("Code","CDISCSubmissionValue"),
+                                           c("CodelistCode","CodeList"))
+    # Extract all code list values
+    CDISCctCodeValues = ctAll[!is.na(CodelistCode), c('CodelistCode','CDISCSubmissionValue')]
   }
 
-  # Import content from worksheet named SEND<sep>Terminology<something>
-  # - include relevant columns and all rows
-  ctSheets<-readxl::excel_sheets(ctFile)
-  ctAll<-data.table::as.data.table(readxl::read_xls(ctFile,
-                                                    sheet=ctSheets[grepl('send[_ ]terminology',
-                                                                         tolower(ctSheets) )]))[,c("Code", "Codelist Code", "CDISC Submission Value")]
-  data.table::setnames(ctAll, c("Codelist Code","CDISC Submission Value"),
-                       c("CodelistCode","CDISCSubmissionValue"))
-
-
-  # Extract all code list names
-  CDISCctCodeLists = ctAll[is.na(CodelistCode), c('Code', 'CDISCSubmissionValue')]
-  data.table::setnames(CDISCctCodeLists, c("Code","CDISCSubmissionValue"),
-                                         c("CodelistCode","CodeList"))
-  # Extract all code list values
-  CDISCctCodeValues = ctAll[!is.na(CodelistCode), c('CodelistCode','CDISCSubmissionValue')]
-
-  # Save the extracted CDISC CT code lists and values in a temporary RData file
+  # Save the all CDISC CT code lists and values in a temporary RData file
   CDISCctFile = tempfile('CDISCct', fileext='.RData')
   save(CDISCctCodeLists, CDISCctCodeValues, file = CDISCctFile)
 
@@ -314,7 +320,7 @@ importCtFile<-function(ctFile) {
 }
 
 ################################################################################
-## Extract values for specific code lists from extracted CDIUS CT code lists/values
+## Extract values for specific code lists from extracted CDISC CT code lists/values
 getCTCodListValues<-function(dbToken, pCodeList=NULL) {
   if (is.null(pCodeList) | isTRUE(is.na(pCodeList)) | isTRUE(pCodeList=='')) {
     stop('Input parameter codeList must have assigned a code list name')
@@ -330,7 +336,8 @@ getCTCodListValues<-function(dbToken, pCodeList=NULL) {
 
   # Extract and return a character vector with all value for the requested code list
   return(data.table::merge.data.table(CDISCctCodeLists[CodeList==toupper(pCodeList), c('CodelistCode')],
-                                      CDISCctCodeValues[!is.na(CodelistCode)])$CDISCSubmissionValue);
+                                      CDISCctCodeValues[!is.na(CodelistCode)],
+                                      by = 'CodelistCode')$CDISCSubmissionValue);
 }
 
 ################################################################################
@@ -413,6 +420,8 @@ prepareFinalResults <- function(dt, srcCols, addCols) {
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
 db_type <- NULL
-CDISCctCodeLists <- CodeList <- NULL
-CDISCctCodeValues <- CodelistCode <- NULL
+# CDISCctCodeLists <- CodeList <- NULL
+# CDISCctCodeValues <- CodelistCode <- NULL
+CodeList <- NULL
+CodelistCode <- NULL
 
