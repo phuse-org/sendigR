@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "first.last@example.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: The package contains a set of functions to extract and filter data for control animals from a database containing SEND data for a set of non-clinical studies. These data base types are supoorted: sqllite, Oracle.
+Description: The package contains a set of functions to extract and filter data for control animals from a database containing CDISC SEND data for a set of non-clinical studies. These data base types are supoorted: sqllite, Oracle.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

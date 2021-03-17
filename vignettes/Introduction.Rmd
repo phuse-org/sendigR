@@ -1,0 +1,200 @@
+---
+title: "Introduction to sendigR"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+The purpose of the `sendigR` package is to extract data from a set of nonclinical studies stored in [CDISC SEND](https://www.cdisc.org/standards/foundational/send) format in a database to be used for cross study analysis.
+It can either be done in a script execution a set of functions from the package or by execution an encapsulated R Shiny application.
+
+The package supports currently these types of databases:
+
+* [SQLite](https://www.sqlite.org/index.html)
+  It's possible access an existing SEND database or build a database with SEND data imported from SAS transport/xpt files, which then can be accessed.
+* Oracle
+  It's only possible to access an already existing SEND database
+
+This vignettes introduces how to use `sendigR` to:
+
+* initiate the use of the functions.
+* build and maintain a SQLite database of SEND data.
+* filter and extract SEND data from a database.
+* execute the R Shiny application to browse the SEND control data stored in the database.
+
+Familiarity with the CDISC SEND data model and at least basic knowledge about animal studies is necessary to follow this vignette and to use the package.
+
+# Getting started
+
+Before we are ready to use the functions in the package, we must ensure that a minimum of prerequisites are fulfilled.
+
+## Package dependencies 
+
+Beside the required packages listed in the Imports section of [DESCRIPTION](../DESCRIPTION), one or more additional package(s) must be installed:
+
+* If the SEND databases is stored - or are to be build - in a SQLite database:
+    * RSQLite
+* If the SEND databases is stored in an Oracle database:
+    * ROracle
+* If a SEND database are to be build using this package's functions
+    * SASxport
+    * sjlabelled
+* If the sendDashboard app is to be executed:
+    * TO BE ADDED
+
+## Database
+
+If an existing SEND database is to be accessed, it must contain a set of tables and columns representing the domains and variables described in the SEND IG version [3.0](https://www.cdisc.org/standards/foundational/send/sendig-v3-0) or [3.1](https://www.cdisc.org/standards/foundational/send/sendig-v3-1) - or a union of the two versions.
+
+It is required that all names and basic data types (i.e. numerical or character) are as described the the SEND IG.
+
+## Study data to import
+
+If study data are to be imported into a SQLite database, data for each study must be located in a separate folder as [SAS transport](https://documentation.sas.com/?cdcId=pgmsascdc&cdcVersion=9.4_3.5&docsetId=movefile&docsetTarget=n1xbwdre0giahfn11c99yjkpi2yb.htm&locale=en) (or xpt) files.
+
+Multiple studies may be located together in a folder hierarchy as described below.
+
+## SEND controlled terminology
+
+Several of the function in the packages uses CDISC SEND terminology code list to verify validity of the SEND data. The package includes the values for the relevant code lists extracted from the newest CT version at build time. If it is relevant to use another version - newer or older - this version must be downloaded in Excel format from [NCI](https://evs.nci.nih.gov/ftp1/CDISC/SEND/) or [CDISC library archives](https://www.cdisc.org/members-only/cdisc-library-archives) and saved in a folder.
+
+# Function overview.
+
+The package contains 5 sets of functions covering different areas - each of these are described below, including detailed examples.
+
+## Initiation and closure of SEND environment
+
+Before any use of the package's function, a database must be opened and the database must be closed again as the final action.
+
+| Function | Description |
+|-|------------|
+| [initEnvironment](../html/initEnvironment.html) |	Initialize the environment. It must be executed as the absolute first function before any other package functions. It opens an existing or create a new empty database and return a handle to the database, which must be used in all following function calls. |
+| [disconnectDB](../html/disconnectDB.html)       | Close the open database. It must be called as the absolute last function in a session. |   
+ 
+Examples in the following sections demonstrates the use of these functions in a complete work flow.
+
+## Build a SQLite SEND database
+
+It is possible to build an SQLite database with SEND data imported from a set of studies.
+
+| Function | Description |
+|-|------------|
+| [dbCreateSchema](../html/dbCreateSchema.html)     | Create a SEND schema, i.e. all the tables to represent the domains documented in SEND IG, in an open and empty database|
+| [dbImportOneStudy](../html/dbImportOneStudy.html) | Import SEND study data in SAS xport format into a SEND database from a single study folder|   
+| [dbImportStudies](../html/dbImportStudies.html)   | Import SEND study data in SAS xport format into a SEND database from a hierarchy study folders|   
+| [dbDeleteStudies](../html/dbDeleteStudies.html)   | Delete one or more studies in SEND database|   
+
+It should be possible to import data into an existing SQLite SEND database using `dbImportOneStudy` and `dbImportStudies`, even though the tables are not created by `dbCreateSchema`. 
+It is possible to delete studies in any SQLite SEND database `dbDeleteStudies` - whether or not it is created by `dbCreateSchema`. 
+
+To make it possible to import data for a set of studies with `dbImportStudies`, the data should be saved in folder structure like this: 
+```
+/path/to/SEND/datasets  
++-- study01  
+   |   +-- ts.xpt  
+   |   +-- dm.xpt  
+   |   +-- ex.xpt  
+   |   +-- etc.  
++-- study02   
+   |   +-- ts.xpt  
+   |   +-- dm.xpt  
+   |   +-- ex.xpt  
+   |   +-- etc.  
++-- proj1234
+    +-- study11
+        |   +-- ts.xpt  
+        |   +-- dm.xpt  
+        |   +-- ex.xpt  
+        |   +-- etc.
+    +-- study12
+        |   +-- ts.xpt  
+        |   +-- dm.xpt  
+        |   +-- ex.xpt  
+        |   +-- etc.
++-- etc.
+```
+
+### Examples
+
+Create new database, create all the SEND domain tables and import data for a set of studies XPT files saved in a folder hierarchy:
+```R
+dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db', dbCreate=TRUE)
+
+dbCreateSchema(dbToken)
+                             
+status <- dbImportStudies(dbToken, '/path/to/SEND/datasets', 
+                          # Print contiously the status for import each study:
+                          verbose = TRUE)
+
+disconnectDB(dbToken)
+```
+
+Open an existing database and import data for a single study, allow it to replace potential existing data for the the same study in the database.
+Delete another study from the database:
+```R
+dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db')
+
+dbImportOneStudy(dbToken, '/path/to/SEND/datasets/proj1234/study11', overWrite=TRUE)
+
+dbDeleteStudies(dbToken, 'study99')
+
+disconnectDB(dbToken)
+```
+
+## Extract and filter SEND data
+
+| Function | Description |
+|-|------------|
+| [getStudiesSDESIGN](../html/getStudiesSDESIGN.html)       | Extract a list of SEND studies with a specified study design |
+| [getStudiesSTSTDTC](../html/getStudiesSTSTDTC.html)       | Extract a list of SEND studies with study start date within a specified interval|
+| [getControlSubj](../html/getControlSubj.html)             | Extract a list of control animals for a list of studies|
+| [getSubjRoute](../html/getSubjRoute.html)                 | Extract the set of animals of the specified route of administration - or just add actual route of administration for each animal.|
+| [getSubjSpeciesStrain](../html/getSubjSpeciesStrain.html) | Extract the set of animals of the specified species and strain - or just add the species and strain for each animal.|
+| [getSubjSex](../html/getSubjSex.html)                     | Extract the set of animals of the specified sex - or just add the sex of each animal.|
+| [getSubjData](../html/getSubjData.html)                   | Extract data from a subject level domain.|
+| [getFindingsPhase](../html/getFindingsPhase.html)         | Extract a set of findings for a specified study phase - or just add phase for each animal|
+| [getFindingsSubjAge](../html/getFindingsSubjAge.html)     | Add the subject age at finding time - and optionally extract the set of findings within a specified range of age|   
+
+### Example 
+
+Extract data to make this analysis:
+
+What are the most common microscopic findings in control Sprague-Dawley male rats 10 to 14 weeks old that were dosed by oral gavage:
+```R
+
+```
+
+## Execute sendDashboard app
+
+TO BE ADDED 
+
+| Function | Description |
+|-|------------|
+| [TO BE ADDED](../html/TO BE ADDED.html) | | 
+
+### Example 
+
+TO BE ADDED
+
+## Direct access to the database 
+
+| Function | Description |
+|-|------------|
+| [genericQuery](../html/genericQuery.html)  | Execute database query and returns fetched rows |
+
+### Example 
+
+
+
+
+
+
