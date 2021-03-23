@@ -5,7 +5,13 @@
 \title{Import SEND study data in SAS xport format into a SEND database from a
 hierarchy study folders.}
 \usage{
-dbImportStudies(dbToken, xptPathRoot, overWrite = FALSE, verbose = FALSE)
+dbImportStudies(
+  dbToken,
+  xptPathRoot,
+  overWrite = FALSE,
+  verbose = FALSE,
+  logFilePath = NULL
+)
 }
 \arguments{
 \item{dbToken}{Mandatory\cr
@@ -24,6 +30,14 @@ newly imported data.}
 \item{verbose}{Optional\cr
 Whether the status of the import shall be continuously written to the
 console for for each processed sub folder.}
+
+\item{logFilePath}{Optional\cr
+A path to a folder to contain a log file with the status of the import for
+each processed sub folder.\cr
+The name of the log file is \code{logFilePath/dbImportStudies_<date &
+  time>.log} where \code{<date & time>} is the actual date and time in format
+\code{YYYYmmdd_HH24MISS} - e.g. \code{dbImportStudies_20210323_084150.log}
+if the function was called 23. March 2021 at 8:41:50}
 }
 \value{
 A list containing a named element with the the import status for each

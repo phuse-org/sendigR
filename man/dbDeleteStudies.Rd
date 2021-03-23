@@ -14,7 +14,7 @@ Token for the open database connection}
 A list or vector of study id values}
 }
 \description{
-Deletes data from all domains for one or more studies in a SQLite based SEND
+Deletes data from all domains for one or more studies in an SQLite based SEND
 database
 }
 \examples{

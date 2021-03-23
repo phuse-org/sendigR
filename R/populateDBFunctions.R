@@ -173,6 +173,13 @@ dbImportOneStudy <- function(dbToken,
 #' @param verbose Optional\cr
 #'   Whether the status of the import shall be continuously written to the
 #'   console for for each processed sub folder.
+#' @param logFilePath Optional\cr
+#'   A path to a folder to contain a log file with the status of the import for
+#'   each processed sub folder.\cr
+#'   The name of the log file is \code{logFilePath/dbImportStudies_<date &
+#'   time>.log} where \code{<date & time>} is the actual date and time in format
+#'   \code{YYYYmmdd_HH24MISS} - e.g. \code{dbImportStudies_20210323_084150.log}
+#'   if the function was called 23. March 2021 at 8:41:50
 #' @return A list containing a named element with the the import status for each
 #'   of the processed sub folders.\cr
 #'   Each of the statuses are one of three variants:
@@ -199,13 +206,23 @@ dbImportOneStudy <- function(dbToken,
 dbImportStudies <- function(dbToken,
                             xptPathRoot,
                             overWrite = FALSE,
-                            verbose = FALSE)
+                            verbose = FALSE,
+                            logFilePath = NULL)
 {
   if (dbToken$dbType != 'sqlite')
     stop("Function is only valid to execute for dbType = 'sqlite'")
 
   if (!file.exists(xptPathRoot))
-    stop(sprintf('Specified path %s cannot be found', xptPathRoot))
+    stop(sprintf('Specified XPT path %s cannot be found', xptPathRoot))
+
+  if (!is.null(logFilePath))
+    if (!file.exists(logFilePath))
+      stop(sprintf('Specified log file path %s cannot be found', logFilePath))
+    else {
+      logFileName <- paste0(logFilePath, '/', 'dbImportStudies_', format(Sys.time(), '%Y%m%d_%H%M%S'), '.log')
+      logr::log_open(logFileName, logdir = FALSE, show_notes = FALSE)
+      print(paste0('Writing status to log file: ', logFileName))
+    }
 
   # initiate list to hold status for load of each study folder
   statusAll <- list()
@@ -220,11 +237,11 @@ dbImportStudies <- function(dbToken,
         tryCatch(
           {
             loadStudyData(dbToken, pathNameFull, overWrite)
-            statusTxt <- 'OK'
+            'OK'
           }
           ,
           warning = function(warn) {
-            paste0('Warning: ', warn$message)
+            paste0('OK with warning(s): ', warn$message)
           }
           ,
           error = function(err) {
@@ -234,14 +251,20 @@ dbImportStudies <- function(dbToken,
       statusAll[[pathName]] <- statusTxt
       if (verbose)
         print(paste0(pathName, ': ', statusTxt))
+      if (!is.null(logFilePath))
+        logr::log_print(paste0(pathName, ': ', statusTxt),
+                        console = FALSE,
+                        blank_after = FALSE)
     }
   }
+  if (!is.null(logFilePath))
+    logr::log_close()
   return(statusAll)
 }
 
 #' Delete one or more studies in SEND database
 #'
-#' Deletes data from all domains for one or more studies in a SQLite based SEND
+#' Deletes data from all domains for one or more studies in an SQLite based SEND
 #' database
 #'
 #' @param dbToken Mandatory\cr
@@ -268,6 +291,95 @@ dbDeleteStudies <- function(dbToken,
     deleteStudyData(dbToken, studyId)
   }
 }
+
+
+#' Create indexes in SEND database
+#'
+#' Create a set of indexes on the tables in an SQLite SEND database to
+#' optimize performance of extraction of data from the different functions in
+#' the package.\cr
+#' All the indexes are named \code{<domain name>_sendigr_<nn>} - .e.g.
+#' \code{TS_sendigr_01}.\cr If any additional indexes are manually created in
+#' the database, avoid to include 'sendigr' in the name, because all existing
+#' indexes with that included in the name will be initially deleted when
+#' execution the function with \code{replaceExisting = TRUE}.\cr
+#' It's recommended to wait with the creation of the indexes until the major
+#' amount of studies to be loaded in to the database are loaded.
+#'
+#' @param dbToken  Mandatory\cr
+#'  Token for the open database connection
+#' @param replaceExisting Optional\cr
+#'   Whether an already existing set of indexes in the database may be replaced
+#'   by a new set of indexes.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' createAllIndexes(myDbToken)
+#' }
+#'
+dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
+
+  # Create one index
+  creIdx <- function(tab, idxName, colListStr) {
+    RSQLite::dbClearResult(RSQLite::dbSendStatement(dbToken$dbHandle,
+                                                    sprintf("create index %s_sendigr_%s on %s (%s)",
+                                                            tab, idxName, tab, colListStr)))
+  }
+
+  if (dbToken$dbType != 'sqlite')
+    stop("Function is only valid to execute for dbType = 'sqlite'")
+
+  ## Check if any sendigr indexes exist - and delete if appropriate
+  idxList <-
+    genericQuery(dbToken,
+                 "select name from sqlite_master
+                   where type = 'index'
+                     and name like '%sendigr%'")$name
+  if (length(idxList) != 0)
+    if (replaceExisting) {
+      for (idxName in idxList)
+        RSQLite::dbClearResult(RSQLite::dbSendStatement(dbToken$dbHandle,
+                                                        sprintf("drop index %s",
+                                                                idxName)))
+    } else {
+      stop('There are already existing indexes, execute with replaceExisting=TRUE to replace with new set of indexes')
+    }
+
+  ## Generate indexes for specific optimization of the data extraction functions
+
+  # TS
+  creIdx('ts','01', 'studyid, tsparmcd, tsval')
+  creIdx('ts','02', 'studyid, tsparmcd, tsgrpid, tsval')
+
+  # TX
+  creIdx('tx','01', 'studyid, txparmcd, setcd, txval')
+
+  # DM
+  creIdx('dm', '01', 'studyid, setcd')
+  creIdx('dm', '02', 'studyid, usubjid')
+  creIdx('dm', '03', 'studyid, setcd, sex, usubjid')
+
+  # POOLDEF
+  creIdx('pooldef', '01', 'studyid, poolid, usubjid')
+
+  # EX
+  creIdx('ex', '01', 'studyid, exroute, usubjid, poolid')
+
+  ## Generate general indexes for the remaining tables on STUDYID and
+  ## (if included) USUBJID
+
+  exclTabList = c('TS','TX','DM','POOLDEF','EX')
+
+  for (tab in setdiff(getDbTables(dbToken), exclTabList)) {
+    if ('USUBJID' %in% dbListFields(dbToken, tab))
+      creIdx(tab, '01', 'studyid, usubjid')
+    else
+      creIdx(tab, '01', 'studyid')
+  }
+}
+
 
 
 ##############################################################################
@@ -379,15 +491,6 @@ loadStudyData <- function(dbToken,
         stop(sprintf('Imported domain %s contains another STUDYID value than TS', domain))
     }
 
-    # # Check if all required columns are not empty
-    # emptyCols <- c()
-    # for (col in setdiff(requiredCols, 'STUDYID')) {
-    #   if (nrow(dtDomain[!eval(quote(isTRUE(nchar(as.character(col)) > 0))),..col]) == 0)
-    #     emptyCols <- c(emptyCols, col)
-    # }
-    # if (!is.null(emptyCols))
-    #   stop(sprintf('Imported domain %s contains rows with values in required column(s): %s', domain, emptyCols))
-
     # Check for correct value of col DOMAIN
     if ('DOMAIN' %in% names(dtDomain)) {
       domainvalue <- unique(dtDomain$DOMAIN)
@@ -416,7 +519,7 @@ loadStudyData <- function(dbToken,
   }
   ### End of loadDomainData
 
-##############################################################################
+  ##############################################################################
 
   # Get list of xpt files - if any
   filesAll <-
@@ -454,6 +557,12 @@ loadStudyData <- function(dbToken,
 
   ## Import and load all domains in a transaction
 
+  # Do a rollback to ensure we are not unexpected in an open transaction
+  #  - ignore error message if no transaction is open
+  tryCatch(
+    { RSQLite::dbRollback(dbToken$dbHandle) }
+    , error = function(errMsg) { } )
+  # Open new transaction
   RSQLite::dbBegin(dbToken$dbHandle)
   tryCatch(
     {

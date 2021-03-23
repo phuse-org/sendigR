@@ -89,6 +89,7 @@ It is possible to build an SQLite database with SEND data imported from a set of
 | Function | Description |
 |-|------------|
 | [dbCreateSchema](../html/dbCreateSchema.html)     | Create a SEND schema, i.e. all the tables to represent the domains documented in SEND IG, in an open and empty database|
+| [dbCreateIndexes](../html/dbCreateIndexes.html)   | Create a set of indexes on the tables in a  SEND database to optimize performance of extraction of data|   
 | [dbImportOneStudy](../html/dbImportOneStudy.html) | Import SEND study data in SAS xport format into a SEND database from a single study folder|   
 | [dbImportStudies](../html/dbImportStudies.html)   | Import SEND study data in SAS xport format into a SEND database from a hierarchy study folders|   
 | [dbDeleteStudies](../html/dbDeleteStudies.html)   | Delete one or more studies in SEND database|   
@@ -125,7 +126,7 @@ To make it possible to import data for a set of studies with `dbImportStudies`, 
 
 ### Examples
 
-Create new database, create all the SEND domain tables and import data for a set of studies XPT files saved in a folder hierarchy:
+Create new database, create all the SEND domain tables and import data for a set of studies XPT files saved in a folder hierarchy - create a set of indexes to optimize data extraction performance for ttheeh sendigR functions:
 ```R
 dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db', dbCreate=TRUE)
 
@@ -134,6 +135,8 @@ dbCreateSchema(dbToken)
 status <- dbImportStudies(dbToken, '/path/to/SEND/datasets', 
                           # Print contiously the status for import each study:
                           verbose = TRUE)
+      
+dbCreateteIndexes(dbToken)
 
 disconnectDB(dbToken)
 ```
@@ -165,6 +168,8 @@ disconnectDB(dbToken)
 | [getFindingsSubjAge](../html/getFindingsSubjAge.html)     | Add the subject age at finding time - and optionally extract the set of findings within a specified range of age|   
 
 ### Example 
+
+... this section is under construction ...
 
 Extract data to make this analysis:
 
