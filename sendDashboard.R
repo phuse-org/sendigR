@@ -438,8 +438,9 @@ server <- function(input, output, session) {
         buttons = c("csv", "excel", "copy", "pdf"),
         colReorder = TRUE,
         scrollY = TRUE,
+        scrollX=TRUE,
         pageLength = 10,
-        columnDefs = list(list(className = "dt-center", targets = "_all")),
+        #columnDefs = list(list(className = "dt-center", targets = "_all")),
         initComplete = JS(
           "function(settings, json) {",
           "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
@@ -483,7 +484,7 @@ server <- function(input, output, session) {
         colReorder = TRUE,
         scrollY = TRUE,
         pageLength = 10,
-        columnDefs = list(list(className = "dt-left", targets = "_all")),
+        #columnDefs = list(list(className = "dt-left", targets = "_all")),
         initComplete = JS(
           "function(settings, json) {",
           "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
