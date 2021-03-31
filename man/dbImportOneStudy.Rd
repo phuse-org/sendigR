@@ -28,8 +28,8 @@ These requirements to the content of the folder must be fulfilled:
 \itemize{
 \item The folder must contain some SAS xport files named
 \code{[send domain].xpt} - the case of the file names doesn't care
-\item A set of required domain files must be included: \code{ts.xpt},
-\code{tx.xpt}, \code{dm.xpt}.
+\item A minimum set of required domain files must be included:
+\code{ts.xpt}, \code{tx.xpt}, \code{dm.xpt}.
 \item Each xpt file must contain one data table with same name as the file
 name - i.e. a send domain name.
 \item Each xpt file must contain a set of required column(s).\cr

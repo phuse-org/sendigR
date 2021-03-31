@@ -80,8 +80,8 @@ dbCreateSchema <- function(dbToken) {
 #' \itemize{
 #'   \item The folder must contain some SAS xport files named
 #'   \code{[send domain].xpt} - the case of the file names doesn't care
-#'   \item A set of required domain files must be included: \code{ts.xpt},
-#'   \code{tx.xpt}, \code{dm.xpt}.
+#'   \item A minimum set of required domain files must be included:
+#'   \code{ts.xpt}, \code{tx.xpt}, \code{dm.xpt}.
 #'   \item Each xpt file must contain one data table with same name as the file
 #'   name - i.e. a send domain name.
 #'   \item Each xpt file must contain a set of required column(s).\cr
@@ -157,6 +157,9 @@ dbImportOneStudy <- function(dbToken,
 #' If parameter \code{verbose = TRUE}, the status for each processed sub folder
 #' is also printed to the console each time a sub folder has been processed -
 #' i.e. it's possible to followed the progress of the import process.
+#' If parameter \code{logFilePath} has been specified with an existing path to a
+#' folder, the status for each processed sub folder is also printed to a log
+#' file in this folder each time a sub folder has been processed.
 #'
 #' The function must be used against an SQLite based SEND database.
 #'
@@ -202,6 +205,11 @@ dbImportOneStudy <- function(dbToken,
 #' # Import studies from another set of folders - allow to overwrite existing
 #' # study data in the database
 #' dbImportStudies(myDbToken,'/mydatapath/project123/studies', overwrite = TRUE)
+#' # Import studies from a set of folders , save the status of each study load
+#' # in a log file
+#' dbImportStudies(myDbToken,'/mydatapath/studies',
+#'                 logFilePath = '/my/log file/path')
+
 #' }
 dbImportStudies <- function(dbToken,
                             xptPathRoot,
@@ -365,7 +373,8 @@ dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
   creIdx('pooldef', '01', 'studyid, poolid, usubjid')
 
   # EX
-  creIdx('ex', '01', 'studyid, exroute, usubjid, poolid')
+  creIdx('ex', '01', 'studyid, exroute, usubjid')
+  creIdx('ex', '02', 'studyid, exroute, poolid')
 
   ## Generate general indexes for the remaining tables on STUDYID and
   ## (if included) USUBJID

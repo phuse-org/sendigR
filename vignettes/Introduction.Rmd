@@ -22,7 +22,7 @@ The package supports currently these types of databases:
 * [SQLite](https://www.sqlite.org/index.html)
   It's possible access an existing SEND database or build a database with SEND data imported from SAS transport/xpt files, which then can be accessed.
 * Oracle
-  It's only possible to access an already existing SEND database
+  It's possible to access an already existing SEND database
 
 This vignettes introduces how to use `sendigR` to:
 
@@ -42,12 +42,12 @@ Before we are ready to use the functions in the package, we must ensure that a m
 Beside the required packages listed in the Imports section of [DESCRIPTION](../DESCRIPTION), one or more additional package(s) must be installed:
 
 * If the SEND databases is stored - or are to be build - in a SQLite database:
-    * RSQLite
+    * _RSQLite_
 * If the SEND databases is stored in an Oracle database:
-    * ROracle
+    * _ROracle_
 * If a SEND database are to be build using this package's functions
-    * SASxport
-    * sjlabelled
+    * _SASxport_
+    * _sjlabelled_
 * If the sendDashboard app is to be executed:
     * TO BE ADDED
 
@@ -59,7 +59,7 @@ It is required that all names and basic data types (i.e. numerical or character)
 
 ## Study data to import
 
-If study data are to be imported into a SQLite database, data for each study must be located in a separate folder as [SAS transport](https://documentation.sas.com/?cdcId=pgmsascdc&cdcVersion=9.4_3.5&docsetId=movefile&docsetTarget=n1xbwdre0giahfn11c99yjkpi2yb.htm&locale=en) (or xpt) files.
+If study data are to be imported into a SQLite database, data for each study must be located in a separate folder as [SAS transport](https://documentation.sas.com/?cdcId=pgmsascdc&cdcVersion=9.4_3.5&docsetId=movefile&docsetTarget=n1xbwdre0giahfn11c99yjkpi2yb.htm&locale=en) files - also konw as XPT files.
 
 Multiple studies may be located together in a folder hierarchy as described below.
 
@@ -77,9 +77,12 @@ Before any use of the package's function, a database must be opened and the data
 
 | Function | Description |
 |-|------------|
-| [initEnvironment](../html/initEnvironment.html) |	Initialize the environment. It must be executed as the absolute first function before any other package functions. It opens an existing or create a new empty database and return a handle to the database, which must be used in all following function calls. |
+| [initEnvironment](../html/initEnvironment.html) |	Initialize the environment. It must be executed as the absolute first function before any other package functions. It opens an existing or create a new empty database and returns a handle to the database, which must be used in all following function calls. |
 | [disconnectDB](../html/disconnectDB.html)       | Close the open database. It must be called as the absolute last function in a session. |   
- 
+
+The call of `initEnvironment` returns a handle with a reference to the open database and pointers to low level functions accessing the specific type of database. This handle must be given as the first input parameter in the execution of all other function in the package.
+It is possible to open and access multiple databases - also of different types - in the same R session. Just execute `initEnvironment` for each relevant database and save the returned db handles in each distinct variable.
+
 Examples in the following sections demonstrates the use of these functions in a complete work flow.
 
 ## Build a SQLite SEND database
@@ -95,9 +98,9 @@ It is possible to build an SQLite database with SEND data imported from a set of
 | [dbDeleteStudies](../html/dbDeleteStudies.html)   | Delete one or more studies in SEND database|   
 
 It should be possible to import data into an existing SQLite SEND database using `dbImportOneStudy` and `dbImportStudies`, even though the tables are not created by `dbCreateSchema`. 
-It is possible to delete studies in any SQLite SEND database `dbDeleteStudies` - whether or not it is created by `dbCreateSchema`. 
+It is possible to delete studies in any SQLite SEND database `dbDeleteStudies` - whether or not the tables are created by `dbCreateSchema`. 
 
-To make it possible to import data for a set of studies with `dbImportStudies`, the data should be saved in folder structure like this: 
+To make it possible to import data for a set of studies with `dbImportStudies`, the input data should be saved in folder structure like this: 
 ```
 /path/to/SEND/datasets  
 +-- study01  
@@ -124,18 +127,28 @@ To make it possible to import data for a set of studies with `dbImportStudies`, 
 +-- etc.
 ```
 
+It is recommended to download [DB Browser for SQLite](https://sqlitebrowser.org) to look at the data imported into the database.
+
 ### Examples
 
-Create new database, create all the SEND domain tables and import data for a set of studies XPT files saved in a folder hierarchy - create a set of indexes to optimize data extraction performance for ttheeh sendigR functions:
+Create a new database, create all the SEND domain tables and import data for a set of studies XPT files saved in a folder hierarchy - create a set of indexes to optimize data extraction performance for the sendigR functions:
 ```R
-dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db', dbCreate=TRUE)
+# The database is created by the call of  initEnvironment with the parameter dbCreate = TRUE:
+dbToken <- initEnvironment(dbType='sqlite', 
+                           dbPath='/path/to/db/send.db', 
+                           dbCreate=TRUE)
 
+# The tables must be created before any study can be imported
 dbCreateSchema(dbToken)
                              
 status <- dbImportStudies(dbToken, '/path/to/SEND/datasets', 
                           # Print contiously the status for import each study:
-                          verbose = TRUE)
-      
+                          verbose = TRUE,
+                          # sand save the status in a log file:
+                          logFilePath = '/path/to/log file')
+
+# Create a set of indexes to increase query performance for the data extraction functions
+# - they may be created before of after import of data
 dbCreateteIndexes(dbToken)
 
 disconnectDB(dbToken)
@@ -155,6 +168,30 @@ disconnectDB(dbToken)
 
 ## Extract and filter SEND data
 
+These functions are divided into different groups:
+
+* __Extract sets of studies__  
+Each of these functions extracts, filter and return studies for different kinds of conditions.  
+They can all be called with or without a set of studies given as input. In the former case, the extraction/filtering is based on the `TS` subset of input studies. In the latter case, the extraction/filtering is based on the full `TS` table.  
+The naming convention of these function are `getStudies`_`TSPARMCD`_, where _`TSPARMCD`_ is the specific TSPARMCD value handled by the function - e.g. `STSTDTC`.
+* __Extract full set of control animals__  
+One function, `getControlSubj`, which extracts and return the set of control animals for a given input set of study id values.  
+Only 'negative' control animals are included in the set of control animals - i.e. animals which are not treated with any kind of compound.
+* __Extract subsets of animals__  
+Each of these functions take a set of animals as input, extracts and return a subset fulfilling a given condition - e.g. for species or route of administration.  
+It is possible to execute each of these functions with no conditions for filtering - it will then just return the set of input rows with additional variables for the actual kind of attributes, e.g. sex or species/strain.  
+The naming convention of these function are `getSubj`_`attributes`_ where _`attributes`_ is the specific attribute handled by the function - e.g. `Sex`.
+* __Extract subject level data__  
+One function, `getControlSubj`, which extracts and return all rows for a given input set of animals from a specified subject level table - it can be any SEND table including `USUBJID` column.
+* __Extract subsets of findings__  
+Each of these functions take a set of finding rows as input, extracts and return a subset fulfilling a given condition - e.g. for a specific study phase.  
+It is possible to execute each of these functions with no conditions for filtering - it will then just return the set of input rows with additional variables for the actual kind of attributes, e.g. the study phase.  
+The naming convention of these function are `getFindings`_`attributes`_ where _`attributes`_ is the specific attribute handled by the function - e.g. `Phase`.
+
+The functions rely on the _data.table_ package - and all input/output sets of data are data tables.
+
+The complete list of functions:
+
 | Function | Description |
 |-|------------|
 | [getStudiesSDESIGN](../html/getStudiesSDESIGN.html)       | Extract a list of SEND studies with a specified study design |
@@ -165,18 +202,91 @@ disconnectDB(dbToken)
 | [getSubjSex](../html/getSubjSex.html)                     | Extract the set of animals of the specified sex - or just add the sex of each animal.|
 | [getSubjData](../html/getSubjData.html)                   | Extract data from a subject level domain.|
 | [getFindingsPhase](../html/getFindingsPhase.html)         | Extract a set of findings for a specified study phase - or just add phase for each animal|
-| [getFindingsSubjAge](../html/getFindingsSubjAge.html)     | Add the subject age at finding time - and optionally extract the set of findings within a specified range of age|   
+| [getFindingsSubjAge](../html/getFindingsSubjAge.html)     | Add the subject age at finding time - and optionally extract the set of findings within a specified range of ages|   
+
+All the functions have an input parameter called `inclUncertain`, default value is `FALSE`.  
+If a function which is doing any kind of filtering is executed with:
+
+* `inclUncertain = FALSE`  
+only rows where the filtering condition can be confidently matched are included in the output data set.  
+E.g. if `getSubjSpeciesStrain` cannot decide the species for an animal because the value does not match a value in the CDISC SEND CT code list 'value  _SPECIES_, the animal is excluded even though it could be a simple misspelling like 'RAAT' instead of 'RAT'
+* `inclUncertain = TRUE`  
+both rows where the filtering condition can be confidently matched and rows where it's not possible to decide that they does not match the filter condition, because the value cannot be decided with certainty, are included.  
+In the species example above, the animal with species 'RAAT' are included.  
+A variable named `UNCERTAIN_MSG` is included in the output data set - it contains an explanation of the uncertainty for the the uncertain rows.  
+The format of such a message is: _`function id`_`: `_`explanation`_, where _`function id`_ indicates from which function the message originates from, e.g. `SpeciesStrain` for function `getSubjSpeciesStrain`. Multiple messages from same function separated by `&`.  
+If the input data set contains an `UNCERTAIN_MSG` variable, uncertain messages are added to this variable. Messages from multiple functions are concatenated and separated by `|`.
+
+As mentioned above, some of the functions may be executed with no filter conditions just to add the relevant attributes to a set of data, e.g. a `SEX` variable is added to the output data set by execution of `getSubjSex`. In these cases, the additional variable is populated with the found value for all rows, also if the value cannot be confidently identified - e.g. when a DM.SEX value like 'Male' does not match any value in the CDISC SEND CT code list value  _SEX_.  
+These functions have an input parameter called `noFilterReportUncertain`, which is equivalent to the `inclUncertain` parameter described above.   
+If one of these functions is executed with no filter condition and `noFilterReportUncertain = FALSE` (default), no explanation of whether the identified values are confident or not is included.  
+If a function is executed with no filter condition and `noFilterReportUncertain = TRUE`, a `NOT_VALID_MSG` variable is included in the output data set with an explanation of the reason for not confident values which may for found.  
+The format of this variable is equivalent to the `UNCERTAIN_MSG` variable described above.
+
+The intention with these functions are to build a work flow or pipeline to extract set(s) of animals, findings or other kinds of subject level data to be used for further analysis or similar - see an example below.
 
 ### Example 
 
-... this section is under construction ...
-
 Extract data to make this analysis:
 
-What are the most common microscopic findings in control Sprague-Dawley male rats 10 to 14 weeks old that were dosed by oral gavage:
+What are the most common microscopic findings in control Sprague-Dawley male rats 10 to 14 weeks old at finding time that were dosed by oral or oral gavage. Include parallel studies after 2016 and findings from the the treatment phase. Include uncertain records.
 ```R
+db <- initEnvironment(dbType='sqlite',
+                      dbPath='/path/to/db/send.db')
 
+# Extract the relevant set of studies into data.table 'studies'
+studies <-
+  getStudiesSDESIGN(db,
+                    studyDesignFilter = 'PARALLEL',
+                    inclUncertain = TRUE) %>%
+  getStudiesSTSTDTC(db, ., 
+                    fromDTC = '2016',
+                    inclUncertain = TRUE)
+
+# Extract the complete set of control animals for the set of extracted studies 
+# into data.table 'controlAnimals':
+controlAnimals <-
+  getControlSubj(db, studies,
+                 inclUncertain = TRUE)
+
+# Extract all 
+#  1: the males
+#  2: Sprague-Dawley rats
+#  3: animals dosed by oral or oral gavage
+# from the set of control animals into data.table 'animals':
+animals <- 
+  getSubjSex(db, controlAnimals, 
+              sexFilter = 'M',
+              inclUncertain = TRUE) %>%
+  getSubjSpeciesStrain(db, .,
+                       speciesFilter = 'RAT',
+                       strainFilter = 'Sprague-Dawley',
+                       inclUncertain = TRUE) %>%
+  getSubjRoute(db, .,
+               routeFilter = c('ORAL', 'ORAL GAVAGE'),
+               inclUncertain = TRUE)
+
+# Extract microscopic findings
+#  1: all MI rows for the extrated set of animals
+#  2: keep the MI rows from the treatment phase
+#  3: keep the MI rows where the animals are between 10 and 14 weeks at the time 
+#     of finding
+# into data.table 'dataMI':
+dataMI <- 
+  getSubjData(db, animals, 'MI') %>%
+  getFindingsPhase(db, .,
+                   phaseFilter = "treatment",
+                   inclUncertain = TRUE) %>%
+  getFindingsSubjAge(db, .,
+                     fromAge = '10w',
+                     toAge = '14w',
+                     inclUncertain = TRUE)
+                     
+disconnectDB(db)
 ```
+The resulting data.table `dataMI` contains all the extracted findings fulfilling the wanted conditions and can be used for further analysis.
+It includes both findings for animals which may have been identified as uncertain by one of the and findings which may have been identified as uncertain.
+The animal level of uncertainties are described in the `animal.UNCERTAIN_MSG` column and the findings are described in the `dataMI.UNCERTAIN_MSG` column 
 
 ## Execute sendDashboard app
 
@@ -192,11 +302,15 @@ TO BE ADDED
 
 ## Direct access to the database 
 
+TO BE ADDED 
+
 | Function | Description |
 |-|------------|
 | [genericQuery](../html/genericQuery.html)  | Execute database query and returns fetched rows |
 
 ### Example 
+
+TO BE ADDED
 
 
 
