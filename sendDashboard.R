@@ -17,7 +17,7 @@ library(MASS)
 library(htmltools)
 library(DT)
 library(sendigR)
-
+library(scales)
 
 # define the path to R scripts to actual script location
 dummyuseCaseQuestionMiFindings<-function() {
@@ -48,7 +48,8 @@ minStudyStartDate <- as.Date(getMinStudyStartDate())
 availableStudies <- GetAvailableStudies()
 availableStudies <- as.list(setNames(availableStudies, availableStudies))
 
-availableSex <- c('M', 'F', 'U', 'All')
+availableSex <- as.list(setNames(c('M', 'F', 'U', 'All'), c('M', 'F', 'U', 'All')))
+
 
 availablePhases <- c('Screening', 'Treatment', 'Recovery')
 
@@ -202,7 +203,7 @@ ui <- dashboardPage(
     
                selectInput("SEX",
                            "Select Sex:",
-                           c('', as.character(availableSex)), 
+                           availableSex, 
                            selected='M'),
                
                # TODO: Get phase of study working.
@@ -214,7 +215,7 @@ ui <- dashboardPage(
                
                checkboxInput('INCL_UNCERTAIN',
                              'Include uncertain rows', 
-                             value = FALSE),
+                             value = TRUE),
                
                actionButton("refreshData", "Generate/Update Data"),
                br()
@@ -599,6 +600,10 @@ server <- function(input, output, session) {
                         on = c('STUDYID', 'USUBJID'),
                         allow.cartesian = TRUE)
     
+    # normalize results by the number of 
+    # animals that have data in the MI domain
+    numAnimalsMI <- nrow(unique(domainData[,.(USUBJID, STUDYID)]))
+    
     domainData$MISPEC <- toupper(domainData$MISPEC)
     domainData$MISTRESC <- toupper(domainData$MISTRESC)
 
@@ -612,6 +617,22 @@ server <- function(input, output, session) {
     # a flag to toggle.
     
     tableData <- aggDomain(domainData, grpByCols, includeUncertain=input$INCL_UNCERTAIN)
+    
+    # number of animals with observations b MISPEC
+    tissueCounts <- domainData %>% 
+                    group_by(MISPEC) %>% 
+                    summarise(Animals.In.MISPEC = n_distinct(USUBJID))
+    tableData <- merge(tableData, tissueCounts, on='MISPEC')
+    
+    tableData['%MISPEC'] <- tableData$N / tableData$Animals.In.MISPEC
+    tableData['%MI'] <- tableData$N / numAnimalsMI
+    
+
+    tableData['%MISPEC'] <- sapply(tableData['%MISPEC'], function(x) scales::percent(x, big.mark = 1, accuracy = 0.2))
+    tableData['%MI'] <- sapply(tableData['%MI'], function(x) scales::percent(x, big.mark = 1, accuracy = 0.2))
+    
+                      
+    tableData <- dplyr::select(tableData, -Animals.In.MISPEC)
     
     tab <- DT::datatable(tableData,
                          filter = list(position = 'top'),
