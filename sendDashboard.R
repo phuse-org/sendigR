@@ -591,9 +591,13 @@ server <- function(input, output, session) {
     # should be chosen by the user, however
     # I think the sendigR package always 
     # return certain columns, e.g., EPOCH
-    grpByCols <- c('SPECIES', 'STRAIN', 'ROUTE', 'MISPEC', 'MISTRESC', 'MISEV')
+    grpByCols <- c('SPECIES', 'STRAIN', 'ROUTE', 'SEX', 
+                   'MISPEC', 'MISTRESC')
     
-    domainData <- merge(animal_list, mi_sub, on = c('STUDYID', 'USUBJID'))
+    domainData <- merge(animal_list, 
+                        mi_sub, 
+                        on = c('STUDYID', 'USUBJID'),
+                        allow.cartesian = TRUE)
     
     domainData$MISPEC <- toupper(domainData$MISPEC)
     domainData$MISTRESC <- toupper(domainData$MISTRESC)
@@ -607,7 +611,7 @@ server <- function(input, output, session) {
     # they will not get recorded.  Maybe this could be
     # a flag to toggle.
     
-    tableData <- aggDomain(domainData, grpByCols)
+    tableData <- aggDomain(domainData, grpByCols, includeUncertain=input$INCL_UNCERTAIN)
     
     tab <- DT::datatable(tableData,
                          filter = list(position = 'top'),
@@ -713,12 +717,7 @@ server <- function(input, output, session) {
     tab
     
   })
-  
-  #### MI aggregate table
-
-
-  
-  
+ 
   # LB displays a histogram 
   # and probability density
   # density function given 

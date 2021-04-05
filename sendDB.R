@@ -315,7 +315,7 @@ GetAnimalGroupsStudy <- function(studyid) {
   return(studyAnimals)
 }
 
-aggDomain <- function(domainData, grpByCols) {
+aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
   # creates an aggregate table from domainData
   # domainData: should be a data.table that with
   # both domain data (e.g., MI) merged with animal
@@ -331,13 +331,22 @@ aggDomain <- function(domainData, grpByCols) {
     group_by_at(grpByCols) %>%
     summarize(N = n())
   
+  # if include uncertain is not
+  # selected, we dont need to calc.
+  # the differences in non confident 
+  # matches.  
+  
+  if (!includeUncertain) {
+    return(aggData)
+  }
+  
   # do the same for non confident
   # matches, which are rows with 
   # no UNCERTAIN_MSG
   aggDataNonConf <- domainData %>% 
     filter(!is.na(UNCERTAIN_MSG)) %>%
     group_by_at(grpByCols) %>%
-    summarize(NonConF = n())
+    summarize(Uncertain.Matches = n())
   
   # if no UNCERTAIN_MSG, that is
   # a confident match. 
@@ -345,7 +354,7 @@ aggDomain <- function(domainData, grpByCols) {
   aggDataConf <- domainData %>% 
     filter(is.na(UNCERTAIN_MSG)) %>%
     group_by_at(grpByCols) %>%
-    summarize(ConfN = n())  
+    summarize(Certain.Matches = n())  
   
   # some groups by have no or all confidence
   # mataches.  Need to to an outer join and 
