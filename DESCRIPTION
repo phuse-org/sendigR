@@ -1,6 +1,6 @@
 Package: sendigR
 Title: Extract control data from a CDISC SEND study data repository
-Version: 0.0.0.9004
+Version: 0.0.0.9005
 Authors@R: 
     person(given = "First",
            family = "Last",
@@ -14,6 +14,7 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
+    RSQLite,
     data.table,
     readxl,
     magrittr,
@@ -22,9 +23,17 @@ Imports:
     DBI,
     DescTools,
     parsedate,
-    stringi
+    stringi,
+    shiny,
+    shinydashboard,
+    tidyverse,
+    MASS,
+    htmltools,
+    DT,
+    scales,
+    dplyr,
+    ggplot2
 Suggests: 
-    RSQLite,
     ROracle,
     SASxport,
     sjlabelled,

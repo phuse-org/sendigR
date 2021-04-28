@@ -8,31 +8,6 @@
 ## 2021-01-06   Bo Larsen             Initial version
 ################################################################################
 
-
-###################################################################################
-# Script name   : filterStudyAnimalRoute.R
-# Date Created  : 16-Jan-2020
-# Programmer    : Bo Larsen
-# --------------------------------------------------------------------------------
-# Change log:
-# Programmer/date     Description
-# -----------------   ------------------------------------------------------------
-# <init/dd-Mon-yyyy>  <description>
-#
-# -------------------------------------------------------------------------------
-#
-# Input         : - The TS, EX and POOLDEF domains - are imported from the pooled SEND data
-#                   store if they don't exist in workspace.
-#                 - A data table specified in the input parameter animalList:
-#                   It contains the list of animals to filter for specified route value(s)
-#                   - must contain these character variables:
-#                       STUDYID
-#                       USUBJID
-#                     other variables may be included
-#                 - The CDISC CT code list ROUTE imported from a CDISC CT file.
-#
-###################################################################################
-
 #' Extract the set of animals of the specified route of administration - or just
 #' add actual route of administration for each animal.
 #'
@@ -338,19 +313,6 @@ getSubjRoute <- function(dbToken,
     if (exclusively) {
       # Exclude all animals belonging to studies which have other ROUTEs than the requested
       foundAnimals<-
-        # unique(allAnimals[,c('STUDYID','ROUTE')]) %>%
-        # # Set of possible ROUTE values per study in the input set of animals:
-        # data.table::merge.data.table(unique(foundAnimals[,c('STUDYID')]),
-        #                              by='STUDYID') %>%
-        # # Set of studies (included in the found set of animals with matching ROUTE values) with possible
-        # # ROUTE values not included in the routeFilter:
-        # data.table::fsetdiff(unique(foundAnimals[,c('STUDYID', 'ROUTE')])) %>%
-        # unique() %>%
-        # # Set of studies to keep:
-        # data.table::fsetdiff(unique(foundAnimals[,c('STUDYID')]),.) %>%
-        # # Keep all animals for the list og found studies
-        # data.table::merge.data.table(foundAnimals, ., by='STUDYID')
-        #
         data.table::merge.data.table(foundAnimals,
               # Set of studies to keep:
               data.table::fsetdiff(unique(foundAnimals[,c('STUDYID')]),
@@ -378,13 +340,26 @@ getSubjRoute <- function(dbToken,
                                    allAnimals[!is.na(UNCERTAIN_MSG), c('STUDYID', 'USUBJID', 'ROUTE', 'UNCERTAIN_MSG')]),
                               use.names=TRUE, fill=TRUE)
   }
+  else {
+    # Include all animals
+    foundAnimals <- allAnimals[, c('STUDYID', 'USUBJID', 'ROUTE')]
+    if (noFilterReportUncertain)
+      # Add the uncertain animals
+      foundAnimals <- data.table::rbindlist(list(foundAnimals,
+                                                 allAnimals[!is.na(NOT_VALID_MSG),
+                                                            c('STUDYID',
+                                                              'USUBJID',
+                                                              'ROUTE',
+                                                              'NOT_VALID_MSG')]),
+                                            use.names = TRUE,
+                                            fill = TRUE)
+  }
 
   # Merge the list of extracted animals with the input set of animals to keep
   # any additional columns from the input table
-  foundAnimals <-
-    data.table::merge.data.table(animalList,
-                                 foundAnimals,
-                                 by=c('STUDYID', 'USUBJID'))
+  foundAnimals <- data.table::merge.data.table(animalList,
+                                               foundAnimals,
+                                               by=c('STUDYID', 'USUBJID'))
 
   # Do final preparation of set of found animals and return
   return(prepareFinalResults(foundAnimals,

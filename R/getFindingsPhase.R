@@ -61,7 +61,7 @@
 #'  where domain is the name of the actuel findings domain - e.g. LBSEQ and
 #'  LBDTC
 #' @param phaseFilter Optional, character.\cr
-#'  The sex value criterion to be used for filtering of the list of animals.\cr
+#'  The phase value criterion to be used for filtering of the list of animals.\cr
 #'  It can be a single string, a vector or a list of multiple strings.
 #' @param inclUncertain  Mandatory, TRUE or FALSE, default: FALSE.\cr
 #'  Only relevant if the \code{phaseFilter} is not empty.\cr

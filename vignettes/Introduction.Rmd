@@ -129,6 +129,8 @@ To make it possible to import data for a set of studies with `dbImportStudies`, 
 
 It is recommended to download [DB Browser for SQLite](https://sqlitebrowser.org) to look at the data imported into the database.
 
+![Figure 1](sendigR_maintain_database_doc.png)
+
 ### Examples
 
 Create a new database, create all the SEND domain tables and import data for a set of studies XPT files saved in a folder hierarchy - create a set of indexes to optimize data extraction performance for the sendigR functions:
@@ -170,6 +172,8 @@ disconnectDB(dbToken)
 
 These functions are divided into different groups:
 
+* __Fetch rows from data__
+A single function `genericQuery` gives the possibility to execute a SQL query against the database, i.e.it executes any user defined select statement and returns the selected rows. It is used internally by the functions described below, but can also be used directly to fetcg rows which ar e not possible with any of the specific extraction functions described below.  
 * __Extract sets of studies__  
 Each of these functions extracts, filter and return studies for different kinds of conditions.  
 They can all be called with or without a set of studies given as input. In the former case, the extraction/filtering is based on the `TS` subset of input studies. In the latter case, the extraction/filtering is based on the full `TS` table.  
@@ -194,6 +198,7 @@ The complete list of functions:
 
 | Function | Description |
 |-|------------|
+| [genericQuery](../html/genericQuery.html)                 | Execute database query and returns fetched rows |
 | [getStudiesSDESIGN](../html/getStudiesSDESIGN.html)       | Extract a list of SEND studies with a specified study design |
 | [getStudiesSTSTDTC](../html/getStudiesSTSTDTC.html)       | Extract a list of SEND studies with study start date within a specified interval|
 | [getControlSubj](../html/getControlSubj.html)             | Extract a list of control animals for a list of studies|
@@ -299,14 +304,6 @@ TO BE ADDED
 ### Example 
 
 TO BE ADDED
-
-## Direct access to the database 
-
-TO BE ADDED 
-
-| Function | Description |
-|-|------------|
-| [genericQuery](../html/genericQuery.html)  | Execute database query and returns fetched rows |
 
 ### Example 
 
