@@ -177,8 +177,8 @@ ui <- dashboardPage(
                #                         options=list(plugins=list('drag_drop','remove_button')))),
                
                uiOutput('ROUTE'),
-               actionButton('clear_route',label='Clear All'),
-               actionButton('select_route',label='Display All'),
+               # actionButton('clear_route',label='Clear All'),
+               # actionButton('select_route',label='Display All'),
                
                
                
@@ -368,14 +368,14 @@ server <- function(input, output, session) {
   
   
   # Clear All Functionality
-  observeEvent(ignoreNULL=TRUE,eventExpr=input$clear_route,
-               handlerExpr={values$selected_routes <- NULL})
+  # observeEvent(ignoreNULL=TRUE,eventExpr=input$clear_route,
+  #              handlerExpr={values$selected_routes <- NULL})
   
  
   
   # Display All Functionality
-  observeEvent(ignoreNULL=TRUE,eventExpr=input$select_route,
-               handlerExpr={values$selected_routes <- GetUniqueRoutes()})
+  # observeEvent(ignoreNULL=TRUE,eventExpr=input$select_route,
+  #              handlerExpr={values$selected_routes <- GetUniqueRoutes()})
   
   
   
