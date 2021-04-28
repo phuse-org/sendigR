@@ -264,7 +264,11 @@ ui <- dashboardPage(
                tabPanel('ANIMALS',
                         fluidRow(title = "Filtered control animals",
                                  br(),
-                                     DT::dataTableOutput("animals"))),
+                                     DT::dataTableOutput("animals"),
+                                 br(),
+                                 br(),
+                                 br(),
+                                 br())),
                tabPanel("MI", # MI ----
                         tabsetPanel(
                           tabPanel("MI Findings",
@@ -415,7 +419,7 @@ server <- function(input, output, session) {
   
   # Control Animal Table ----
   
-  output$animals <- DT::renderDataTable({
+  output$animals <- DT::renderDataTable(server = F,{
     animal_df <- animalList()
     # make last column as date
 
@@ -436,7 +440,19 @@ server <- function(input, output, session) {
       ),
       options = list(
         dom = "lfrtipB",
-        buttons = c("csv", "excel", "copy", "pdf"),
+        # buttons = c("csv", "excel", "copy", "pdf"),
+        buttons=list(list(
+          extend = 'collection',
+          buttons = list(list(extend='csv',
+                              filename = 'Filtered Control Animal'),
+                         list(extend='excel',
+                              filename = 'Filtered Control Animal'),
+                         list(extend='pdf',
+                              pageSize = 'A4',
+                              orientation = 'landscape',
+                              filename= 'Filtered Control Animal')),
+          text = 'Download'
+        )),
         colReorder = TRUE,
         scrollY = TRUE,
         scrollX=TRUE,
@@ -446,7 +462,8 @@ server <- function(input, output, session) {
           "function(settings, json) {",
           "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
           "}")
-        ))
+        )
+      )
     animal_df
     })
   
@@ -464,7 +481,7 @@ server <- function(input, output, session) {
   
   #### MI findings table UI ---- 
   
-  output$findingsTable <- DT::renderDataTable({
+  output$findingsTable <- DT::renderDataTable(server = F,{
     
     req(input$STRAIN)
     findings <- MiFindings(animalList(), input$MISPEC)
@@ -484,7 +501,7 @@ server <- function(input, output, session) {
         buttons = c("csv", "excel", "pdf"),
         colReorder = TRUE,
         scrollY = TRUE,
-        pageLength = 10,
+        pageLength = nrow(findings),
         #columnDefs = list(list(className = "dt-left", targets = "_all")),
         initComplete = JS(
           "function(settings, json) {",
@@ -557,7 +574,7 @@ server <- function(input, output, session) {
   
   
   #### output rendertable for MI individual table
-  output$mi_subj <- DT::renderDataTable({
+  output$mi_subj <- DT::renderDataTable(server = F,{
     tab <- table_to_show()
     tab <- tab %>% mutate_if(is.character,as.factor)
     
@@ -565,8 +582,20 @@ server <- function(input, output, session) {
                          filter = list(position = 'top'),
                          options = list(
                            dom = "lfrtipB",
-                           buttons = c("csv", "excel", "pdf"),
-                           #colReorder = TRUE,
+                           # buttons = c("csv", "excel", "copy", "pdf"),
+                           buttons=list(list(
+                             extend = 'collection',
+                             buttons = list(list(extend='csv',
+                                                 filename = 'MI Individual Table'),
+                                            list(extend='excel',
+                                                 filename = 'MI Individual Table'),
+                                            list(extend='pdf',
+                                                 pageSize = 'A4',
+                                                 orientation = 'landscape',
+                                                 filename= 'MI Individual Table')),
+                             text = 'Download'
+                           )),
+                           colReorder = TRUE,
                            scrollY = TRUE,
                            scrollX=TRUE,
                            pageLength = 10,
@@ -574,15 +603,17 @@ server <- function(input, output, session) {
                            initComplete = JS(
                              "function(settings, json) {",
                              "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                             "}")))
+                             "}")
+                         )
+                         )
     
     tab
       
   })
   
- #### MI aggregate table
+ #### MI aggregate table ----
   
-  output$mi_agg_tab <- DT::renderDataTable({
+  output$mi_agg_tab <- DT::renderDataTable(server = F,{
     
     animal_list <- animalList()
     mi_sub <- MI_subject()
@@ -687,7 +718,7 @@ server <- function(input, output, session) {
     col_selected
     
   })
-  #### MI individual record table UI with hide/show side column ----
+  #### LB individual record table UI with hide/show side column ----
   
   output$lb_indiv_table <- renderUI({
     
@@ -716,7 +747,7 @@ server <- function(input, output, session) {
   
   
   #### output rendertable for LB individual table
-  output$lb_subj <- DT::renderDataTable({
+  output$lb_subj <- DT::renderDataTable(server = F,{
     tab <- lb_table_to_show()
     tab <- tab %>% mutate_if(is.character,as.factor)
   
@@ -725,6 +756,7 @@ server <- function(input, output, session) {
                          options = list(
                            dom = "lfrtipB",
                            buttons = c("csv", "excel", "pdf"),
+                           
                            #colReorder = TRUE,
                            scrollY = TRUE,
                            scrollX=TRUE,
@@ -798,6 +830,69 @@ server <- function(input, output, session) {
   # responses. 
  
   
+  # LB aggregate table ----
+  
+  output$lb_agg_tab <- DT::renderDataTable(server = F,{
+    
+    animal_list <- animalList()
+    lb_sub <- LB_subject()
+    
+    grpByCols <- c("LBSPEC","LBTESTCD", "LBTEST","SEX","AGEDAYS","LBSTRESU")
+    
+    df <- getFindingsSubjAge(dbToken,findings=lb_sub,animalList = animal_list,
+                             fromAge = NULL,toAge = NULL,inclUncertain = input$INCL_UNCERTAIN,
+                             noFilterReportUncertain = TRUE)
+    
+    df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
+                              sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
+                              noFilterReportUncertain = TRUE)
+    
+    tableData <- df %>%
+      dplyr::group_by_at(grpByCols) %>% 
+      summarize(mean.log.LBSTRESN=round(mean(log(LBSTRESN)),2),
+                sd.log.LBSTRESN=round(sd(log(LBSTRESN)),2),
+                N = n()) %>% 
+      dplyr::select(LBSPEC,LBTESTCD,LBTEST,SEX,AGEDAYS,mean.log.LBSTRESN,sd.log.LBSTRESN,LBSTRESU,N)
+    
+    
+    
+    # domainData <- merge(animal_list, 
+    #                     mi_sub, 
+    #                     on = c('STUDYID', 'USUBJID'),
+    #                     allow.cartesian = TRUE)
+    
+    
+    
+    
+    # replace Null values with NORMAL
+    #domainData$MISTRESC[domainData$MISTRESC == ''] <- 'NORMAL'
+    
+    
+    
+    
+    tab <- DT::datatable(tableData,
+                         filter = list(position = 'top'),
+                         options = list(
+                           dom = "lfrtipB",
+                           buttons = c("csv", "excel", "pdf"),
+                           #colReorder = TRUE,
+                           scrollY = TRUE,
+                           scrollX=TRUE,
+                           pageLength = 10,
+                           columnDefs = list(list(className = "dt-center", targets = "_all")),
+                           initComplete = JS(
+                             "function(settings, json) {",
+                             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                             "}")))
+    
+    tab
+    
+  })
+  
+  
+  
+  
+  
   ################### CL TAB ########################
   
   #### get CL individual records table ----
@@ -830,7 +925,7 @@ server <- function(input, output, session) {
     col_selected
     
   })
-  #### MI individual record table UI with hide/show side column ----
+  #### CL individual record table UI with hide/show side column ----
   
   output$cl_indiv_table <- renderUI({
     
@@ -859,7 +954,7 @@ server <- function(input, output, session) {
   
   
   #### output rendertable for cl individual table
-  output$cl_subj <- DT::renderDataTable({
+  output$cl_subj <- DT::renderDataTable(server = F,{
     tab <- cl_table_to_show()
     tab <- tab %>% mutate_if(is.character,as.factor)
     
@@ -931,7 +1026,7 @@ server <- function(input, output, session) {
     col_selected
     
   })
-  #### MI individual record table UI with hide/show side column ----
+  #### BW individual record table UI with hide/show side column ----
   
   output$bw_indiv_table <- renderUI({
     
@@ -959,8 +1054,8 @@ server <- function(input, output, session) {
   })
   
   
-  #### output rendertable for bw individual table
-  output$bw_subj <- DT::renderDataTable({
+  #### output rendertable for bw individual table ----
+  output$bw_subj <- DT::renderDataTable(server = F,{
     tab <- bw_table_to_show()
     tab <- tab %>% mutate_if(is.character,as.factor)
     
@@ -983,7 +1078,66 @@ server <- function(input, output, session) {
     
   })
   
-  #### BW aggregate table
+  #### BW aggregate table ----
+  
+  output$bw_agg_tab <- DT::renderDataTable(server = F,{
+    
+    animal_list <- animalList()
+    bw_sub <- BW_subject()
+    
+    grpByCols <- c('AGEDAYS','SEX')
+    
+   df <- getFindingsSubjAge(dbToken,findings=bw_sub,animalList = animal_list,
+                            fromAge = NULL,toAge = NULL,inclUncertain = input$INCL_UNCERTAIN,
+                            noFilterReportUncertain = TRUE)
+   
+   df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
+                             sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
+                             noFilterReportUncertain = TRUE)
+   
+   tableData <- df %>%
+     dplyr::group_by_at(grpByCols) %>% 
+     summarize(mean.log.BWSTRESN=round(mean(log(BWSTRESN)),2),
+               sd.log.BWSTRESN=round(sd(log(BWSTRESN)),2),
+               N = n())
+    
+    # domainData <- merge(animal_list, 
+    #                     mi_sub, 
+    #                     on = c('STUDYID', 'USUBJID'),
+    #                     allow.cartesian = TRUE)
+    
+
+  
+    
+    # replace Null values with NORMAL
+    #domainData$MISTRESC[domainData$MISTRESC == ''] <- 'NORMAL'
+    
+    
+
+    
+    tab <- DT::datatable(tableData,
+                         filter = list(position = 'top'),
+                         options = list(
+                           dom = "lfrtipB",
+                           buttons = c("csv", "excel", "pdf"),
+                           #colReorder = TRUE,
+                           scrollY = TRUE,
+                           scrollX=TRUE,
+                           pageLength = 10,
+                           columnDefs = list(list(className = "dt-center", targets = "_all")),
+                           initComplete = JS(
+                             "function(settings, json) {",
+                             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                             "}")))
+    
+    tab
+    
+  })
+  
+  
+  
+  
+  
   
   
   
