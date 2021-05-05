@@ -91,7 +91,7 @@ execSendDashboard <- function(dbToken) {
     htmltools::attachDependencies(x, c(htmltools::htmlDependencies(x), list(jqueryUIDep)))
   }
 
-  #reactive value
+  #reactive value ----
   values <- shiny::reactiveValues()
 
   values$selected_routes <- NULL
@@ -125,7 +125,7 @@ execSendDashboard <- function(dbToken) {
 
 
 
-  #### UI ####
+########### UI #######
 
 
   # The basic input is
@@ -141,6 +141,7 @@ execSendDashboard <- function(dbToken) {
   ui <- shinydashboard::dashboardPage(
     shinydashboard::dashboardHeader(title = "Historical Control Collator",
                                     titleWidth = 300),
+    ##### Sidebar ----
     shinydashboard::dashboardSidebar(width = 300,
                                      shinydashboard::sidebarMenu(
                                        shinydashboard::menuItem("Choose Parameters:",
@@ -154,7 +155,7 @@ execSendDashboard <- function(dbToken) {
                  #             value=c(minStudyStartDate, Sys.Date()),
                  #             timeFormat="%Y-%m",
                  #             dragRange=TRUE),
-
+##### Date Range, Design, Route, Species, Strain, Sex, Uncertain ----
                  shiny::dateRangeInput("STSTDTC",
                                 "Select Study Start Date Range:",
                                 start = minStudyStartDate,
@@ -226,18 +227,18 @@ execSendDashboard <- function(dbToken) {
                  shiny::actionButton("refreshData", "Generate/Update Data"),
                  htmltools::br()
 
-        ),
+        )
 
         # TODO: implement function
         # to take STUDYID, read study
         # study parameters and populate
         # inputs.
 
-        shinydashboard::menuItem("By Study:", icon = shiny::icon("flask"),
-                                 shiny::selectInput("STUDYID",
-                             "Select STUDYID:",
-                             choices=availableStudies)
-        )
+        # shinydashboard::menuItem("By Study:", icon = shiny::icon("flask"),
+        #                          shiny::selectInput("STUDYID",
+        #                      "Select STUDYID:",
+        #                      choices=availableStudies)
+        # )
       ),
 
       # left side scroller
@@ -253,6 +254,7 @@ execSendDashboard <- function(dbToken) {
 
     ),
 
+##### Mainbody ----
     # Main body of the app. Consists
     # of different of different tabs
     # each displaying a domain and
@@ -267,7 +269,7 @@ execSendDashboard <- function(dbToken) {
                #   # The id lets us use input$tabset1 on the server to find the current tab
                #   id = "findingsTab",
       shiny::tabsetPanel(type = 'tab',
-                 shiny::tabPanel('ANIMALS',
+                 shiny::tabPanel('ANIMALS', ##### Animal Tab ----
                           shiny::fluidRow(title = "Filtered control animals",
                                    htmltools::br(),
                                        DT::dataTableOutput("animals"),
@@ -275,7 +277,7 @@ execSendDashboard <- function(dbToken) {
                                    htmltools::br(),
                                    htmltools::br(),
                                    htmltools::br())),
-                 shiny::tabPanel("MI", # MI ----
+                 shiny::tabPanel("MI", ##### MI ----
                           shiny::tabsetPanel(
                             shiny::tabPanel("MI Findings",
                                      shiny::fluidRow(
@@ -298,7 +300,7 @@ execSendDashboard <- function(dbToken) {
                             shiny::tabPanel("Aggregate Table",
                                      DT::dataTableOutput('mi_agg_tab')))),
 
-                 shiny::tabPanel("LB", #LB ----
+                 shiny::tabPanel("LB", #####LB ----
                           shiny::tabsetPanel(
                             shiny::tabPanel("LB Findings",
                                      shiny::fluidRow(
@@ -325,7 +327,7 @@ execSendDashboard <- function(dbToken) {
 
                           )
                           ),
-                 shiny::tabPanel("CL",
+                 shiny::tabPanel("CL", ##### CL ----
                           shiny::tabsetPanel(
                             shiny::tabPanel("Individual Records",
                                             shiny::checkboxInput("cl_hide_check_column",
@@ -335,7 +337,7 @@ execSendDashboard <- function(dbToken) {
                                      shiny::uiOutput("cl_indiv_table")),
                             shiny::tabPanel("Aggregate Table",
                                      DT::dataTableOutput('cl_agg_tab')))),
-                 shiny::tabPanel("BW",
+                 shiny::tabPanel("BW", ##### BW ----
                           shiny::tabsetPanel(
                             shiny::tabPanel("Individual Records",
                                             shiny::checkboxInput("bw_hide_check_column",
@@ -390,8 +392,8 @@ execSendDashboard <- function(dbToken) {
 
 
 
-
-    # Get the list of studies and animals based on new/changed filter criterion
+##### AnimalList ----
+    # Get the list of studies and animals based on new/changed filter criterion 
     animalList<-shiny::eventReactive(input$refreshData, {
 
       # print(c(as.character(input$STSTDTC[1]),
@@ -457,11 +459,12 @@ execSendDashboard <- function(dbToken) {
             buttons = list(list(extend='csv',
                                 filename = 'Filtered Control Animal'),
                            list(extend='excel',
-                                filename = 'Filtered Control Animal'),
-                           list(extend='pdf',
-                                pageSize = 'A4',
-                                orientation = 'landscape',
-                                filename= 'Filtered Control Animal')),
+                                filename = 'Filtered Control Animal')
+                           # list(extend='pdf',
+                           #      pageSize = 'A4',
+                           #      orientation = 'landscape',
+                           #      filename= 'Filtered Control Animal')
+                           ),
             text = 'Download'
           )),
           
@@ -490,14 +493,14 @@ execSendDashboard <- function(dbToken) {
     # the function called MiFindings()
     # defined in sendDB.R
 
-    #### MI findings table UI ----
+    ###### MI findings table ----
 
     output$findingsTable <- DT::renderDataTable(server = F,{
 
       shiny::req(input$STRAIN)
       findings <- MiFindings(animalList(), input$MISPEC)
       findings <- findings %>% dplyr::mutate_if(is.character,as.factor)
-
+      findings_name <- paste0("MI Findings_",input$MISPEC) 
       findings <- DT::datatable(findings,
         class = "cell-border stripe",
         filter = list(position = 'top'),
@@ -509,7 +512,20 @@ execSendDashboard <- function(dbToken) {
         ),
         options = list(
           dom = "lfrtipB",
-          buttons = c("csv", "excel", "pdf"),
+          # buttons = c("csv", "excel", "pdf"),
+          buttons=list(list(
+            extend = 'collection',
+            buttons = list(list(extend='csv',
+                                filename = findings_name),
+                           list(extend='excel',
+                                filename = findings_name),
+                           list(extend='pdf',
+                                pageSize = 'A4',
+                                orientation = 'landscape',
+                                filename= findings_name)
+            ),
+            text = 'Download'
+          )),
           colReorder = TRUE,
           scrollY = TRUE,
           pageLength = nrow(findings),
@@ -524,7 +540,7 @@ execSendDashboard <- function(dbToken) {
     })
 
 
-    #### get MI individual records table ----
+    ###### get MI individual records table ----
     MI_subject <- shiny::reactive({
       animal_list <- animalList()
       mi_sub <- sendigR::getSubjData(dbToken = .sendigRenv$dbToken,
@@ -557,7 +573,7 @@ execSendDashboard <- function(dbToken) {
       col_selected
 
     })
-    #### MI individual record table UI with hide/show side column ----
+    ###### MI individual record table UI with hide/show side column ----
 
     output$mi_indiv_table <- shiny::renderUI({
 
@@ -587,7 +603,7 @@ execSendDashboard <- function(dbToken) {
     })
 
 
-    #### output rendertable for MI individual table
+    ####### output datatable for MI individual table ----
     output$mi_subj <- DT::renderDataTable(server = F,{
       tab <- table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
@@ -600,19 +616,20 @@ execSendDashboard <- function(dbToken) {
                              buttons=list(list(
                                extend = 'collection',
                                buttons = list(list(extend='csv',
-                                                   filename = 'MI Individual Table'),
+                                                   filename = 'MI Individual Record Table'),
                                               list(extend='excel',
-                                                   filename = 'MI Individual Table'),
-                                              list(extend='pdf',
-                                                   pageSize = 'A4',
-                                                   orientation = 'landscape',
-                                                   filename= 'MI Individual Table')),
+                                                   filename = 'MI Individual Record Table')
+                                              # list(extend='pdf',
+                                              #      pageSize = 'A4',
+                                              #      orientation = 'landscape',
+                                              #      filename= 'MI Individual Table')
+                                              ),
                                text = 'Download'
                              )),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
-                             pageLength = 10,
+                             pageLength = 25,
                              #columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -623,7 +640,7 @@ execSendDashboard <- function(dbToken) {
 
     })
 
-   #### MI aggregate table
+   ###### MI aggregate table ----
 
     output$mi_agg_tab <- DT::renderDataTable(server = F,{
 
@@ -688,11 +705,20 @@ execSendDashboard <- function(dbToken) {
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtipB",
-                             buttons = c("csv", "excel", "pdf"),
+                             # buttons = c("csv", "excel", "pdf"),
+                             
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'MI Aggregate Table'),
+                                              list(extend='excel',
+                                                   filename = 'MI Aggregate Table')),
+                               text = 'Download')),
+                             
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
-                             pageLength = 10,
+                             pageLength = 25,
                              #columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -705,9 +731,9 @@ execSendDashboard <- function(dbToken) {
 
 
 
-    ########################### LB TAB #######################################
+    #### LB TAB #######################################
 
-    #### get LB individual records table ----
+    ###### get LB individual records table ----
     LB_subject <- shiny::reactive({
       animal_list <- animalList()
       lb_sub <- sendigR::getSubjData(dbToken = .sendigRenv$dbToken, domain = 'lb',
@@ -737,7 +763,7 @@ execSendDashboard <- function(dbToken) {
       col_selected
 
     })
-    #### MI individual record table UI with hide/show side column ----
+    ###### LB individual record table UI with hide/show side column ----
 
     output$lb_indiv_table <- shiny::renderUI({
 
@@ -769,7 +795,7 @@ execSendDashboard <- function(dbToken) {
     })
 
 
-    #### output rendertable for LB individual table
+    ###### output datatable for LB individual table ----
     output$lb_subj <- DT::renderDataTable(server = F,{
       tab <- lb_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character, as.factor)
@@ -779,11 +805,19 @@ execSendDashboard <- function(dbToken) {
         filter = list(position = 'top'),
         options = list(
           dom = "lfrtipB",
-          buttons = c("csv", "excel", "pdf"),
+          # buttons = c("csv", "excel", "pdf"),
+          
+          buttons=list(list(
+            extend = 'collection',
+            buttons = list(list(extend='csv',
+                                filename = 'LB Individual Record  Table'),
+                           list(extend='excel',
+                                filename = 'LB Individual Record Table')),
+            text = 'Download')),
           #colReorder = TRUE,
           scrollY = TRUE,
           scrollX = TRUE,
-          pageLength = 10,
+          pageLength = 25,
           #columnDefs = list(list(className = "dt-center", targets = "_all")),
           initComplete = DT::JS(
             "function(settings, json) {",
@@ -855,7 +889,7 @@ execSendDashboard <- function(dbToken) {
     # axis as liver enzyme
     # responses.
     
-    # LB aggregate table ----
+    ###### LB aggregate table ----
     
     output$lb_agg_tab <- DT::renderDataTable(server = F,{
       
@@ -889,11 +923,18 @@ execSendDashboard <- function(dbToken) {
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtipB",
-                             buttons = c("csv", "excel", "pdf"),
+                             # buttons = c("csv", "excel", "pdf"),
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'LB Aggregate Table'),
+                                              list(extend='excel',
+                                                   filename = 'LB Aggregate Table')),
+                               text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
-                             pageLength = 10,
+                             pageLength = 25,
                              columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -908,9 +949,9 @@ execSendDashboard <- function(dbToken) {
     
 
 
-    ################### CL TAB ########################
+    #### CL TAB ########################
 
-    #### get CL individual records table ----
+    ###### get CL individual records table ----
     CL_subject <- shiny::reactive({
       animal_list <- animalList()
       cl_sub <- sendigR::getSubjData(dbToken = .sendigRenv$dbToken,
@@ -941,7 +982,7 @@ execSendDashboard <- function(dbToken) {
       col_selected
 
     })
-    #### CL individual record table UI with hide/show side column ----
+    ###### CL individual record table UI with hide/show side column ----
 
     output$cl_indiv_table <- shiny::renderUI({
 
@@ -969,7 +1010,7 @@ execSendDashboard <- function(dbToken) {
     })
 
 
-    #### output rendertable for cl individual table
+    ######  output datatable for CL individual table ----
     output$cl_subj <- DT::renderDataTable(server = F,{
       tab <- cl_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
@@ -978,11 +1019,18 @@ execSendDashboard <- function(dbToken) {
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtipB",
-                             buttons = c("csv", "excel", "pdf"),
+                             # buttons = c("csv", "excel", "pdf"),
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'CL Individual Record Table'),
+                                              list(extend='excel',
+                                                   filename = 'CL Individual Record Table')),
+                               text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
-                             pageLength = 10,
+                             pageLength = 25,
                              #columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -996,7 +1044,7 @@ execSendDashboard <- function(dbToken) {
     #### CL aggregate table
 
 
-    #################### BW Tab ###############################
+    ##### BW Tab ###############################
 
     output$bodyWeightTime <- shiny::renderPlot({
 
@@ -1012,7 +1060,7 @@ execSendDashboard <- function(dbToken) {
     })
 
 
-    #### get BW individual records table ----
+    ###### get BW individual records table ----
     BW_subject <- shiny::reactive({
       animal_list <- animalList()
       bw_sub <- sendigR::getSubjData(dbToken = .sendigRenv$dbToken,
@@ -1043,7 +1091,7 @@ execSendDashboard <- function(dbToken) {
       col_selected
 
     })
-    #### BW individual record table UI with hide/show side column ----
+    ###### BW individual record table UI with hide/show side column ----
 
     output$bw_indiv_table <- shiny::renderUI({
 
@@ -1075,7 +1123,7 @@ execSendDashboard <- function(dbToken) {
     })
 
 
-    #### output rendertable for bw individual table ----
+    ###### output datatable for BW individual table ----
     output$bw_subj <- DT::renderDataTable(server = F,{
       tab <- bw_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
@@ -1084,11 +1132,18 @@ execSendDashboard <- function(dbToken) {
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtipB",
-                             buttons = c("csv", "excel", "pdf"),
+                             # buttons = c("csv", "excel", "pdf"),
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'BW Individual Record Table'),
+                                              list(extend='excel',
+                                                   filename = 'BW Individual Record Table')),
+                               text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
-                             pageLength = 10,
+                             pageLength = 25,
                              #columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -1099,7 +1154,7 @@ execSendDashboard <- function(dbToken) {
 
     })
 
-    #### BW aggregate table ----
+    ###### BW aggregate table ----
 
     output$bw_agg_tab <- DT::renderDataTable(server = F,{
       
@@ -1127,11 +1182,18 @@ execSendDashboard <- function(dbToken) {
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtipB",
-                             buttons = c("csv", "excel", "pdf"),
+                             # buttons = c("csv", "excel", "pdf"),
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'BW Aggregate Table'),
+                                              list(extend='excel',
+                                                   filename = 'BW Aggregate Table')),
+                               text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
-                             pageLength = 10,
+                             pageLength = 25,
                              columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -1145,7 +1207,7 @@ execSendDashboard <- function(dbToken) {
     
 
 
-    ################## eDish #############################
+    ##### eDish #############################
 
     studyAnimalList <- shiny::reactive({
       studyInfo <- GetStudyTS(input$STUDYID)
@@ -1206,13 +1268,16 @@ execSendDashboard <- function(dbToken) {
 
   }
 
-  # Run the application
+  ##### Run the application ----
   shiny::shinyApp(ui = ui, server = server)
 
 }
 
 ################################################################################
-# Avoid  'no visible binding for global variable' notes from check of package:
+#### Avoid  'no visible binding for global variable' notes from check of package: -----
 MISPEC <- Animals.In.MISPEC <- days <- BWSTRESN <- NULL
 LBSTRESC_TRANS.x <- LBSTRESC_TRANS.y <- SET <- NULL
 distribution <- ..density.. <- NULL
+
+
+############################## END ##################################################
