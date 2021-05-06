@@ -896,27 +896,19 @@ execSendDashboard <- function(dbToken) {
       animal_list <- animalList()
       lb_sub <- LB_subject()
       
-      grpByCols <- c("LBSPEC","LBTESTCD", "LBTEST","SEX","AGEDAYS","LBSTRESU")
+     
+      # 
+      # df <- sendigR::getFindingsSubjAge(dbToken,findings=lb_sub,animalList = animal_list,
+      #                          fromAge = NULL,toAge = NULL,inclUncertain = input$INCL_UNCERTAIN,
+      #                          noFilterReportUncertain = TRUE)
+      # 
+      # df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
+      #                           sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
+      #                           noFilterReportUncertain = TRUE)
       
-      df <- sendigR::getFindingsSubjAge(dbToken,findings=lb_sub,animalList = animal_list,
-                               fromAge = NULL,toAge = NULL,inclUncertain = input$INCL_UNCERTAIN,
-                               noFilterReportUncertain = TRUE)
+      domainData <- merge(animal_list, lb_sub, by = c('STUDYID', 'USUBJID'), all=T)
       
-      df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
-                                sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
-                                noFilterReportUncertain = TRUE)
-      
-      tableData <- df %>%
-        dplyr::group_by_at(grpByCols) %>% 
-        dplyr::summarize(mean.log.LBSTRESN=round(mean(log(LBSTRESN)),2),
-                  sd.log.LBSTRESN=round(sd(log(LBSTRESN)),2),
-                  N = n()) %>% 
-        dplyr::select(LBSPEC,LBTESTCD,LBTEST,SEX,AGEDAYS,mean.log.LBSTRESN,sd.log.LBSTRESN,LBSTRESU,N)
-      
-      
-      
-  
-      
+      tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'lb', input$INCL_UNCERTAIN)
       
       
       tab <- DT::datatable(tableData,
@@ -935,7 +927,7 @@ execSendDashboard <- function(dbToken) {
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
-                             columnDefs = list(list(className = "dt-center", targets = "_all")),
+                             #columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
@@ -1161,21 +1153,24 @@ execSendDashboard <- function(dbToken) {
       animal_list <- animalList()
       bw_sub <- BW_subject()
       
-      grpByCols <- c('AGEDAYS','SEX')
+     
+      #get age at finding
+      df <- sendigR::getFindingsSubjAge(dbToken = .sendigRenv$dbToken,
+                                        findings=bw_sub,
+                                        animalList = animal_list,
+                                        fromAge = NULL,toAge = NULL,
+                                        inclUncertain = input$INCL_UNCERTAIN,
+                                        noFilterReportUncertain = TRUE)
       
-      df <- sendigR::getFindingsSubjAge(dbToken,findings=bw_sub,animalList = animal_list,
-                               fromAge = NULL,toAge = NULL,inclUncertain = input$INCL_UNCERTAIN,
-                               noFilterReportUncertain = TRUE)
+      # df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
+      #                           sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
+      #                           noFilterReportUncertain = TRUE)
+      domainData <- merge(animal_list, df, by = c('STUDYID', 'USUBJID'),
+                         all=T, suffixes = c("_Control_animal", "_BW_AGE"))
       
-      df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
-                                sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
-                                noFilterReportUncertain = TRUE)
       
-      tableData <- df %>%
-        dplyr::group_by_at(grpByCols) %>% 
-        dplyr::summarize(mean.log.BWSTRESN=round(mean(log(BWSTRESN)),2),
-                  sd.log.BWSTRESN=round(sd(log(BWSTRESN)),2),
-                  N = n())
+tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'bw',
+                             includeUncertain = input$INCL_UNCERTAIN)
 
       
       tab <- DT::datatable(tableData,
@@ -1194,7 +1189,7 @@ execSendDashboard <- function(dbToken) {
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
-                             columnDefs = list(list(className = "dt-center", targets = "_all")),
+                             #columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",

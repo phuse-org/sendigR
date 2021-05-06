@@ -337,6 +337,68 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
 
 }
 
+# function for Aggregate BW and LB domain
+# control animal list and domain subject data merged to create doaminData
+#domain should be "lb" or "bw"
+aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
+  
+  domain <- tolower(domain)
+  
+  if (domain=='bw') {
+    grpByCols <- c("AGEDAYS_BW_AGE","SEX","BWORRESU")
+    result <- 'BWSTRESN'
+    result_unit <- 'BWORRESU'
+    
+  } else if (domain=='lb') {
+    grpByCols <- c("LBSPEC","LBTESTCD", "LBTEST","SEX","LBSTRESU")
+    result <- 'LBSTRESN'
+    result_unit <- 'LBSTRESU'
+    
+  }
+  mean_result <- paste0('Mean_',result)
+  sd_result <- paste0('SD_',result)
+  
+  if (includeUncertain==F) {
+    
+    agg_tb_certain <- domainData%>%
+      dplyr::group_by_at(grpByCols) %>% 
+      dplyr::summarize(!!mean_result := mean(get(result)),
+                       !!sd_result := sd(get(result)),
+                       N = n())
+    agg_tb_certain <- dplyr::relocate(agg_tb_certain,{{result_unit}}, .after = (!!sd_result))
+    
+    return(agg_tb_certain)
+  } else if (includeUncertain==T) {
+    
+    agg_tb_uncer <- domainData%>%
+      dplyr::group_by_at(grpByCols) %>% 
+      dplyr::summarize(!!mean_result := mean(get(result)),
+                       !!sd_result := sd(get(result)),
+                       N = n())
+    
+    aggDataNonConf <- domainData%>% 
+      dplyr::filter(!is.na(UNCERTAIN_MSG)) %>% 
+      dplyr::group_by_at(grpByCols) %>%
+      dplyr::summarize(Uncertain.Matches = n())
+    
+    aggDataConf <- domainData%>% 
+      dplyr::filter(is.na(UNCERTAIN_MSG)) %>%
+      dplyr::group_by_at(grpByCols) %>%
+      dplyr::summarize(Certain.Matches = n()) 
+    
+    df <- merge(agg_tb_uncer, aggDataConf, by=grpByCols, all=TRUE)
+    df <- merge(df, aggDataNonConf, by=grpByCols, all=TRUE)
+    df <- dplyr::relocate(df,{{result_unit}}, .after = {{sd_result}})
+    
+    for(j in seq_along(df)){
+      data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
+    }
+    
+    return(df)
+    
+  }
+}
+
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
 MISTRESC <- LBSTRESC <- NULL
