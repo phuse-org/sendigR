@@ -55,6 +55,7 @@ execSendDashboard <- function(dbToken) {
   #availableSex <- as.list(stats::setNames(c('M', 'F', 'U', 'All'), c('M', 'F', 'U', 'All')))
   availableSex <- GetUniqueSex()
   availableSex <- availableSex[[1]]
+  availableSex <- c(availableSex, "All")
   availableSex <- as.list(stats::setNames(availableSex,availableSex))
 
   availablePhases <- c('Screening', 'Treatment', 'Recovery')
@@ -279,7 +280,8 @@ execSendDashboard <- function(dbToken) {
                                    htmltools::br(),
                                    htmltools::br(),
                                    htmltools::br(),
-                                   htmltools::br())),
+                                   htmltools::br()
+                                   )),
                  shiny::tabPanel("MI", ##### MI ----
                           shiny::tabsetPanel(
                             shiny::tabPanel("MI Findings",
@@ -291,17 +293,29 @@ execSendDashboard <- function(dbToken) {
                                                           availableOrgans,
                                                           selected='KIDNEY')),
                                        shiny::column(width = 6, offset = 1,
-                                              DT::dataTableOutput("findingsTable")))),
+                                              DT::dataTableOutput("findingsTable"),
+                                              htmltools::br(),
+                                              htmltools::br(),
+                                              htmltools::br(),
+                                              htmltools::br()))),
 
                             shiny::tabPanel("Individual Records",
                                             shiny::checkboxInput('hide_check_column',
                                                                  label = 'Show Only Table',
                                                                  value = 0),
                                     htmltools::br(),
-                                    shiny::uiOutput('mi_indiv_table')),
+                                    shiny::uiOutput('mi_indiv_table'),
+                                    htmltools::br(),
+                                    htmltools::br(),
+                                    htmltools::br(),
+                                    htmltools::br()),
 
                             shiny::tabPanel("Aggregate Table",
-                                     DT::dataTableOutput('mi_agg_tab')))),
+                                     DT::dataTableOutput('mi_agg_tab'),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br()))),
 
                  shiny::tabPanel("LB", #####LB ----
                           shiny::tabsetPanel(
@@ -323,10 +337,18 @@ execSendDashboard <- function(dbToken) {
                                                                  label = 'Show Only Table',
                                                                  value = 0),
                                      htmltools::br(),
-                                     shiny::uiOutput('lb_indiv_table')),
+                                     shiny::uiOutput('lb_indiv_table'),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br()),
 
                             shiny::tabPanel("Aggregate Table",
-                                     DT::dataTableOutput('lb_agg_tab'))
+                                     DT::dataTableOutput('lb_agg_tab'),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br())
 
                           )
                           ),
@@ -337,9 +359,17 @@ execSendDashboard <- function(dbToken) {
                                                                  label = "Show Only Table",
                                                                  value = 0),
                                      htmltools::br(),
-                                     shiny::uiOutput("cl_indiv_table")),
+                                     shiny::uiOutput("cl_indiv_table"),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br()),
                             shiny::tabPanel("Aggregate Table",
-                                     DT::dataTableOutput('cl_agg_tab')))),
+                                     DT::dataTableOutput('cl_agg_tab'),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br()))),
                  shiny::tabPanel("BW", ##### BW ----
                           shiny::tabsetPanel(
                             shiny::tabPanel("Individual Records",
@@ -347,9 +377,17 @@ execSendDashboard <- function(dbToken) {
                                                                  label = "Show Only Table",
                                                                  value = 0),
                                      htmltools::br(),
-                                     shiny::uiOutput("bw_indiv_table")),
+                                     shiny::uiOutput("bw_indiv_table"),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br()),
                             shiny::tabPanel("Aggregate Table",
-                                     DT::dataTableOutput('bw_agg_tab'))))
+                                     DT::dataTableOutput('bw_agg_tab'),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     htmltools::br())))
 
                  )))
 
