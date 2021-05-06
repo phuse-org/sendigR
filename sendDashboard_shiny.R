@@ -52,7 +52,10 @@ execSendDashboard <- function(dbToken) {
   availableStudies <- GetAvailableStudies()
   availableStudies <- as.list(stats::setNames(availableStudies, availableStudies))
 
-  availableSex <- as.list(stats::setNames(c('M', 'F', 'U', 'All'), c('M', 'F', 'U', 'All')))
+  #availableSex <- as.list(stats::setNames(c('M', 'F', 'U', 'All'), c('M', 'F', 'U', 'All')))
+  availableSex <- GetUniqueSex()
+  availableSex <- availableSex[[1]]
+  availableSex <- as.list(stats::setNames(availableSex,availableSex))
 
   availablePhases <- c('Screening', 'Treatment', 'Recovery')
 
@@ -222,7 +225,7 @@ execSendDashboard <- function(dbToken) {
 
                  shiny::checkboxInput('INCL_UNCERTAIN',
                                'Include uncertain rows',
-                               value = TRUE),
+                               value = FALSE),
 
                  shiny::actionButton("refreshData", "Generate/Update Data"),
                  htmltools::br()
