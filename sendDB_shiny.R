@@ -283,6 +283,13 @@ GetAnimalGroupsStudy <- function(studyid) {
   return(studyAnimals)
 }
 
+GetUniqueSex <- function() {
+  uniqueSex <- sendigR::genericQuery(.sendigRenv$dbToken,
+                                     'SELECT DISTINCT SEX FROM DM')
+  
+  return(uniqueSex)
+}
+
 aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
   # creates an aggregate table from domainData
   # domainData: should be a data.table that with
