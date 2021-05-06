@@ -952,6 +952,7 @@ execSendDashboard <- function(dbToken) {
       tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'lb', input$INCL_UNCERTAIN)
       
       
+      
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
@@ -973,6 +974,7 @@ execSendDashboard <- function(dbToken) {
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
+      tab <- DT::formatRound(table = tab,columns = c(5,6),digits = 2)
       
       tab
       
@@ -1235,6 +1237,7 @@ tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'bw',
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
+      tab <- DT::formatRound(table = tab,columns = c(3,4),digits = 2)
       
       tab
       
