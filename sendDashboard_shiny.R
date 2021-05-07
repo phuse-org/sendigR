@@ -760,7 +760,7 @@ execSendDashboard <- function(dbToken) {
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
-                             #columnDefs = list(list(className = "dt-center", targets = "_all")),
+                             columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
@@ -969,7 +969,7 @@ execSendDashboard <- function(dbToken) {
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
-                             #columnDefs = list(list(className = "dt-center", targets = "_all")),
+                             columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
@@ -1232,7 +1232,7 @@ tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'bw',
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
-                             #columnDefs = list(list(className = "dt-center", targets = "_all")),
+                             columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
