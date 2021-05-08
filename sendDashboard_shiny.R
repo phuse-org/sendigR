@@ -544,6 +544,7 @@ execSendDashboard <- function(dbToken) {
       findings <- MiFindings(animalList(), input$MISPEC)
       findings <- findings %>% dplyr::mutate_if(is.character,as.factor)
       findings_name <- paste0("MI Findings_",input$MISPEC) 
+      
       findings <- DT::datatable(findings,
         class = "cell-border stripe",
         filter = list(position = 'top'),
@@ -719,8 +720,8 @@ execSendDashboard <- function(dbToken) {
       # they will not get recorded.  Maybe this could be
       # a flag to toggle.
 
-      tableData <- aggDomain(domainData, grpByCols,
-                             includeUncertain=input$INCL_UNCERTAIN)
+      shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
+                             includeUncertain=input$INCL_UNCERTAIN))
 
       # number of animals with observations b MISPEC
       tissueCounts <- domainData %>%
@@ -952,7 +953,7 @@ execSendDashboard <- function(dbToken) {
       
       domainData <- merge(animal_list, lb_sub, by = c('STUDYID', 'USUBJID'), all=T)
       
-      tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'lb', input$INCL_UNCERTAIN)
+      shiny::isolate(tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'lb', input$INCL_UNCERTAIN))
       
       
       
@@ -1195,28 +1196,27 @@ execSendDashboard <- function(dbToken) {
     ###### BW aggregate table ----
 
     output$bw_agg_tab <- DT::renderDataTable(server = F,{
+      # req(input$refreshData)
       
       animal_list <- animalList()
       bw_sub <- BW_subject()
       
      
       #get age at finding
-      df <- sendigR::getFindingsSubjAge(dbToken = .sendigRenv$dbToken,
+     shiny::isolate(df <- sendigR::getFindingsSubjAge(dbToken = .sendigRenv$dbToken,
                                         findings=bw_sub,
                                         animalList = animal_list,
                                         fromAge = NULL,toAge = NULL,
                                         inclUncertain = input$INCL_UNCERTAIN,
-                                        noFilterReportUncertain = TRUE)
+                                        noFilterReportUncertain = TRUE))
       
       # df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
       #                           sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
       #                           noFilterReportUncertain = TRUE)
       domainData <- merge(animal_list, df, by = c('STUDYID', 'USUBJID'),
                          all=T, suffixes = c("_Control_animal", "_BW_AGE"))
-      
-      
-tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'bw',
-                             includeUncertain = input$INCL_UNCERTAIN)
+      shiny::isolate(tableData <- aggDomain_bw_lb(domainData = domainData,domain = 'bw',
+                                                  includeUncertain =input$INCL_UNCERTAIN))
 
       
       tab <- DT::datatable(tableData,
