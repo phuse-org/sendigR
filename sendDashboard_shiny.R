@@ -319,19 +319,20 @@ execSendDashboard <- function(dbToken) {
 
                  shiny::tabPanel("LB", #####LB ----
                           shiny::tabsetPanel(
-                            shiny::tabPanel("LB Findings",
-                                     shiny::fluidRow(
-                                       htmltools::br(),
-                                       shiny::column(width = 2,
-                                                     shiny::selectInput("LBTESTCD",
-                                                          "Select LBTESTCD:",
-                                                          availableLBTESTCD)),
-                                       shiny::column(width = 2,
-                                                     shiny::radioButtons("dist", "Distribution type:",
-                                                           c("Normal" = "norm",
-                                                             "Log-normal" = "lnorm"))),
-                                       shiny::column(width = 7,offset = 1,
-                                                     shiny::plotOutput("labTestHist")))),
+                            # shiny::tabPanel("LB Findings",
+                            #          shiny::fluidRow(
+                            #            htmltools::br(),
+                            #            shiny::column(width = 2,
+                            #                          shiny::selectInput("LBTESTCD",
+                            #                               "Select LBTESTCD:",
+                            #                               availableLBTESTCD)),
+                            #            shiny::column(width = 2,
+                            #                          shiny::radioButtons("dist", "Distribution type:",
+                            #                                c("Normal" = "norm",
+                            #                                  "Log-normal" = "lnorm"))),
+                            #            shiny::column(width = 7,offset = 1,
+                            #                          shiny::plotOutput("labTestHist")))
+                            #          ),
                             shiny::tabPanel("Individual Records",
                                             shiny::checkboxInput('lb_hide_check_column',
                                                                  label = 'Show Only Table',
@@ -363,13 +364,14 @@ execSendDashboard <- function(dbToken) {
                                      htmltools::br(),
                                      htmltools::br(),
                                      htmltools::br(),
-                                     htmltools::br()),
-                            shiny::tabPanel("Aggregate Table",
-                                     DT::dataTableOutput('cl_agg_tab'),
-                                     htmltools::br(),
-                                     htmltools::br(),
-                                     htmltools::br(),
-                                     htmltools::br()))),
+                                     htmltools::br())
+                            # shiny::tabPanel("Aggregate Table",
+                            #          DT::dataTableOutput('cl_agg_tab'),
+                            #          htmltools::br(),
+                            #          htmltools::br(),
+                            #          htmltools::br(),
+                            #          htmltools::br())
+                            )),
                  shiny::tabPanel("BW", ##### BW ----
                           shiny::tabsetPanel(
                             shiny::tabPanel("Individual Records",
@@ -882,42 +884,43 @@ execSendDashboard <- function(dbToken) {
     # of displaying as normal
     # or log-normal distribution.
 
-    output$labTestHist <- shiny::renderPlot({
-
-      # LiverFindings() gets
-      # lab test results for
-      # a user-defined LBTESTCD
-
-      labResults <- LiverFindings(animalList(), input$LBTESTCD)
-
-
-      # change the distbution
-      # function depending on
-      # user input
-
-      if (input$dist == 'norm') {
-        labResults$distribution <- labResults$LBSTRESC_TRANS
-        dist <- MASS::fitdistr(labResults$distribution, 'normal')
-        fun <- stats::dnorm
-      } else if (input$dist == 'lnorm') {
-        labResults$distribution <- log(labResults$LBSTRESC_TRANS + 1)
-        dist <- MASS::fitdistr(labResults$distribution, 'lognormal')
-        fun <- stats::dlnorm
-      }
-
-      # plot the probability
-      # distribution and
-      # the pdf
-
-      ggplot2::ggplot(labResults) +
-        ggplot2::geom_histogram(ggplot2::aes(x = distribution, y = ..density..),
-                       fill = "blue",
-                       colour = "grey", alpha=0.6) +
-        ggplot2::stat_function(fun = fun,
-                      args = list(mean = dist$estimate[1], sd = dist$estimate[2], log = F),
-                      color="grey", lwd=1, alpha=0.6)
-
-    })
+    
+    # output$labTestHist <- shiny::renderPlot({
+    # 
+    #   # LiverFindings() gets
+    #   # lab test results for
+    #   # a user-defined LBTESTCD
+    # 
+    #   labResults <- LiverFindings(animalList(), input$LBTESTCD)
+    # 
+    # 
+    #   # change the distbution
+    #   # function depending on
+    #   # user input
+    # 
+    #   if (input$dist == 'norm') {
+    #     labResults$distribution <- labResults$LBSTRESC_TRANS
+    #     dist <- MASS::fitdistr(labResults$distribution, 'normal')
+    #     fun <- stats::dnorm
+    #   } else if (input$dist == 'lnorm') {
+    #     labResults$distribution <- log(labResults$LBSTRESC_TRANS + 1)
+    #     dist <- MASS::fitdistr(labResults$distribution, 'lognormal')
+    #     fun <- stats::dlnorm
+    #   }
+    # 
+    #   # plot the probability
+    #   # distribution and
+    #   # the pdf
+    # 
+    #   ggplot2::ggplot(labResults) +
+    #     ggplot2::geom_histogram(ggplot2::aes(x = distribution, y = ..density..),
+    #                    fill = "blue",
+    #                    colour = "grey", alpha=0.6) +
+    #     ggplot2::stat_function(fun = fun,
+    #                   args = list(mean = dist$estimate[1], sd = dist$estimate[2], log = F),
+    #                   color="grey", lwd=1, alpha=0.6)
+    # 
+    # })
 
 
     # Two panels not yet
