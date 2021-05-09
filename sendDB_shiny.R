@@ -48,6 +48,7 @@ MiFindings <- function(animalList, mispec) {
                                             WHERE MISPEC == "%s"', mispec))
   finalFindings <- merge(animalList, findings,
                          by=c('STUDYID', 'USUBJID'))
+  finalFindings <- finalFindings %>% filter(MISTRESC!="")
   finalFindings$MISTRESC <- toupper(finalFindings$MISTRESC)
 
   # Count findings using dplyr
