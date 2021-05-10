@@ -33,6 +33,28 @@ GetAnimalList <- function(design, species) {
   return(animals)
 }
 
+
+MiFindings_table <- function(animalList, mispec) {
+  # given a set of USUBJIDs and and target organ
+  # will return the frequency counts of counts
+  # of the findings
+  
+  # query MI and remove findings not in
+  # our target animals. Convert
+  # all findings to uppercase for
+  # counting.
+  findings <- sendigR::genericQuery(.sendigRenv$dbToken,
+                                    sprintf('SELECT STUDYID, USUBJID, MISTRESC
+                                            FROM MI
+                                            WHERE MISPEC == "%s"', mispec))
+  finalFindings <- merge(animalList, findings,
+                         by=c('STUDYID', 'USUBJID'))
+  finalFindings <- finalFindings %>% filter(MISTRESC!="")
+  finalFindings$MISTRESC <- toupper(finalFindings$MISTRESC)
+  return(finalFindings)
+}
+
+
 MiFindings <- function(animalList, mispec) {
   # given a set of USUBJIDs and and target organ
   # will return the frequency counts of counts

@@ -287,6 +287,11 @@ execSendDashboard <- function(dbToken) {
                             shiny::tabPanel("MI Findings",
                                      shiny::fluidRow(
                                        htmltools::br(),
+                                       shiny::uiOutput('mi_findings_filter')
+                                       ),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     shiny::fluidRow(
                                        shiny::column(width = 3,
                                               shiny::selectInput("MISPEC",
                                                           "Select MISPEC:",
@@ -537,6 +542,64 @@ execSendDashboard <- function(dbToken) {
     # defined in sendDB.R
 
     ###### MI findings table ----
+    
+   
+    
+    # get Mifindings total table
+   MiFindings_filter_table <- reactive({
+     shiny::req(input$STRAIN)
+     df <- MiFindings_table(animalList(), input$MISPEC)
+     df
+   })
+
+    
+    # render mi findings filter
+    output$mi_findings_filter <- shiny::renderUI({
+      
+      df <- MiFindings_filter_table()
+      df_route <- unique(df[['ROUTE']])
+      df_species <- unique(df[['SPECIES']])
+      df_strain <- unique(df[['STRAIN']])
+      df_sex <- unique(df[['SEX']])
+      
+      # addUIDep(shiny::selectizeInput("SPECIES",label='Select Species:',
+      #                                choices= GetUniqueSpecies(),
+      #                                selected='RAT',
+      #                                multiple=TRUE,
+      #                                options=list(plugins=list('drag_drop','remove_button'))))
+      
+      shiny::fluidRow(
+        
+        shiny::column(width = 3,
+                     addUIDep(shiny::selectizeInput("mi_route",
+                                         "Select Route",
+                                         choices=df_route,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button')
+                                         )))),
+        
+        shiny::column(width = 3,
+                      shiny::selectInput("mi_species",
+                                         "Select Species",
+                                         df_species)),
+        
+        shiny::column(width = 3,
+                     addUIDep( shiny::selectizeInput("mi_strain",
+                                         "Select Strain",
+                                         df_strain,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button'))
+                                         ))
+                     ),
+        
+        shiny::column(width = 3,
+                      shiny::selectInput("mi_sex",
+                                         "Select Sex",
+                                         df_sex))
+      )
+      
+      
+    })
 
     output$findingsTable <- DT::renderDataTable(server = F,{
 
