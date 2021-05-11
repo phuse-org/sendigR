@@ -7,21 +7,22 @@
 genericQuery(dbToken, queryString, queryParams = NULL)
 }
 \arguments{
-\item{dbToken}{Mandatory - token for the open database connection}
+\item{dbToken}{Mandatory\cr
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{queryString}{Mandatory - the select statement to execute}
+\item{queryString}{Mandatory, character.\cr
+The select statement to execute}
 
-\item{queryParams}{Optional - a varibale with values for bind variable
-referenced in the where clause of the select statemt}
+\item{queryParams}{Optional, character.\cr
+A variable with values for bind variable referenced in the where clause of
+the select statement}
 }
 \value{
-Data table with the set of fetched rows
+Data.table with the set of fetched rows
 }
 \description{
 The function executes a SQL select statements in the database and returns
-the fetched set of rows as a data table.
-The underlying functions specific for the database type is called to do the
-SQL execution.
+the fetched set of rows as a data.table.
 }
 \examples{
 

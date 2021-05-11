@@ -15,68 +15,81 @@ initEnvironment(
 )
 }
 \arguments{
-\item{dbType}{Mandatory\cr
+\item{dbType}{Mandatory, character\cr
 The type of database, valid values (case insensitive):
 \itemize{
-\item sqlite
-\item oracle
+\item 'sqlite'
+\item 'oracle'
 }}
 
-\item{dbPath}{Mandatory\cr
+\item{dbPath}{Mandatory, character\cr
 The path to the database (path to file or another kind of db reference)}
 
-\item{dbCreate}{Mandatory\cr
-If \code{TRUE}, a new database is to be created.\cr
-Only valid for \code{dbType} sqlite}
+\item{dbCreate}{Mandatory, boolean\cr
+If \code{TRUE}, a new database is to be created - this is only valid for
+\code{dbType} 'sqlite'}
 
-\item{dbUser}{Mandatory if login credentials are required for the
+\item{dbUser}{Mandatory, character - if login credentials are required for the
 specific db type\cr
-The user name to be used for log in to database.}
+The user name to be used for login to database.}
 
-\item{dbPwd}{Mandatory if login credentials are required for the
+\item{dbPwd}{Mandatory, character - if login credentials are required for the
 specific db type\cr
-The user name to be used for log in to database.}
+The password to be used for login to database.}
 
-\item{dbSchema}{Optional\cr
-The table owner of the SEND table in the specific database}
+\item{dbSchema}{Optional, character\cr
+The table owner of the SEND table in the specific database.\cr
+This parameter is only relevant to specify if it is necessary to prefix
+table names with schema in SQL statements i the database.}
 
-\item{ctFile}{Optional.\cr
-Name (full path) of CDISC CT file in Excel xls format to be imported.\cr
-If a values is not specified, a set of SEND CT values included in the
-packages is used by the package's functions. It's the newest CDISC SEND CT
-version at the time of the build of the current version of the package
-which is included.}
+\item{ctFile}{Optional, character.\cr
+Name (full path) of CDISC CT file in Excel xls format to be imported.
+Only relevant to use if another CDISC CT version than the version
+included in packages is wanted.\cr}
 }
 \value{
-Token for the open database connection
+The function returns a token which is a data structure describing
+the open database connection. This token must be given as input parameter
+to all functions accessing the actual database.
 }
 \description{
-Defines relevant global variables for - type of SEND database - pointer to
-database (filename, connect string....) - username/password to database (if
-relevant) Import CDISC CT data from specified CT file in Excel format.
+Open or create a SEND database and return a token for the open database
+connection.
 }
 \details{
-Multiple types of databases are supported - for each of the supported db
-types:
-\itemize{
-\item A metadata record is included describing the relevant properties for
-a type of database
-\item A function to connect to the specific database
-\item function to import data for a SEND domain from the specific database
-}
+If the function is executed with parameter \code{dbCreate=FALSE} (default),
+a connection to the specified database is opened. Dependent of the type of
+database (parameter \code{dbType}), a login using specified user credentials
+(parameters \code{dbUser} and \code{dbPwd}) may be done.\cr
+The database must contain a set of tables representing the SEND domains
+compliant with SEND IG version 3.0 and/on 3.1.\cr
+
+If the function is executed with parameter \code{dbCreate=TRUE}, an empty
+database is created and opened. This is only supported for a SQLite database,
+i.e. parameter \code{dbType='sqlite'}. The SEND domain tables may then be
+created by execution of the function \code{\link{dbCreateSchema}}.
+
+Besides the open database connection, a set of CDISC SEND controlled
+terminology values are imported. If parameter \code{ctFile} is specified with
+a path to an Excel file containing a CDISC SEND ct version downloaded from
+\url{https://evs.nci.nih.gov/ftp1/CDISC/SEND/}, the content
+from this file is imported and used by some of the package's functions.
+Else a set of CDISC SEND CT values which are included in the  packages is
+used by the package's functions. It's the newest CDISC SEND CT version at the
+time of the build of the current version of the package which is included.
 }
 \examples{
 
 \dontrun{
-initEnvironment(dbType='sqlite',
-               dbPath='//servername/SendData/db/send.db',
-               ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
-initEnvironment(dbType='oracle',
-                dbPath='dbserver:1521/send_db',
-                dbUser='ME',
-                dbPwd='mypassword',
-                dbSchema = 'send',
-                ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
+db <- initEnvironment(dbType='sqlite',
+                      dbPath='//servername/SendData/db/send.db',
+                      ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
+db <- initEnvironment(dbType='oracle',
+                      dbPath='dbserver:1521/send_db',
+                      dbUser='ME',
+                      dbPwd='mypassword',
+                      dbSchema = 'send',
+                      ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
 }
 
 

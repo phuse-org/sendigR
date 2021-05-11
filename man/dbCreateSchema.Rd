@@ -8,16 +8,17 @@ dbCreateSchema(dbToken)
 }
 \arguments{
 \item{dbToken}{Mandatory\cr
-Token for the open database connection}
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 }
 \description{
 Create all the domains and variables which are described in the SEND IG
 versions 3.0 and 3.1 in the database - i.e. a union of domains from the
-SEND IG versions and in each domain a union of variables from the the
-SEND IG versions.
+SEND IG versions and in each domain a union of variables from the SEND IG
+versions.
 }
 \details{
-The database must be a SQLite database
+The database must be an SQLite database - no other types of databases are
+supported by this function.
 }
 \examples{
 \dontrun{

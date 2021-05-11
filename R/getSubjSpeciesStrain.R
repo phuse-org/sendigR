@@ -12,11 +12,11 @@
 #' the species and strain for each animal.
 #'
 #' Returns a data table with the set of animals included in the
-#' \code{animalList} of the species and strain specified in the
+#' \code{animalList} matching the species and strain specified in the
 #' \code{speciesFilter} and \code{strainFilter}.\cr
 #' If the \code{speciesFilter} and \code{strainFilter} are empty (null, na or
-#' empty string) - all rows from \code{animalList} are returned with filled in
-#' SPECIES and STRAIN columns added.
+#' empty string) - all rows from \code{animalList} are returned with additional
+#' populated SPECIES and STRAIN columns.
 #'
 #' The species and strain per animal respectively are identified by a
 #' hierarchical lookup in these domains
@@ -34,39 +34,42 @@
 #' in the output set. These uncertain situations are identified and reported for
 #' SPECIES and STRAIN respectively (in column UNCERTAIN_MSG):
 #' \itemize{
-#'   \item TS parameter SPECIES/STRAIN is missing or invalid (not CT value - CDISC code list SPECIES/STRAIN)
-#'    and TX parameter SPECIES/STRAIN is missing or invalid (not CT value) and DM.SPECIES/STRAIN is
-#'    missing or invalid (not CT value)
-#'   \item Different values of SPECIES/STRAIN across TS, TX and DM for studies where no or only one
-#'    TS parameter SPECIES/STRAIN is registered
-#'   \item Multiple TS parameter SPECIES/STRAIN values are registered for study and TX parameter
-#'    SPECIES/STRAIN and/or DM.SPECIES/STRAIN do not match any of the TS values.
-#'   \item  Multiple TS parameter SPECIES/STRAIN values are registered for study and TX parameter
-#'    SPECIES/STRAIN and DM.SPECIES/STRAIN are unequal.
+#'   \item TS parameter SPECIES/STRAIN is missing or invalid (not CT value -
+#'   CDISC SEND code list SPECIES/STRAIN) and TX parameter SPECIES/STRAIN is
+#'   missing or invalid (not CT value) and DM.SPECIES/STRAIN is missing or
+#'   invalid (not CT value)
+#'   \item Different values of SPECIES/STRAIN across TS, TX and DM for studies
+#'   where no or only one TS parameter SPECIES/STRAIN is registered
+#'   \item Multiple TS parameter SPECIES/STRAIN values are registered for study
+#'   and TX parameter SPECIES/STRAIN and/or DM.SPECIES/STRAIN do not match any
+#'   of the TS values.
+#'   \item  Multiple TS parameter SPECIES/STRAIN values are registered for study
+#'   and TX parameter SPECIES/STRAIN and DM.SPECIES/STRAIN are unequal.
 #' }
 #' The same checks are performed and reported in column NOT_VALID_MSG if
 #' \code{speciesFilter} and \code{strainFilter} are empty and
 #' \code{noFilterReportUncertain=TRUE}.
 #'
-#' @param dbToken Mandatory - token for the open database connection
-#' @param animalList  Mandatory.\cr
-#'  A data.table with the list of animals to process.\cr
+#' @param dbToken Mandatory\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @param animalList  Mandatory, data.table.\cr
+#'  A table with the list of animals to process.\cr
 #'  The table must include at least columns named 'STUDYID' and 'USUBJID'.
 #' @param speciesFilter  Optional, character.\cr
 #'  The species value(s) to use as criterion for filtering of the input data
 #'  table.\cr
 #'  It can be a single string, a vector or a list of multiple strings.
 #' @param strainFilter  Optional, character.\cr
-#'  The species value(s) to use as criterion for filtering of the input data
+#'  The strain value(s) to use as criterion for filtering of the input data
 #'  table.\cr
 #'  It can be a single string, a vector or a list of multiple strings.
-#'  When a multiple values are specified for \code{speciesFilter}, each strain
+#'  When multiple values are specified for \code{speciesFilter}, each strain
 #'  value must be prefixed by species and ':' , e.g.
 #'  \code{c('RAT: WISTAR','DOG: BEAGLE')}.
-#' @param inclUncertain  Mandatory, TRUE or FALSE, default: FALSE.\cr
+#' @param inclUncertain  Mandatory, boolean.\cr
 #'  Indicates whether animals for which the species or strain cannot be
 #'  confidently identified shall be included or not in the output data table.
-#' @param exclusively Optional.
+#' @param exclusively Mandatory, boolean.
 #'   \itemize{
 #'   \item TRUE: Include animals only for studies with no other species and
 #'   optional strains then included in \code{speciesFilter} and
@@ -74,7 +77,7 @@
 #'   \item FALSE: Include animals for all studies with species and strain
 #'   matching \code{speciesFilter} and \code{strainFilter} respectively.
 #' }
-#' @param noFilterReportUncertain  Optional, TRUE or FALSE, default: TRUE\cr
+#' @param noFilterReportUncertain  Optional, boolean.\cr
 #'  Only relevant if the \code{speciesFilter} and  \code{strainFilter} are
 #'  empty.\cr
 #'  Indicates if the reason should be included if the species or strain cannot
@@ -96,7 +99,7 @@
 #' specified in \code{animalList} - separated by '|'.
 #'   \item NOT_VALID_MSG (character)\cr
 #' Included when parameter \code{noFilterReportUncertain=TRUE}.\cr
-#' In case the species or strainn cannot be confidently decided, the column
+#' In case the species or strain cannot be confidently decided, the column
 #' contains an indication of the reason.\cr
 #' Is NA for rows where species and strain can be confidently decided.\cr
 #' A non-empty NOT_VALID_MSG value generated by this function is merged with
@@ -110,25 +113,25 @@
 #' \dontrun{
 #' # Extract rats and mice plus uncertain animals
 #' getSubjSpeciesStrain(dbToken, controlAnimals,
-#'                         speciesFilter = c('RAT', 'MOUSE')
-#'                         inclUncertain = TRUE)
+#'                      speciesFilter = c('RAT', 'MOUSE')
+#'                      inclUncertain = TRUE)
 #' # Extract Spargue-Dawley rats plus uncertain animals.
 #' # Include only animals from studies which do not contain other species or
 #' # strains
 #' getSubjSpeciesStrain(dbToken, controlAnimals,
-#'                         speciesFilter = 'RAT'
-#'                         strainFilter = 'SPRAGUE-DAWLEY',
-#'                         inclUncertain = TRUE,
-#'                         exclusively = TRUE,
-#'                         noFilterReportUncertain = TRUE)
+#'                      speciesFilter = 'RAT'
+#'                      strainFilter = 'SPRAGUE-DAWLEY',
+#'                      inclUncertain = TRUE,
+#'                      exclusively = TRUE,
+#'                      noFilterReportUncertain = TRUE)
 #' # Extract Wistar rats and and Beagle dogs - and no uncertain animals
 #' getSubjSpeciesStrain(dbToken, controlAnimals,
-#'                         speciesFilter = c('RAT', 'DOG'),
-#'                         strainFilter = c('RAT: WISTAR', 'DOG: BEAGLE'))
+#'                      speciesFilter = c('RAT', 'DOG'),
+#'                      strainFilter = c('RAT: WISTAR', 'DOG: BEAGLE'))
 #' # No filtering, just add SPECIES and STRAIN - do not include messages when
 #' # these values cannot be confidently found
 #' getSubjSpeciesStrain(dbToken, controlAnimals,
-#'                         noFilterReportUncertain = FALSE)
+#'                      noFilterReportUncertain = FALSE)
 #' }
 getSubjSpeciesStrain<-function(dbToken,
                                   animalList,

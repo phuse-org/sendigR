@@ -14,7 +14,7 @@
 #' Returns a data table with the set of findings rows included in the
 #' \code{findings} of the phase(s) specified in the \code{phaseFilter}.\cr
 #' If the \code{phaseFilter} is empty (null, na or empty string), all rows from
-#' \code{findings} are returned with the a PHASE added.
+#' \code{findings} are returned with the an additional PHASE column.
 #'
 #' The logic for the extraction is based on the subject elements and the trial
 #' design domains - for each finding row:
@@ -30,6 +30,38 @@
 #' phase is identified per animal included in the each pool and finding, and if all
 #' identified phases are equal per pool and finding, the identified phase are
 #' returned per pool and finding.
+#'
+#' The populated value of a phase is one of:
+#' \itemize{
+#'   \item 'Screening'\
+#'      If TA.EPOCH fulfills one:
+#'      \itemize{
+#'        \item contains 'pre' followed by one of
+#'              \['treat','trt','dos',test','study','exposure'\]
+#'        \item contains one of
+#'              \['acclimat','screen','baseline','allocat','random'\]
+#'      }
+#'   \item 'Recovery'\cr
+#'      If TA.EPOCH doesn't fulfill the pattern for 'Screening' and fulfills one
+#'      of:
+#'      \itemize{
+#'        \item contains 'recovery'
+#'        \item contains 'post' followed by one of
+#'              \['treat','trt','dos','test','study','exposure'\]
+#'      }
+#'   \item 'Treatment'\cr
+#'      If TA.EPOCH doesn't fulfill the patterns for 'Screening' or 'Recovery'
+#'      and fulfills both:
+#'      \itemize{
+#'        \item contains one of
+#'              \['treat','trt','dos','test','exposure'\]
+#'        \item does not contain any of
+#'              \['off','non'|','free'|','holiday'\]
+#'      }
+#'   \item 'Uncertain'\cr
+#'      If the TA.EPOCH is empty or does not fulfills any of the requirements
+#'      described for the three phases above.
+#' }
 #'
 #' If input parameter \code{inclUncertain=TRUE}, findings rows where the phase
 #' cannot be confidently identified are included in the output set. These
@@ -47,8 +79,9 @@
 #' The same checks are performed and reported in column NOT_VALID_MSG if
 #' \code{phaseFilter} is empty and \code{noFilterReportUncertain=TRUE}.
 #'
-#' @param dbToken Mandatory - token for the open database connection
-#' @param findings Mandatory.\cr
+#' @param dbToken Mandatory\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @param findings Mandatory, data.table.\cr
 #'  A data.table with the set of finding rows to process.\cr
 #'  The table must include at least columns named
 #'  \itemize{
@@ -58,16 +91,16 @@
 #'     \item domainSEQ
 #'     \item domainDTC
 #'  }
-#'  where domain is the name of the actuel findings domain - e.g. LBSEQ and
+#'  where domain is the name of the actual findings domain - e.g. LBSEQ and
 #'  LBDTC
 #' @param phaseFilter Optional, character.\cr
 #'  The phase value criterion to be used for filtering of the list of animals.\cr
 #'  It can be a single string, a vector or a list of multiple strings.
-#' @param inclUncertain  Mandatory, TRUE or FALSE, default: FALSE.\cr
+#' @param inclUncertain  Mandatory, boolean.\cr
 #'  Only relevant if the \code{phaseFilter} is not empty.\cr
 #'  Indicates whether finding rows for which the phase cannot be confidently
 #'  identified shall be included or not in the output data table.
-#' @param noFilterReportUncertain  Optional, TRUE or FALSE, default: TRUE\cr
+#' @param noFilterReportUncertain  Mandatory, boolean.\cr
 #'  Only relevant if the \code{phaseFilter} is empty.\cr
 #'  Indicates if the reason should be included if the phase cannot be
 #'  confidently decided for an animal.

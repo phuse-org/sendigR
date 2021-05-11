@@ -7,11 +7,11 @@
 disconnectDB(dbToken)
 }
 \arguments{
-\item{dbToken}{Mandatory - token for the open database connection}
+\item{dbToken}{Mandatory\cr
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 }
 \description{
-Disconnect from database by calling the disconnect function specific for
-the current database type.
+Close database session and disconnect from open database.
 }
 \examples{
 \dontrun{

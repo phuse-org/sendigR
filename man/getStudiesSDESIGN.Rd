@@ -2,7 +2,8 @@
 % Please edit documentation in R/getStudiesSDESIGN.R
 \name{getStudiesSDESIGN}
 \alias{getStudiesSDESIGN}
-\title{Extract a list of SEND studies with a specified study design.}
+\title{Extract a list of SEND studies with a specified study design - or just add
+actual study design for each study.}
 \usage{
 getStudiesSDESIGN(
   dbToken,
@@ -14,18 +15,19 @@ getStudiesSDESIGN(
 )
 }
 \arguments{
-\item{dbToken}{Mandatory - token for the open database connection}
+\item{dbToken}{Mandatory.\cr
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{studyList}{Optional.\cr
-A data.table with the list of studies to process. If empty, all studies in
-the data base are included processing \cr
+\item{studyList}{Optional, data.table.\cr
+A table with the list of studies to process. If empty, all studies in
+the data base are processed\cr
 The table must include at least a column named 'STUDYID'}
 
 \item{studyDesignFilter}{Mandatory, character. The study design to use as
 criterion for filtering of the study id values. It can be a single string,
 a vector or a list of multiple strings.}
 
-\item{exclusively}{Optional.
+\item{exclusively}{Mandatory, boolean.
 \itemize{
 \item TRUE: Include studies only for studies with no other study design
 then included in \code{studyDesignFilter}.
@@ -33,11 +35,11 @@ then included in \code{studyDesignFilter}.
 \code{studyDesignFilter}.
 }}
 
-\item{inclUncertain}{Optional, TRUE or FALSE, default: FALSE.\cr
+\item{inclUncertain}{Mandatory, boolean.\cr
 Indicates whether study ids with SDESIGN value which are is missing or wrong
 shall be included or not in the output data table.}
 
-\item{noFilterReportUncertain}{Optional, TRUE or FALSE, default: TRUE\cr
+\item{noFilterReportUncertain}{Mandatory, boolean\cr
 Only relevant if the \code{studyDesignFilter} is empty.\cr
 Indicates if the reason should be included if the SDESIGN cannot be
 confidently decided for an animal.}
@@ -77,6 +79,7 @@ rows for the TSPARMCD 'SDESIGN' are returned.
 Extracts the set of studies from TS where the value of TSVAL for the TSPARMCD
 'SDESIGN' is equal to a given study design.\cr
 The comparison of study design values are done case insensitive.\cr
+
 If a data table with a list of studies is specified in \code{studyList}, only
 the subset of studies included in that set is processed.
 

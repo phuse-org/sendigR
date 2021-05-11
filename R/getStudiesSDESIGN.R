@@ -8,7 +8,8 @@
 ## 2020-12-04   Bo Larsen             Initial version
 ################################################################################
 
-#' Extract a list of SEND studies with a specified study design.
+#' Extract a list of SEND studies with a specified study design - or just add
+#' actual study design for each study.
 #'
 #' Returns a data table with the list of study ids from TS where the value of
 #' TSVAL for the TSPARMCD 'SDESIGN' is equal to a given study design.\cr
@@ -18,6 +19,7 @@
 #' Extracts the set of studies from TS where the value of TSVAL for the TSPARMCD
 #' 'SDESIGN' is equal to a given study design.\cr
 #' The comparison of study design values are done case insensitive.\cr
+#'
 #' If a data table with a list of studies is specified in \code{studyList}, only
 #' the subset of studies included in that set is processed.
 #'
@@ -25,32 +27,33 @@
 #' in the output set. These uncertain situations are identified and reported (in
 #' column UNCERTAIN_MSG):
 #' \itemize{
-#' \item without any row for TSPARMCD='SDESIGN' or
-#' \item TSVAL doesn't contain a value included in the  CDISC CT list
-#'      'DESIGN' for TSPARMCD='SDESIGN'
+#'   \item without any row for TSPARMCD='SDESIGN' or
+#'   \item TSVAL doesn't contain a value included in the  CDISC CT list
+#'        'DESIGN' for TSPARMCD='SDESIGN'
 #' }
 #' The same checks are performed and reported in column NOT_VALID_MSG if
 #' \code{studyDesignFilter} is empty and \code{noFilterReportUncertain=TRUE}.
 #'
-#' @param dbToken Mandatory - token for the open database connection
-#' @param studyList Optional.\cr
-#'  A data.table with the list of studies to process. If empty, all studies in
-#'  the data base are included processing \cr
+#' @param dbToken Mandatory.\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @param studyList Optional, data.table.\cr
+#'  A table with the list of studies to process. If empty, all studies in
+#'  the data base are processed\cr
 #'  The table must include at least a column named 'STUDYID'
 #' @param studyDesignFilter Mandatory, character. The study design to use as
 #'   criterion for filtering of the study id values. It can be a single string,
 #'   a vector or a list of multiple strings.
-#' @param exclusively Optional.
+#' @param exclusively  Mandatory, boolean.
 #'   \itemize{
 #'     \item TRUE: Include studies only for studies with no other study design
 #'   then included in \code{studyDesignFilter}.
 #'     \item FALSE: Include animals for all studies with study design matching
 #'   \code{studyDesignFilter}.
 #'   }
-#' @param inclUncertain Optional, TRUE or FALSE, default: FALSE.\cr
-#' Indicates whether study ids with SDESIGN value which are is missing or wrong
-#' shall be included or not in the output data table.
-#' @param noFilterReportUncertain  Optional, TRUE or FALSE, default: TRUE\cr
+#' @param inclUncertain Mandatory, boolean.\cr
+#'   Indicates whether study ids with SDESIGN value which are is missing or wrong
+#'   shall be included or not in the output data table.
+#' @param noFilterReportUncertain   Mandatory, boolean\cr
 #'  Only relevant if the \code{studyDesignFilter} is empty.\cr
 #'  Indicates if the reason should be included if the SDESIGN cannot be
 #'  confidently decided for an animal.

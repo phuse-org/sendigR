@@ -14,21 +14,22 @@ getSubjSex(
 )
 }
 \arguments{
-\item{dbToken}{Mandatory - token for the open database connection}
+\item{dbToken}{Mandatory\cr
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{animalList}{Mandatory.\cr
-A data.table with the list of animals to process.\cr
+\item{animalList}{Mandatory, data.table.\cr
+A table with the list of animals to process.\cr
 The table must include at least columns named 'STUDYID' and 'USUBJID'.}
 
 \item{sexFilter}{Optional, character.\cr
 The sex value criterion to be used for filtering of the list of animals.\cr
 It can be a single string, a vector or a list of multiple strings.}
 
-\item{inclUncertain}{Mandatory, TRUE or FALSE, default: FALSE.\cr
+\item{inclUncertain}{Mandatory, boolean.\cr
 Indicates whether animals for which the sex cannot be confidently identified
 shall be included or not in the output data table.}
 
-\item{noFilterReportUncertain}{Optional, TRUE or FALSE, default: TRUE\cr
+\item{noFilterReportUncertain}{Mandatory, boolean.\cr
 Only relevant if the \code{sexFilter} is empty.\cr
 Indicates if the reason should be included if the sex cannot be confidently
 decided for an animal.}
@@ -61,7 +62,7 @@ non-empty NOT_VALID_MSG values which may exist in the input set of animals
 Returns a data table with the set of animals included in the
 \code{animalList} of the sex specified in the \code{sexFilter}.\cr
 If the \code{sexFilter} is empty (null, na or empty string) - all rows from
-\code{animalList} are returned with the a SEX column added.
+\code{animalList} are returned with the an additional populated SEX column.
 }
 \details{
 The sex value is decided from the DM.SEX variable.\cr

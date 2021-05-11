@@ -23,9 +23,10 @@
 #'
 #' See ++ADD REFERENCE TO A VIGNETTE WITH DOC OF APP++ for further details
 #'
-#' @param dbToken Mandatory - token for the open database connection
+#' @param dbToken Mandatory\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
 #'
-#' @return The function dores not return anything, but it is possible to extract
+#' @return The function does not return anything, but it is possible to extract
 #' data from the app in different formats to use for further processing
 #'
 #' @export

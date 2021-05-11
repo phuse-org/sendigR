@@ -3,7 +3,7 @@ title: "Introduction to sendigR"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction}
+  %\VignetteIndexEntry{Introduction to sendigR}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,12 +15,12 @@ knitr::opts_chunk$set(
 )
 ```
 The purpose of the `sendigR` package is to extract data from a set of nonclinical studies stored in [CDISC SEND](https://www.cdisc.org/standards/foundational/send) format in a database to be used for cross study analysis.
-It can either be done in a script execution a set of functions from the package or by execution an encapsulated R Shiny application.
+It can either be done in a script by execution of a set of functions from the package to extract data for further processing or by execution an encapsulated R Shiny application.
 
 The package supports currently these types of databases:
 
 * [SQLite](https://www.sqlite.org/index.html)
-  It's possible access an existing SEND database or build a database with SEND data imported from SAS transport/xpt files, which then can be accessed.
+  It's possible to access an existing SEND database or build a database with SEND data imported from SAS transport/xpt files, which then can be accessed.
 * Oracle
   It's possible to access an already existing SEND database
 
@@ -41,8 +41,6 @@ Before we are ready to use the functions in the package, we must ensure that a m
 
 Beside the required packages listed in the Imports section of [DESCRIPTION](../DESCRIPTION), one or more additional package(s) must be installed:
 
-* If the SEND databases is stored - or are to be build - in a SQLite database:
-    * _RSQLite_
 * If the SEND databases is stored in an Oracle database:
     * _ROracle_
 * If a SEND database are to be build using this package's functions
@@ -65,7 +63,7 @@ Multiple studies may be located together in a folder hierarchy as described belo
 
 ## SEND controlled terminology
 
-Several of the function in the packages uses CDISC SEND terminology code list to verify validity of the SEND data. The package includes the values for the relevant code lists extracted from the newest CT version at build time. If it is relevant to use another version - newer or older - this version must be downloaded in Excel format from [NCI](https://evs.nci.nih.gov/ftp1/CDISC/SEND/) or [CDISC library archives](https://www.cdisc.org/members-only/cdisc-library-archives) and saved in a folder.
+Several of the function in the packages uses CDISC SEND terminology code list to verify validity of the SEND data. The package includes the values for the relevant code lists extracted from the newest CT version at build time. If it is relevant to use another version - newer or older - this version must be downloaded in Excel format from [NCI](https://evs.nci.nih.gov/ftp1/CDISC/SEND/) or [CDISC library archives](https://www.cdisc.org/members-only/cdisc-library-archives) and saved in any folder which is accessible from the R script(s) using this package.
 
 # Function overview.
 
@@ -129,8 +127,6 @@ To make it possible to import data for a set of studies with `dbImportStudies`, 
 
 It is recommended to download [DB Browser for SQLite](https://sqlitebrowser.org) to look at the data imported into the database.
 
-![Figure 1](sendigR_maintain_database_doc.png)
-
 ### Examples
 
 Create a new database, create all the SEND domain tables and import data for a set of studies XPT files saved in a folder hierarchy - create a set of indexes to optimize data extraction performance for the sendigR functions:
@@ -180,13 +176,13 @@ They can all be called with or without a set of studies given as input. In the f
 The naming convention of these function are `getStudies`_`TSPARMCD`_, where _`TSPARMCD`_ is the specific TSPARMCD value handled by the function - e.g. `STSTDTC`.
 * __Extract full set of control animals__  
 One function, `getControlSubj`, which extracts and return the set of control animals for a given input set of study id values.  
-Only 'negative' control animals are included in the set of control animals - i.e. animals which are not treated with any kind of compound.
+Only 'negative' control animals are included in the set of control animals - i.e. animals which are not treated with a compound but only vehicle.
 * __Extract subsets of animals__  
 Each of these functions take a set of animals as input, extracts and return a subset fulfilling a given condition - e.g. for species or route of administration.  
 It is possible to execute each of these functions with no conditions for filtering - it will then just return the set of input rows with additional variables for the actual kind of attributes, e.g. sex or species/strain.  
 The naming convention of these function are `getSubj`_`attributes`_ where _`attributes`_ is the specific attribute handled by the function - e.g. `Sex`.
 * __Extract subject level data__  
-One function, `getControlSubj`, which extracts and return all rows for a given input set of animals from a specified subject level table - it can be any SEND table including `USUBJID` column.
+One function, `getSubjData`, which extracts and return all rows for a given input set of animals from a specified subject level table - it can be any SEND table including `USUBJID` column.
 * __Extract subsets of findings__  
 Each of these functions take a set of finding rows as input, extracts and return a subset fulfilling a given condition - e.g. for a specific study phase.  
 It is possible to execute each of these functions with no conditions for filtering - it will then just return the set of input rows with additional variables for the actual kind of attributes, e.g. the study phase.  
@@ -218,8 +214,8 @@ E.g. if `getSubjSpeciesStrain` cannot decide the species for an animal because t
 * `inclUncertain = TRUE`  
 both rows where the filtering condition can be confidently matched and rows where it's not possible to decide that they does not match the filter condition, because the value cannot be decided with certainty, are included.  
 In the species example above, the animal with species 'RAAT' are included.  
-A variable named `UNCERTAIN_MSG` is included in the output data set - it contains an explanation of the uncertainty for the the uncertain rows.  
-The format of such a message is: _`function id`_`: `_`explanation`_, where _`function id`_ indicates from which function the message originates from, e.g. `SpeciesStrain` for function `getSubjSpeciesStrain`. Multiple messages from same function separated by `&`.  
+A variable named `UNCERTAIN_MSG` is included in the output data set - it contains an explanation of the uncertainty for the uncertain rows.  
+The format of such a message is: _`function id`_`: `_`explanation`_, where _`function id`_ indicates from which function the message originates from, e.g. `SpeciesStrain` for function `getSubjSpeciesStrain`. Multiple messages from same function are separated by `&`.  
 If the input data set contains an `UNCERTAIN_MSG` variable, uncertain messages are added to this variable. Messages from multiple functions are concatenated and separated by `|`.
 
 As mentioned above, some of the functions may be executed with no filter conditions just to add the relevant attributes to a set of data, e.g. a `SEX` variable is added to the output data set by execution of `getSubjSex`. In these cases, the additional variable is populated with the found value for all rows, also if the value cannot be confidently identified - e.g. when a DM.SEX value like 'Male' does not match any value in the CDISC SEND CT code list value  _SEX_.  
@@ -234,7 +230,7 @@ The intention with these functions are to build a work flow or pipeline to extra
 
 Extract data to make this analysis:
 
-What are the most common microscopic findings in control Sprague-Dawley male rats 10 to 14 weeks old at finding time that were dosed by oral or oral gavage. Include parallel studies after 2016 and findings from the the treatment phase. Include uncertain records.
+What are the most common microscopic findings in control Sprague-Dawley male rats 10 to 14 weeks old at finding time that were dosed by oral or oral gavage. Include parallel studies after 2016 and findings from the treatment phase. Include uncertain records.
 ```R
 db <- initEnvironment(dbType='sqlite',
                       dbPath='/path/to/db/send.db')
@@ -290,26 +286,34 @@ dataMI <-
 disconnectDB(db)
 ```
 The resulting data.table `dataMI` contains all the extracted findings fulfilling the wanted conditions and can be used for further analysis.
-It includes both findings for animals which may have been identified as uncertain by one of the and findings which may have been identified as uncertain.
-The animal level of uncertainties are described in the `animal.UNCERTAIN_MSG` column and the findings are described in the `dataMI.UNCERTAIN_MSG` column 
+
+It includes both findings
+
+* for animals which may have been identified as uncertain by one of the study or subject level functions - this level of uncertainties are described in the `animal.UNCERTAIN_MSG` column
+* and findings which may have been identified as uncertain by the findings level functions- this level of uncertainties are described in the `dataMI.UNCERTAIN_MSG` column.  
 
 ## Execute sendDashboard app
 
-TO BE ADDED 
+The sendigR package contains an encapsulated Shiny app - SendDashboard. The app enables the user to search and extract historical control data in a SEND database.
+
 
 | Function | Description |
 |-|------------|
-| [TO BE ADDED](../html/TO BE ADDED.html) | | 
+| [execSendDashboard](../html/execSendDashboard.html) |Starts the SendDashboard app | 
+
+The [SendDashboard](SendDashboard.html)
 
 ### Example 
 
-TO BE ADDED
+Connect to the database, start the app.
+Remember to disconnect from database when leaving the app.
+```R
+dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db')
 
-### Example 
+execSendDashboard(dbToken)
 
-TO BE ADDED
-
-
+disconnectDB(dbToken)
+```
 
 
 

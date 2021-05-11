@@ -8,23 +8,29 @@ dbCreateIndexes(dbToken, replaceExisting = FALSE)
 }
 \arguments{
 \item{dbToken}{Mandatory\cr
-Token for the open database connection}
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{replaceExisting}{Optional\cr
+\item{replaceExisting}{Mandatory, character\cr
 Whether an already existing set of indexes in the database may be replaced
 by a new set of indexes.}
 }
 \description{
 Create a set of indexes on the tables in an SQLite SEND database to
 optimize performance of extraction of data from the different functions in
-the package.\cr
+the package.
+}
+\details{
 All the indexes are named \code{<domain name>_sendigr_<nn>} - .e.g.
-\code{TS_sendigr_01}.\cr If any additional indexes are manually created in
-the database, avoid to include 'sendigr' in the name, because all existing
-indexes with that included in the name will be initially deleted when
-execution the function with \code{replaceExisting = TRUE}.\cr
+\code{TS_sendigr_01}.\cr
+If any additional indexes are manually created in the database, avoid to
+include 'sendigr' in the name, because all existing indexes with that
+included in the name will be initially deleted when execution the function
+with \code{replaceExisting = TRUE}.\cr
 It's recommended to wait with the creation of the indexes until the major
 amount of studies to be loaded in to the database are loaded.
+
+The database must be an SQLite database - no other types of databases are
+supported by this function.
 }
 \examples{
 \dontrun{

@@ -15,23 +15,23 @@ dbImportStudies(
 }
 \arguments{
 \item{dbToken}{Mandatory\cr
-Token for the open database connection}
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{xptPathRoot}{Mandatory\cr
+\item{xptPathRoot}{Mandatory, character\cr
 Root location of a set of sub folders - each sub folder with a if SAS xport
 files per study to import.\cr
 The folder tree is traversed recursively - i.e. a multilevel folder
 hierarchy is allowed.}
 
-\item{overWrite}{Optional\cr
+\item{overWrite}{Mandatory, boolean\cr
 Whether an already existing study in the database may be overwritten by
 newly imported data.}
 
-\item{verbose}{Optional\cr
+\item{verbose}{Mandatory, boolean\cr
 Whether the status of the import shall be continuously written to the
 console for for each processed sub folder.}
 
-\item{logFilePath}{Optional\cr
+\item{logFilePath}{Optional, character\cr
 A path to a folder to contain a log file with the status of the import for
 each processed sub folder.\cr
 The name of the log file is \code{logFilePath/dbImportStudies_<date &
@@ -56,7 +56,9 @@ imported to the database because an error has been detected.
 For each non-empty folder below the specified root folder, the actions to
 import a set of SAS xpt files into the opened SQLlite database described
 for function \link{dbImportOneStudy}.
-The status for the processing of each sub folder is catched an returned a
+}
+\details{
+The status for the processing of each sub folder is catched and returned as
 described below.\cr
 If parameter \code{verbose = TRUE}, the status for each processed sub folder
 is also printed to the console each time a sub folder has been processed -
@@ -64,9 +66,9 @@ i.e. it's possible to followed the progress of the import process.
 If parameter \code{logFilePath} has been specified with an existing path to a
 folder, the status for each processed sub folder is also printed to a log
 file in this folder each time a sub folder has been processed.
-}
-\details{
-The function must be used against an SQLite based SEND database.
+
+The database must be an SQLite database - no other types of databases are
+supported by this function.
 }
 \examples{
 \dontrun{

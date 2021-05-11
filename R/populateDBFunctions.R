@@ -14,13 +14,14 @@
 #'
 #' Create all the domains and variables which are described in the SEND IG
 #' versions 3.0 and 3.1 in the database - i.e. a union of domains from the
-#' SEND IG versions and in each domain a union of variables from the the
-#' SEND IG versions.
+#' SEND IG versions and in each domain a union of variables from the SEND IG
+#' versions.
 #'
-#' The database must be a SQLite database
+#' The database must be an SQLite database - no other types of databases are
+#' supported by this function.
 #'
 #' @param dbToken Mandatory\cr
-#'  Token for the open database connection
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
 #'
 #' @export
 #'
@@ -72,9 +73,9 @@ dbCreateSchema <- function(dbToken) {
 #' Import SEND study data in SAS xport format into a SEND database from a single
 #' study folder
 #'
-#' Check each of the SAS xpt file located in the specified folder.\cr
-#' If relevant, import content from file and load it into the corresponding SEND
-#' domain table in the open database.
+#' Check each of the SAS xpt file located in the specified folder - import
+#' content from file and load it into the corresponding SEND domain table in the
+#' open database.
 #'
 #' These requirements to the content of the folder must be fulfilled:
 #' \itemize{
@@ -113,13 +114,14 @@ dbCreateSchema <- function(dbToken) {
 #'   do(es)n't exist(s) in the corresponding domain.
 #' }
 #'
-#' The function must be used against an SQLite based SEND database.
+#' The database must be an SQLite database - no other types of databases are
+#' supported by this function.
 #'
 #' @param dbToken Mandatory\cr
-#'  Token for the open database connection
-#' @param xptPath Mandatory\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @param xptPath Mandatory, character\cr
 #'  Location of the SAS xport files
-#' @param overWrite Optional\cr
+#' @param overWrite Mandatory, boolean, default = FALSE\cr
 #'   Whether an already existing study in the database may be overwritten by
 #'   newly imported data.
 #'
@@ -152,7 +154,8 @@ dbImportOneStudy <- function(dbToken,
 #' For each non-empty folder below the specified root folder, the actions to
 #' import a set of SAS xpt files into the opened SQLlite database described
 #' for function [dbImportOneStudy].
-#' The status for the processing of each sub folder is catched an returned a
+#'
+#' The status for the processing of each sub folder is catched and returned as
 #' described below.\cr
 #' If parameter \code{verbose = TRUE}, the status for each processed sub folder
 #' is also printed to the console each time a sub folder has been processed -
@@ -161,22 +164,23 @@ dbImportOneStudy <- function(dbToken,
 #' folder, the status for each processed sub folder is also printed to a log
 #' file in this folder each time a sub folder has been processed.
 #'
-#' The function must be used against an SQLite based SEND database.
+#' The database must be an SQLite database - no other types of databases are
+#' supported by this function.
 #'
 #' @param dbToken Mandatory\cr
-#'  Token for the open database connection
-#' @param xptPathRoot Mandatory\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @param xptPathRoot Mandatory, character\cr
 #'  Root location of a set of sub folders - each sub folder with a if SAS xport
 #'  files per study to import.\cr
 #'  The folder tree is traversed recursively - i.e. a multilevel folder
 #'  hierarchy is allowed.
-#' @param overWrite Optional\cr
+#' @param overWrite Mandatory, boolean\cr
 #'   Whether an already existing study in the database may be overwritten by
 #'   newly imported data.
-#' @param verbose Optional\cr
+#' @param verbose Mandatory, boolean\cr
 #'   Whether the status of the import shall be continuously written to the
 #'   console for for each processed sub folder.
-#' @param logFilePath Optional\cr
+#' @param logFilePath Optional, character\cr
 #'   A path to a folder to contain a log file with the status of the import for
 #'   each processed sub folder.\cr
 #'   The name of the log file is \code{logFilePath/dbImportStudies_<date &
@@ -275,9 +279,12 @@ dbImportStudies <- function(dbToken,
 #' Deletes data from all domains for one or more studies in an SQLite based SEND
 #' database
 #'
+#' The database must be a SQLite database - no other types of databases are
+#' supported by this function.
+
 #' @param dbToken Mandatory\cr
-#'  Token for the open database connection
-#' @param studyIdList Mandatory\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @param studyIdList Mandatory, character\cr
 #'  A list or vector of study id values
 #'
 #' @export
@@ -305,18 +312,23 @@ dbDeleteStudies <- function(dbToken,
 #'
 #' Create a set of indexes on the tables in an SQLite SEND database to
 #' optimize performance of extraction of data from the different functions in
-#' the package.\cr
+#' the package.
+#'
 #' All the indexes are named \code{<domain name>_sendigr_<nn>} - .e.g.
-#' \code{TS_sendigr_01}.\cr If any additional indexes are manually created in
-#' the database, avoid to include 'sendigr' in the name, because all existing
-#' indexes with that included in the name will be initially deleted when
-#' execution the function with \code{replaceExisting = TRUE}.\cr
+#' \code{TS_sendigr_01}.\cr
+#' If any additional indexes are manually created in the database, avoid to
+#' include 'sendigr' in the name, because all existing indexes with that
+#' included in the name will be initially deleted when execution the function
+#' with \code{replaceExisting = TRUE}.\cr
 #' It's recommended to wait with the creation of the indexes until the major
 #' amount of studies to be loaded in to the database are loaded.
 #'
+#' The database must be an SQLite database - no other types of databases are
+#' supported by this function.
+
 #' @param dbToken  Mandatory\cr
-#'  Token for the open database connection
-#' @param replaceExisting Optional\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @param replaceExisting Mandatory, character\cr
 #'   Whether an already existing set of indexes in the database may be replaced
 #'   by a new set of indexes.
 #'

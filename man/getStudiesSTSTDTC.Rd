@@ -3,7 +3,7 @@
 \name{getStudiesSTSTDTC}
 \alias{getStudiesSTSTDTC}
 \title{Extract a list of SEND studies with study start date within a specified
-interval.}
+interval - or just add actual study start date for each study}
 \usage{
 getStudiesSTSTDTC(
   dbToken,
@@ -15,11 +15,12 @@ getStudiesSTSTDTC(
 )
 }
 \arguments{
-\item{dbToken}{Mandatory - token for the open database connection}
+\item{dbToken}{Mandatory.\cr
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
 \item{studyList}{Optional.\cr
 A data.table with the list of studies to process. If empty, all studies in
-the data base are included processing \cr
+the data base are processed \cr
 The table must include at least a column named 'STUDYID'.}
 
 \item{fromDTC}{Optional (either or both of \code{fromDTC} and \code{toDTC}
@@ -29,11 +30,11 @@ The start of the date interval to extract - must be in ISO8601 date format.}
 \item{toDTC}{Optional (either or both of \code{fromDTC} and \code{toDTC} must be filled).\cr
 The end of the date interval to extract - must be in ISO8601 date format.}
 
-\item{inclUncertain}{Optional, TRUE or FALSE, default: FALSE.\cr
+\item{inclUncertain}{Mandatory, boolean.\cr
 Indicates whether study ids with STSTDTC which are are missing or wrong
 shall be included or not in the output data table.}
 
-\item{noFilterReportUncertain}{Optional, TRUE or FALSE, default: TRUE\cr
+\item{noFilterReportUncertain}{Mandatory, boolean\cr
 Only relevant if the \code{fromDTC} and\code{toDTC} are empty.\cr
 Indicates if the reason should be included if the STSTDTC cannot be
 confidently decided for an animal.}
@@ -74,27 +75,33 @@ If the \code{fromDTC} and\code{toDTC} are empty (null, na or empty string)
 \details{
 Extracts the set of study ids from TS where the value of TSVAL for the
 TSPARMCD 'STSTDTC' falls within a specified start/end date interval in IS8601
-format (input parameters \code{fromDTC}/\code{toDTC}).\cr Both complete and
-incomplete input start/end dates can be handled. If only a year is specified
+format (input parameters \code{fromDTC}/\code{toDTC}).\cr
+
+Both complete and incomplete input start/end dates can be handled.
 \itemize{
-\item the date set to the first of January that year.\cr If only a year and month
-is specified - the date set to the first day in that month.\cr
-If a time part is included in a specified input start/end date, it is
-ignored.\cr
+\item If only a year is specified - the date set to the first of January that
+year.
+\item If only a year and month is specified - the date set to the first day
+in that month.
+\item If a time part is included in a specified input start/end date, it is
+ignored.
+}
+
 If both a start and end input date are specified - all the STUDYID values
 from TS where TSVAL for TSPARMCD 'STSTDTC' is with the interval of the
 specified start/end date interval are extracted and returned - including the
 values equal to the start/end dates. are included.\cr
+
 If only a start input date is specified - all the STUDYID values from TS
 where TSVAL for TSPARMCD 'STSTDTC' is equal to or later than the input date
 are extracted and returned.\cr
+
 If only an end date is specified - all the STUDYID values from TS where TSVAL
 for TSPARMCD 'STSTDTC' is equal to or earlier than the are date are extracted
 and returned.\cr
-}
 
 If a data table with a list of studies is specified in \code{studyList}, only
-the subset of studies included in that set is processed.
+the subset of studies included in that set is processed.\cr
 
 If input \code{inclUncertain} is TRUE, uncertain studies are included in the
 output set. These uncertain situations are identified and reported (in column

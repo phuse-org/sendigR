@@ -16,10 +16,11 @@ getFindingsSubjAge(
 )
 }
 \arguments{
-\item{dbToken}{Mandatory - token for the open database connection}
+\item{dbToken}{Mandatory\cr
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{findings}{Mandatory.\cr
-A data.table with the set of finding rows to process.\cr
+\item{findings}{Mandatory, data.table.\cr
+A table with the set of input finding rows to process.\cr
 The table must include at least columns named
 \itemize{
 \item \code{STUDYID}
@@ -32,11 +33,11 @@ The table must include at least columns named
 where \code{[domain]} is the name of the actual findings domain - e.g. \code{LBSEQ}, \code{LBDY}
 and \code{LBDTC}}
 
-\item{animalList}{Mandatory.\cr
-A data.table with the set of animals included in the \code{findings} table
+\item{animalList}{Mandatory, data.table.\cr
+A data with the set of animals included in the \code{findings} table
 (may contain more animals than included in \code{findings})}
 
-\item{fromAge}{Optional \cr
+\item{fromAge}{Optional, character \cr
 The start of age interval to extract.\cr
 Must be in a string in this format:\cr
 \code{[value][age unit]} where \code{[age unit]} is one of
@@ -49,16 +50,16 @@ Must be in a string in this format:\cr
 The unit is case-insensitive, space(s) between age value and unit is
 allowed.}
 
-\item{toAge}{Optional \cr
+\item{toAge}{Optional. character \cr
 The start of age interval to extract.\cr
 Must be in a string in in the same format as described for \code{fromAge}.}
 
-\item{inclUncertain}{Mandatory, \code{TRUE} or \code{FALSE}, default: \code{FALSE}.\cr
+\item{inclUncertain}{Mandatory, boolean.\cr
 Only relevant if the \code{fromAge} and/or \code{toAge} is/are not empty.\cr
 Indicates whether finding rows for which the age at finding time cannot be
 confidently identified, shall be included or not in the output data table.}
 
-\item{noFilterReportUncertain}{Optional, \code{TRUE} or \code{FALSE}, default: \code{TRUE}\cr
+\item{noFilterReportUncertain}{Optional, boolean.\cr
 Only relevant if the \code{fromAge} and \code{toAge} are empty.\cr
 Indicates if the reason should be included if the age at finding time cannot
 be confidently decided for an animal.}
@@ -73,7 +74,7 @@ The subject age at finding time calculated in days. Is \code{NA} if thge age
 cannot be confidently calculated.
 \item \code{UNCERTAIN_MSG}  (character)\cr
 Included when parameter \code{inclUncertain=TRUE}.\cr
-In case the age age finding time cannot be confidently matched during the
+In case the age at finding time cannot be confidently matched during the
 filtering of data, the column contains an indication of the reason.\cr
 If any uncertainties have been identified for individual subjects included in
 pools for pooled finding rows, one  message for is reported per pool/finding.\cr
@@ -96,10 +97,10 @@ Returns a data table with the set of findings rows included in the
 \code{findings} where the age of subjects at finding time is within the
 interval specified in \code{fromAge} to \code{fromAge}.\cr
 If the \code{fromAge} and \code{fromAge} are empty (null, na or empty
-string), all rows from \code{findings} are returned,\cr
+string), all rows from \code{findings} are returned.
 }
 \details{
-In both situation , the subject age at finding time is calculated into an
+In both situation, the subject age at finding time is calculated into an
 additional column \code{AGEDAYS} for each row in \code{findings} combined
 with the the additional input data.table \code{animalList} using this
 algorithm:
@@ -117,21 +118,32 @@ algorithm:
 \code{animalList.RFSTDTC} is each subject's reference start date
 (\code{DM.RFSTDTC})
 }
-\item Animal age at time of finding is the calculated as
+\item Animal age at time of finding is then calculated as
 \code{animalList.AGEDAYS + [study days between study start and
         findings]}\cr
-where \code{animalList.AGEDAYS} is the  subject age at
-reference start date.
+where \code{animalList.AGEDAYS} is the  subject age at reference
+start date(calculated during extraction of control subjects in
+\code{\link{getControlSubj}}.
+\item For pooled findings rows - i.e. POOLID is populated instead of
+USUBJID - the animal age at time of finding is calculated per animal
+included in the each pool and finding.
+\itemize{
+\item If all calculated ages are equal within a pool and finding,
+the calculated age is populated for this pool/finding.
+\item If all calculated ages are within the same time internal
+(2 days) within a pool and finding, the minimum calculated age
+plus 1 day is populated for this pool/finding.
+}
 }
 
-If both \code{fromAge} and \code{fromAge} values are specified - all the rows
+If both \code{fromAge} and \code{toAge} values are specified - all the rows
 from the input table \code{findings} where value of the calculated
 \code{AGEDYAS} is within the interval of the specified start/end age interval
 are returned - including the values equal to the start/end age values.\cr
 If only a \code{fromAge} value is specified - all the rows from the input
 table \code{findings} where value of \code{AGEDYAS} equal to or greater than
 the input age are returned.\cr
-If only a \code{tomAge} value is specified - all the rows from input table
+If only a \code{toAge} value is specified - all the rows from input table
 \code{findings} where value of AGEDAYS is equal to or less than the input age
 are extracted and returned.
 The input age value(s) is/are converted to days before extraction of rows

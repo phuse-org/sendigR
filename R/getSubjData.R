@@ -1,16 +1,27 @@
+################################################################################
+## The function getSubjData.
+##
+## History:
+## -----------------------------------------------------------------------------
+## Date         Programmer            Note
+## ----------   --------------------  ------------------------------------------
+## 2021-01-28   Bo Larsen             Initial version
+################################################################################
+
 #' Extract data from a subject level domain.
 #'
 #' Extracts and returns all rows from the specified \code{domain} for the set
-#' of animals included in \code{animalList}.\cr
+#' of subjects included in \code{animalList}.\cr
 #'
-#' @param dbToken Mandatory - token for the open database connection
-#' @param animalList  Mandatory.\cr
-#' A data.table with the list of animals to be included in the output data.\cr
-#' The table must include at least columns named 'STUDYID' and 'USUBJID'.
+#' @param dbToken Mandatory\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @param animalList  Mandatory, data.table.\cr
+#'   A table with the list of animals to be included in the output data.\cr
+#'   The table must include at least columns named 'STUDYID' and 'USUBJID'.
 #' @param domain Mandatory, character, not case sensitive.\cr
-#' The name of the domain table to extract data from.\cr
-#' The name must be a subject level domain - i.e. a table including a 'USUBJID'
-#' column.
+#'  The name of the domain table to extract data from.\cr
+#'  The name must be a subject level domain - i.e. a table including a 'USUBJID'
+#'  column.
 #' @param colList Optional, character, not case sensitive.\cr
 #'  The list of columns to be extracted from the specified domain table.\cr
 #'  It can be a single string, a vector or a list of multiple strings.
@@ -43,8 +54,10 @@
 #'   The data table contains both
 #'   \itemize{
 #'      \item subject level data - i.e. rows where USUBJID is not empty
-#'      \item if applicable for the \code{domain}, pool level data - i.e. rows where
-#'      POOLID is not empty
+#'      \item if applicable for the \code{domain}, pool level data - i.e. rows
+#'      where POOLID is not empty.\cr
+#'      In this case, all pools, which includes any of the subjects included in
+#'      \code{animalList}, are included
 #'   }
 #'
 #' @export

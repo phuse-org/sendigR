@@ -9,19 +9,19 @@ dbImportOneStudy(dbToken, xptPath, overWrite = FALSE)
 }
 \arguments{
 \item{dbToken}{Mandatory\cr
-Token for the open database connection}
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{xptPath}{Mandatory\cr
+\item{xptPath}{Mandatory, character\cr
 Location of the SAS xport files}
 
-\item{overWrite}{Optional\cr
+\item{overWrite}{Mandatory, boolean, default = FALSE\cr
 Whether an already existing study in the database may be overwritten by
 newly imported data.}
 }
 \description{
-Check each of the SAS xpt file located in the specified folder.\cr
-If relevant, import content from file and load it into the corresponding SEND
-domain table in the open database.
+Check each of the SAS xpt file located in the specified folder - import
+content from file and load it into the corresponding SEND domain table in the
+open database.
 }
 \details{
 These requirements to the content of the folder must be fulfilled:
@@ -61,7 +61,8 @@ Such files are ignored by the import/load process.
 do(es)n't exist(s) in the corresponding domain.
 }
 
-The function must be used against an SQLite based SEND database.
+The database must be an SQLite database - no other types of databases are
+supported by this function.
 }
 \examples{
 \dontrun{

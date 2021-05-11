@@ -7,10 +7,11 @@
 getSubjData(dbToken, animalList, domain, colList = NULL)
 }
 \arguments{
-\item{dbToken}{Mandatory - token for the open database connection}
+\item{dbToken}{Mandatory\cr
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{animalList}{Mandatory.\cr
-A data.table with the list of animals to be included in the output data.\cr
+\item{animalList}{Mandatory, data.table.\cr
+A table with the list of animals to be included in the output data.\cr
 The table must include at least columns named 'STUDYID' and 'USUBJID'.}
 
 \item{domain}{Mandatory, character, not case sensitive.\cr
@@ -51,13 +52,15 @@ SEND IG.\cr
 The data table contains both
 \itemize{
 \item subject level data - i.e. rows where USUBJID is not empty
-\item if applicable for the \code{domain}, pool level data - i.e. rows where
-POOLID is not empty
+\item if applicable for the \code{domain}, pool level data - i.e. rows
+where POOLID is not empty.\cr
+In this case, all pools, which includes any of the subjects included in
+\code{animalList}, are included
 }
 }
 \description{
 Extracts and returns all rows from the specified \code{domain} for the set
-of animals included in \code{animalList}.\cr
+of subjects included in \code{animalList}.\cr
 }
 \examples{
 \dontrun{

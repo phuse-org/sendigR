@@ -1,5 +1,3 @@
-# ADD calculation of animal age
-
 ################################################################################
 ## The function getControlSubj
 ##
@@ -64,38 +62,39 @@
 #' Positive control according to the algorithm described above
 #' }
 #'
-#' @param dbToken Mandatory - token for the open database connection
-#' @param studyList Mandatory.\cr
-#'  A data.table with a list of studies to limit the output to be within this
+#' @param dbToken Mandatory.\cr
+#'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @param studyList Mandatory, data.table.\cr
+#'  A table with a list of studies to limit the output to be within this
 #'  set of studies.\cr
 #'  The table must include a column named 'STUDYID'.
-#' @param inclUncertain Optional, TRUE or FALSE, default: FALSE.\cr
-#'   Indicates whether animals which cannot be identified as neither negative
-#'   nor positive control (i.e. uncertain animals) shall be included or not in
+#' @param inclUncertain Mandatory, boolean.\cr
+#'   Indicates whether animals, which cannot be identified as neither negative
+#'   nor positive control (i.e. uncertain animals), shall be included or not in
 #'   the output data table.
 #'
 #' @return The function return a data.table with columns:
 #'   \itemize{
 #'   \item STUDYID       (character)
-#'   \item Additional columns contained in the \code{studyList} table (if such an input
-#'   table is given)
-#' The value of the TX parameter TCNTRL which is used for identification of
-#' whether its a negative control group or not
-#'   \item TCNTRL        (character)
+#'   \item Additional columns contained in the \code{studyList} table
+#'   \item TCNTRL        (character)\cr
+#'         The value of the TX parameter TCNTRL which is used for identification
+#'         of whether its a negative control group or not
 #'   \item USUBJID       (character)
 #'   \item RFSTDTC       (character)
-#'   \item DM_AGEDAYS    (integer)
-#' The calculated age in days of the animal at the reference start day - i.e.
-#' the age registered in DM.
-#'   \item NO_AGE_MSG    (character)
-#' Included when parameter \code{inclUncertain=TRUE}.\cr
-#' Contains the reason if a DM_AGEDAYS couldn't be calculated
-#'   \item UNCERTAIN_MSG (character)
-#' Included when parameter \code{inclUncertain=TRUE}.\cr
-#' Contains the reason for an uncertain animal is NA for rows for confident
-#' identified negative control animals.
-#'   \item NOT_VALID_MSG (character)
-#' Included if the column is included in data table specified in \code{studyList},
+#'   \item DM_AGEDAYS    (integer)\cr
+#'         The calculated age in days of the animal at the reference start day
+#'         - i.e. the age registered in DM.
+#'   \item NO_AGE_MSG    (character)\cr
+#'         Included when parameter \code{inclUncertain=TRUE}.\cr
+#'         Contains the reason if a DM_AGEDAYS couldn't be calculated
+#'   \item UNCERTAIN_MSG (character)\cr
+#'         Included when parameter \code{inclUncertain=TRUE}.\cr
+#'         Contains the reason for an uncertain animal is NA for rows for
+#'         confident identified negative control animals.
+#'   \item NOT_VALID_MSG (character)\cr
+#'         Included if the column is included in data table specified in
+#'         \code{studyList},
 #' }
 #'
 #' @export
@@ -105,8 +104,8 @@
 #' controlAnimals <- getControlSubj(myDbToken, allSTudies)
 #' }
 getControlSubj<-function(dbToken,
-                            studyList,
-                            inclUncertain=FALSE) {
+                         studyList,
+                         inclUncertain=FALSE) {
 
   ###################################################################################################
   # calculate the age for an animal at the reference start date in DM to days

@@ -16,10 +16,11 @@ getSubjRoute(
 )
 }
 \arguments{
-\item{dbToken}{Mandatory - token for the open database connection}
+\item{dbToken}{Mandatory\cr
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{animalList}{Mandatory.\cr
-A data.table with the list of animals to process.\cr
+\item{animalList}{Mandatory, data.table.\cr
+A table with the list of animals to process.\cr
 The table must include at least columns named 'STUDYID' and 'USUBJID'.}
 
 \item{routeFilter}{Optional, character.\cr
@@ -27,11 +28,11 @@ The rout of administration value(s) to use as criterion for filtering of the
 input data table.\cr
 It can be a single string, a vector or a list of multiple strings.}
 
-\item{inclUncertain}{Mandatory, TRUE or FALSE, default: FALSE.\cr
+\item{inclUncertain}{Mandatory, boolean,.\cr
 Indicates whether animals for which the route cannot be confidently
 identified shall be included or not in the output data table.}
 
-\item{exclusively}{Optional.
+\item{exclusively}{Mandatory, boolean.
 \itemize{
 \item TRUE: Include animals only for studies with no other routes then
 included in \code{routeFilter}.
@@ -39,7 +40,7 @@ included in \code{routeFilter}.
 matching \code{routeFilter}.
 }}
 
-\item{matchAll}{Optional.
+\item{matchAll}{Mandatory, boolean.
 \itemize{
 \item TRUE: Include animals only for studies with route(s) matching all
 values in \code{routeFilter}.
@@ -47,7 +48,7 @@ values in \code{routeFilter}.
 one value in \code{routeFilter}.
 }}
 
-\item{noFilterReportUncertain}{Optional, TRUE or FALSE, default: TRUE\cr
+\item{noFilterReportUncertain}{Mandatory, boolean\cr
 Only relevant if the \code{routeFilter} is empty.\cr
 Indicates if the reason should be included if the route cannot be
 confidently decided for an animal.}
@@ -78,18 +79,18 @@ non-empty NOT_VALID_MSG values which may exist in the input set of animals
 }
 \description{
 Returns a data table with the set of animals included in the
-\code{animalList} of the route of administration specified in the
+\code{animalList} matching the route of administration specified in the
 \code{routeFilter}.\cr
 If the \code{routeFilter} is empty (null, na or empty string) - all rows from
-\code{animalList} are returned with the a ROUTE column added.
+\code{animalList} are returned with an additional populated ROUTE column.
 }
 \details{
 The route of administration per animal are identified by a hierarchical
 lookup in these domains
 \itemize{
-\item EX - If a single not empty EXROUTE value is found for animal, this is
-included in the output.\cr
-\item TS - if a single TS parameter 'SPECIES' value exists for the study,
+\item EX - If a distinct not empty EXROUTE value is found for animal, this
+is included in the output.\cr
+\item TS - if a distinct TS parameter 'ROUTE' value exists for the study,
 this is included in the output.\cr
 }
 If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
@@ -99,7 +100,7 @@ column UNCERTAIN_MSG):
 \item TS parameter ROUTE is missing for study and no EX rows contain a
 EXROUTE value for the animal
 \item The selected EXROUTE or TS parameter ROUTE value is invalid (not CT
-value - CDISC code list ROUTE)
+value - CDISC SEND code list ROUTE)
 \item Multiple EXROUTE values have been found for the animal
 \item Multiple TS parameter ROUTE values are registered for study but no EX
 rows contain a EXROUTE value for the animal
@@ -113,22 +114,22 @@ The same checks are performed and reported in column NOT_VALID_MSG if
 \dontrun{
 # Extract animals administered oral or oral gavage plus uncertain animals
 getSubjRoute(dbToken, controlAnimals,
-                routeFilter = c('ORAL', 'ORAL GAVAGE')
-                inclUncertain = TRUE)
+             routeFilter = c('ORAL', 'ORAL GAVAGE')
+             inclUncertain = TRUE)
 # Extract animals administered oral or oral gavage.
-# Do only include studies which include but route values
+# Do only include studies which include both route values
 getSubjRoute(dbToken, controlAnimals,
-                routeFilter = c('ORAL', 'ORAL GAVAGE')
-                matchAll = TRUE)
+             routeFilter = c('ORAL', 'ORAL GAVAGE')
+             matchAll = TRUE)
 # Extract animals administered subcutaneous.
 # Include only animals from studies which do not contain other route values
 getSubjRoute(dbToken, controlAnimals,
-                routeFilter = 'subcutaneous',
-                exclusively = TRUE)
+             routeFilter = 'subcutaneous',
+             exclusively = TRUE)
 # No filtering, just add ROUTE - do not include messages when
 # these values cannot be confidently found
 getSubjRoute(dbToken, controlAnimals,
-                noFilterReportUncertain = FALSE)
+             noFilterReportUncertain = FALSE)
 }
 
 }

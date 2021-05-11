@@ -8,14 +8,18 @@ dbDeleteStudies(dbToken, studyIdList)
 }
 \arguments{
 \item{dbToken}{Mandatory\cr
-Token for the open database connection}
+Token for the open database connection (see \code{\link{initEnvironment}}).}
 
-\item{studyIdList}{Mandatory\cr
+\item{studyIdList}{Mandatory, character\cr
 A list or vector of study id values}
 }
 \description{
 Deletes data from all domains for one or more studies in an SQLite based SEND
 database
+}
+\details{
+The database must be a SQLite database - no other types of databases are
+supported by this function.
 }
 \examples{
 \dontrun{

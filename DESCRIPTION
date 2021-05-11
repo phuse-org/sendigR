@@ -1,6 +1,6 @@
 Package: sendigR
 Title: Extract control data from a CDISC SEND study data repository
-Version: 0.0.0.9005
+Version: 0.0.0.9006
 Authors@R: 
     person(given = "First",
            family = "Last",
