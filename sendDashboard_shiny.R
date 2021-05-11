@@ -127,7 +127,7 @@ execSendDashboard <- function(dbToken) {
   bw_col_names_selected <- c('STUDYID','USUBJID','BWTEST','BWSTRESN'
                              ,'BWSTRESU','VISITDY')
 
-
+  '%ni%' <- Negate('%in%')
 
 ########### UI #######
 
@@ -287,6 +287,11 @@ execSendDashboard <- function(dbToken) {
                             shiny::tabPanel("MI Findings",
                                      shiny::fluidRow(
                                        htmltools::br(),
+                                       shiny::uiOutput('mi_findings_filter')
+                                       ),
+                                     htmltools::br(),
+                                     htmltools::br(),
+                                     shiny::fluidRow(
                                        shiny::column(width = 3,
                                               shiny::selectInput("MISPEC",
                                                           "Select MISPEC:",
@@ -537,12 +542,107 @@ execSendDashboard <- function(dbToken) {
     # defined in sendDB.R
 
     ###### MI findings table ----
+    
+   
+    
+    # get Mifindings whole table
+   MiFindings_filter_table <- reactive({
+     shiny::req(input$STRAIN)
+     df <- MiFindings_table(animalList(), input$MISPEC)
+     df
+   })
 
+    
+    # render mi findings filter
+    output$mi_findings_filter <- shiny::renderUI({
+      
+      df <- MiFindings_filter_table()
+      df_route <- unique(df[['ROUTE']])
+      df_species <- unique(df[['SPECIES']])
+      df_strain <- unique(df[['STRAIN']])
+      df_sex <- unique(df[['SEX']])
+      
+      # addUIDep(shiny::selectizeInput("SPECIES",label='Select Species:',
+      #                                choices= GetUniqueSpecies(),
+      #                                selected='RAT',
+      #                                multiple=TRUE,
+      #                                options=list(plugins=list('drag_drop','remove_button'))))
+      
+      shiny::fluidRow(
+        
+        shiny::column(width = 3,
+                     addUIDep(shiny::selectizeInput("mi_route",
+                                         "Select Route",
+                                         choices=df_route,
+                                         selected=df_route,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button')
+                                         )))),
+        
+        shiny::column(width = 3,
+                    addUIDep(shiny::selectizeInput("mi_species",
+                                         "Select Species",
+                                         df_species,
+                                         selected=df_species,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button'))
+                                         ))),
+        
+        shiny::column(width = 3,
+                     addUIDep( shiny::selectizeInput("mi_strain",
+                                         "Select Strain",
+                                         df_strain,
+                                         selected=df_strain,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button'))
+                                         ))
+                     ),
+        
+        shiny::column(width = 3,
+                   addUIDep(shiny::selectizeInput("mi_sex",
+                                         "Select Sex",
+                                         df_sex,
+                                         selected=df_sex,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button'))
+                                         )))
+      )
+      
+      
+    })
+
+    findings_table_after_filter <- reactive({
+      shiny::req(input$STRAIN)
+      
+      finalFindings <- MiFindings_filter_table()
+     
+      finalFindings <- finalFindings %>% dplyr::filter(ROUTE %in% input$mi_route,
+                                                       STRAIN %in% input$mi_strain,
+                                                       SPECIES %in% input$mi_species,
+                                                       SEX %in% input$mi_sex)
+
+      findingsCount <- finalFindings %>%
+        dplyr::distinct(STUDYID, USUBJID, MISTRESC) %>% # only one organ, finding per animal (input errors cause duplications)
+        dplyr::count(MISTRESC) %>%
+        dplyr::arrange(-n)
+      
+      # findings = n / total animals * 100
+      # round to 2 decimal places and
+      # sort by descending.
+      findingsCount$Incidence <- (findingsCount$n / length(unique(finalFindings$USUBJID))) * 100
+      findingsCount$Incidence <- paste0(round(findingsCount$Incidence, 2), '%')
+      findingsCount <- dplyr::select(findingsCount, -n)
+      findingsCount
+      
+    })
+    
+    
     output$findingsTable <- DT::renderDataTable(server = F,{
 
-      shiny::req(input$STRAIN)
-      findings <- MiFindings(animalList(), input$MISPEC)
-      findings <- findings %>% dplyr::mutate_if(is.character,as.factor)
+      # shiny::req(input$STRAIN)
+      # findings <- MiFindings(animalList(), input$MISPEC)
+      # findings <- findings %>% dplyr::mutate_if(is.character,as.factor)
+      findings <- findings_table_after_filter()
       findings_name <- paste0("MI Findings_",input$MISPEC) 
       
       findings <- DT::datatable(findings,
@@ -712,7 +812,9 @@ execSendDashboard <- function(dbToken) {
       domainData$MISTRESC <- toupper(domainData$MISTRESC)
 
       # replace Null values with NORMAL
-      domainData$MISTRESC[domainData$MISTRESC == ''] <- 'NORMAL'
+      #domainData$MISTRESC[domainData$MISTRESC == ''] <- 'NORMAL'
+      remove_index <- which(domainData$MISTRESC=='')
+      domainData <- domainData[-remove_index,]
 
       # TODO: Do we account for animals that do not have
       # MI (or maybe other domains?) for which there is
