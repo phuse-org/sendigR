@@ -353,25 +353,25 @@ execSendDashboard <- function(dbToken) {
 
                           )
                           ),
-                 shiny::tabPanel("CL", ##### CL ----
-                          shiny::tabsetPanel(
-                            shiny::tabPanel("Individual Records",
-                                            shiny::checkboxInput("cl_hide_check_column",
-                                                                 label = "Show Only Table",
-                                                                 value = 0),
-                                     htmltools::br(),
-                                     shiny::uiOutput("cl_indiv_table"),
-                                     htmltools::br(),
-                                     htmltools::br(),
-                                     htmltools::br(),
-                                     htmltools::br())
-                            # shiny::tabPanel("Aggregate Table",
-                            #          DT::dataTableOutput('cl_agg_tab'),
-                            #          htmltools::br(),
-                            #          htmltools::br(),
-                            #          htmltools::br(),
-                            #          htmltools::br())
-                            )),
+                 # shiny::tabPanel("CL", ##### CL ----
+                 #          shiny::tabsetPanel(
+                 #            shiny::tabPanel("Individual Records",
+                 #                            shiny::checkboxInput("cl_hide_check_column",
+                 #                                                 label = "Show Only Table",
+                 #                                                 value = 0),
+                 #                     htmltools::br(),
+                 #                     shiny::uiOutput("cl_indiv_table"),
+                 #                     htmltools::br(),
+                 #                     htmltools::br(),
+                 #                     htmltools::br(),
+                 #                     htmltools::br())
+                 #            # shiny::tabPanel("Aggregate Table",
+                 #            #          DT::dataTableOutput('cl_agg_tab'),
+                 #            #          htmltools::br(),
+                 #            #          htmltools::br(),
+                 #            #          htmltools::br(),
+                 #            #          htmltools::br())
+                 #            )),
                  shiny::tabPanel("BW", ##### BW ----
                           shiny::tabsetPanel(
                             shiny::tabPanel("Individual Records",
