@@ -285,18 +285,15 @@ execSendDashboard <- function(dbToken) {
                  shiny::tabPanel("MI", ##### MI ----
                           shiny::tabsetPanel(
                             shiny::tabPanel("MI Findings",
-                                     shiny::fluidRow(
-                                       htmltools::br(),
-                                       shiny::uiOutput('mi_findings_filter')
-                                       ),
-                                     htmltools::br(),
-                                     htmltools::br(),
-                                     shiny::fluidRow(
-                                       shiny::column(width = 3,
-                                              shiny::selectInput("MISPEC",
-                                                          "Select MISPEC:",
-                                                          availableOrgans,
-                                                          selected='KIDNEY')),
+                                            shiny::fluidRow(
+                                              htmltools::br(),
+                                              shiny::column(width = 3, offset = 1,
+                                                            shiny::selectInput("MISPEC",
+                                                                               "Select MISPEC:",
+                                                                               availableOrgans,
+                                                                               selected='KIDNEY'),
+                                                            shiny::uiOutput('mi_findings_filter')),
+          
                                        shiny::column(width = 6, offset = 1,
                                               DT::dataTableOutput("findingsTable"),
                                               htmltools::br(),
@@ -570,42 +567,42 @@ execSendDashboard <- function(dbToken) {
       
       shiny::fluidRow(
         
-        shiny::column(width = 3,
+        
                      addUIDep(shiny::selectizeInput("mi_route",
-                                         "Select Route",
+                                         "Select Route:",
                                          choices=df_route,
                                          selected=df_route,
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button')
-                                         )))),
+                                         ))),
         
-        shiny::column(width = 3,
+    
                     addUIDep(shiny::selectizeInput("mi_species",
-                                         "Select Species",
+                                         "Select Species:",
                                          df_species,
                                          selected=df_species,
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button'))
-                                         ))),
+                                         )),
         
-        shiny::column(width = 3,
+       
                      addUIDep( shiny::selectizeInput("mi_strain",
-                                         "Select Strain",
+                                         "Select Strain:",
                                          df_strain,
                                          selected=df_strain,
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button'))
-                                         ))
+                                         )
                      ),
         
-        shiny::column(width = 3,
+   
                    addUIDep(shiny::selectizeInput("mi_sex",
-                                         "Select Sex",
+                                         "Select Sex:",
                                          df_sex,
                                          selected=df_sex,
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button'))
-                                         )))
+                                         ))
       )
       
       
@@ -644,18 +641,20 @@ execSendDashboard <- function(dbToken) {
       # findings <- findings %>% dplyr::mutate_if(is.character,as.factor)
       findings <- findings_table_after_filter()
       findings_name <- paste0("MI Findings_",input$MISPEC) 
+      findings_name_tab <- paste0("MI Findings: ",input$MISPEC) 
       
       findings <- DT::datatable(findings,
         class = "cell-border stripe",
-        filter = list(position = 'top'),
+        # filter = list(position = 'top'),
         extensions = list("Buttons" = NULL,
                           "ColReorder" = NULL),
         caption = htmltools::tags$caption(
           style = "caption-side: top; text-align: center; font-size: 20px; color: black",
-          "Table :", htmltools::strong("Findings")
+          "Table :", htmltools::strong(findings_name_tab)
         ),
         options = list(
-          dom = "lfrtipB",
+          # list(searching = FALSE),
+          dom = "lrtipB",
           # buttons = c("csv", "excel", "pdf"),
           buttons=list(list(
             extend = 'collection',
@@ -673,6 +672,7 @@ execSendDashboard <- function(dbToken) {
           colReorder = TRUE,
           scrollY = TRUE,
           pageLength = nrow(findings),
+          lengthChange = FALSE,
           #columnDefs = list(list(className = "dt-left", targets = "_all")),
           initComplete = DT::JS(
             "function(settings, json) {",
