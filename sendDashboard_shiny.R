@@ -477,7 +477,7 @@ execSendDashboard <- function(dbToken) {
 
     # Control Animal Table ----
 
-    output$animals <- DT::renderDataTable(server = F,{
+    output$animals <- DT::renderDataTable(server = T,{
       animal_df <- animalList()
       # make last column as date
 
@@ -634,7 +634,7 @@ execSendDashboard <- function(dbToken) {
     })
     
     
-    output$findingsTable <- DT::renderDataTable(server = F,{
+    output$findingsTable <- DT::renderDataTable(server = T,{
 
       # shiny::req(input$STRAIN)
       # findings <- MiFindings(animalList(), input$MISPEC)
@@ -748,7 +748,7 @@ execSendDashboard <- function(dbToken) {
 
 
     ####### output datatable for MI individual table ----
-    output$mi_subj <- DT::renderDataTable(server = F,{
+    output$mi_subj <- DT::renderDataTable(server = T,{
       tab <- table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
 
@@ -786,7 +786,7 @@ execSendDashboard <- function(dbToken) {
 
    ###### MI aggregate table ----
 
-    output$mi_agg_tab <- DT::renderDataTable(server = F,{
+    output$mi_agg_tab <- DT::renderDataTable(server = T,{
 
       animal_list <- animalList()
       mi_sub <- MI_subject()
@@ -942,7 +942,7 @@ execSendDashboard <- function(dbToken) {
 
 
     ###### output datatable for LB individual table ----
-    output$lb_subj <- DT::renderDataTable(server = F,{
+    output$lb_subj <- DT::renderDataTable(server = T,{
       tab <- lb_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character, as.factor)
 
@@ -1038,7 +1038,7 @@ execSendDashboard <- function(dbToken) {
     
     ###### LB aggregate table ----
     
-    output$lb_agg_tab <- DT::renderDataTable(server = F,{
+    output$lb_agg_tab <- DT::renderDataTable(server = T,{
       
       animal_list <- animalList()
       lb_sub <- LB_subject()
@@ -1152,7 +1152,7 @@ execSendDashboard <- function(dbToken) {
 
 
     ######  output datatable for CL individual table ----
-    output$cl_subj <- DT::renderDataTable(server = F,{
+    output$cl_subj <- DT::renderDataTable(server = T,{
       tab <- cl_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
 
@@ -1265,7 +1265,7 @@ execSendDashboard <- function(dbToken) {
 
 
     ###### output datatable for BW individual table ----
-    output$bw_subj <- DT::renderDataTable(server = F,{
+    output$bw_subj <- DT::renderDataTable(server = T,{
       tab <- bw_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
 
@@ -1297,7 +1297,7 @@ execSendDashboard <- function(dbToken) {
 
     ###### BW aggregate table ----
 
-    output$bw_agg_tab <- DT::renderDataTable(server = F,{
+    output$bw_agg_tab <- DT::renderDataTable(server = T,{
       # req(input$refreshData)
       
       animal_list <- animalList()
