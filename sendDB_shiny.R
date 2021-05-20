@@ -49,7 +49,7 @@ MiFindings_table <- function(animalList, mispec) {
                                             WHERE MISPEC == "%s"', mispec))
   finalFindings <- merge(animalList, findings,
                          by=c('STUDYID', 'USUBJID'))
-  finalFindings <- finalFindings %>% filter(MISTRESC!="")
+  finalFindings <- finalFindings %>% dplyr::filter(MISTRESC!="")
   finalFindings$MISTRESC <- toupper(finalFindings$MISTRESC)
   return(finalFindings)
 }
@@ -70,7 +70,7 @@ MiFindings <- function(animalList, mispec) {
                                             WHERE MISPEC == "%s"', mispec))
   finalFindings <- merge(animalList, findings,
                          by=c('STUDYID', 'USUBJID'))
-  finalFindings <- finalFindings %>% filter(MISTRESC!="")
+  finalFindings <- finalFindings %>% dplyr::filter(MISTRESC!="")
   finalFindings$MISTRESC <- toupper(finalFindings$MISTRESC)
 
   # Count findings using dplyr
@@ -393,8 +393,8 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
     agg_tb_certain <- domainData%>%
       dplyr::group_by_at(grpByCols) %>% 
       dplyr::summarize(!!mean_result := mean(get(result)),
-                       !!sd_result := sd(get(result)),
-                       N = n())
+                       !!sd_result := stats::sd(get(result)),
+                       N = dplyr::n())
     agg_tb_certain <- dplyr::relocate(agg_tb_certain,{{result_unit}}, .after = (!!sd_result))
     
     return(agg_tb_certain)
@@ -403,18 +403,18 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
     agg_tb_uncer <- domainData%>%
       dplyr::group_by_at(grpByCols) %>% 
       dplyr::summarize(!!mean_result := mean(get(result)),
-                       !!sd_result := sd(get(result)),
-                       N = n())
+                       !!sd_result := stats::sd(get(result)),
+                       N = dplyr::n())
     
     aggDataNonConf <- domainData%>% 
       dplyr::filter(!is.na(UNCERTAIN_MSG)) %>% 
       dplyr::group_by_at(grpByCols) %>%
-      dplyr::summarize(Uncertain.Matches = n())
+      dplyr::summarize(Uncertain.Matches = dplyr::n())
     
     aggDataConf <- domainData%>% 
       dplyr::filter(is.na(UNCERTAIN_MSG)) %>%
       dplyr::group_by_at(grpByCols) %>%
-      dplyr::summarize(Certain.Matches = n()) 
+      dplyr::summarize(Certain.Matches = dplyr::n()) 
     
     df <- merge(agg_tb_uncer, aggDataConf, by=grpByCols, all=TRUE)
     df <- merge(df, aggDataNonConf, by=grpByCols, all=TRUE)

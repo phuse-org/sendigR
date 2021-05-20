@@ -572,7 +572,7 @@ execSendDashboard <- function(dbToken) {
    
     
     # get Mifindings whole table
-   MiFindings_filter_table <- reactive({
+   MiFindings_filter_table <- shiny::reactive({
      shiny::req(input$STRAIN)
      df <- MiFindings_table(animalList(), input$MISPEC)
      df
@@ -637,7 +637,7 @@ execSendDashboard <- function(dbToken) {
       
     })
 
-    findings_table_after_filter <- reactive({
+    findings_table_after_filter <- shiny::reactive({
       shiny::req(input$STRAIN)
       
       finalFindings <- MiFindings_filter_table()

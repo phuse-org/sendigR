@@ -15,7 +15,7 @@
 # module for downloaing CSV data
 # UI function
 download_csv_UI <- function(id) {
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     shiny::conditionalPanel(
         condition = "input.refreshData!=0",
             shiny::downloadButton(ns("data_download"), label = "Download .CSV")
@@ -42,7 +42,7 @@ download_csv <- function(input, output, session, data, filename) {
 # module for downloading rds data
 # UI function
 download_rds_UI <- function(id) {
-    ns <- NS(id)
+    ns <- shiny::NS(id)
     shiny::conditionalPanel(
         condition = "input.refreshData!=0",
         shiny::downloadButton(ns("data_download"), label = "Download .rds")
