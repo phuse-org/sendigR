@@ -276,8 +276,12 @@ execSendDashboard <- function(dbToken) {
                  shiny::tabPanel('ANIMALS', ##### Animal Tab ----
                           shiny::fluidRow(title = "Filtered control animals",
                                    htmltools::br(),
-                                       DT::dataTableOutput("animals"),
+                                   DT::dataTableOutput("animals"),
                                    htmltools::br(),
+                                   download_csv_UI('download_filter_animal'),
+                                   htmltools::br(),
+                                   htmltools::br(),
+                                   download_rds_UI('download_filter_animal_rds'),
                                    htmltools::br(),
                                    htmltools::br(),
                                    htmltools::br()
@@ -490,8 +494,8 @@ execSendDashboard <- function(dbToken) {
         animal_df,
         class = "cell-border stripe",
         filter = list(position = 'top'),
-        extensions = list("Buttons" = NULL,
-                          "ColReorder" = NULL),
+        # extensions = list("Buttons" = NULL,
+        #                   "ColReorder" = NULL),
         caption = htmltools::tags$caption(
           style = "caption-side: top; text-align: center; font-size: 20px; color: black",
           "Table :", htmltools::strong("Filtered Control Animal")
@@ -499,21 +503,21 @@ execSendDashboard <- function(dbToken) {
         options = list(
           dom = "lfrtipB",
           #buttons = c("csv", "excel", "copy", "pdf"),
-          buttons=list(list(
-            extend = 'collection',
-            buttons = list(list(extend='csv',
-                                filename = 'Filtered Control Animal'),
-                           list(extend='excel',
-                                filename = 'Filtered Control Animal')
-                           # list(extend='pdf',
-                           #      pageSize = 'A4',
-                           #      orientation = 'landscape',
-                           #      filename= 'Filtered Control Animal')
-                           ),
-            text = 'Download'
-          )),
+          # buttons=list(list(
+          #   extend = 'collection',
+          #   buttons = list(list(extend='csv',
+          #                       filename = 'Filtered Control Animal'),
+          #                  list(extend='excel',
+          #                       filename = 'Filtered Control Animal')
+          #                  # list(extend='pdf',
+          #                  #      pageSize = 'A4',
+          #                  #      orientation = 'landscape',
+          #                  #      filename= 'Filtered Control Animal')
+          #                  ),
+          #   text = 'Download'
+          # )),
           
-          colReorder = TRUE,
+          #colReorder = TRUE,
           scrollY = TRUE,
           scrollX=TRUE,
           pageLength = 10,
@@ -525,6 +529,24 @@ execSendDashboard <- function(dbToken) {
           ))
       animal_df
       })
+    
+    
+    ##### Control animal download button ----
+    # output$download_filter_animal <- shiny::downloadHandler(
+    #   filename = function() { 
+    #     paste0("Filtered Control Animal", ".csv")
+    #   },
+    #   content = function(file) {
+    #     animal <- animalList()
+    #   utils::write.csv(animal, file)
+    #   })
+    
+    shiny::callModule(download_csv, id = "download_filter_animal", data = animalList, filename='filtered Control Animal')
+    
+    shiny::callModule(download_rds, id = "download_filter_animal_rds", data = animalList, filename='filtered Control Animal')
+    
+    
+    
 
     ########################### MI TAB #######################################
 

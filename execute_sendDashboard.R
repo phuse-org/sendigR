@@ -23,6 +23,7 @@ setwd(getSrcDirectory(dummyGetLocation))
 source('sendDB_shiny.R')
 source('controlFiltering_shiny.R')
 source('sendDashboard_shiny.R')
+source('download_module.R')
 
 # Import parameter file from same folder as program is located
 iniParmsFile <- 'sendDashboard.ini'
