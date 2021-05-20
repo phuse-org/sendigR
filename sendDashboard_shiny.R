@@ -540,10 +540,17 @@ execSendDashboard <- function(dbToken) {
     #     animal <- animalList()
     #   utils::write.csv(animal, file)
     #   })
+    # call module to download csv file
     
-    shiny::callModule(download_csv, id = "download_filter_animal", data = animalList, filename='filtered Control Animal')
+   
+    shiny::callModule(download_csv, id = "download_filter_animal",
+                      data = animalList,
+                      filename='filtered Control Animal')
     
-    shiny::callModule(download_rds, id = "download_filter_animal_rds", data = animalList, filename='filtered Control Animal')
+    # call module to download rds data
+    shiny::callModule(download_rds, id = "download_filter_animal_rds",
+                      data = animalList,
+                      filename='filtered Control Animal')
     
     
     
