@@ -11,45 +11,49 @@
 ##              Bo Larsen
 ################################################################################
 
-doFilterAnimalsSpeciesStrain <- function(pControlAnimals,
-                                         pSpecies,
-                                         pStrain,
-                                         pInclUncertain) {
 
-  execFilter <- function(species) {
-    # Extract list of select strains for current species
-    # - remove prefixed species value
-    strain <- stringr::str_replace(pStrain[stringr::str_detect(pStrain, paste0(species,': '))],
-                          paste0(species,': '),'')
-    if (length(strain) == 0) strain <- NULL
-
-    # Execute species/strain filtering for current species/strain(s)
-    return(
-      sendigR::getSubjSpeciesStrain(.sendigRenv$dbToken,
-                                    animalList    = pControlAnimals,
-                                    speciesFilter = pSpecies,
-                                    strainFilter  = pStrain,
-                                    inclUncertain = pInclUncertain))
-  }
-
-  if (length(pSpecies) == 1)
-    # One species selected - just execute  the filtering of the species/strain
-    # and return result
-    return(
-      sendigR::getSubjSpeciesStrain(.sendigRenv$dbToken,
-                                    animalList    = pControlAnimals,
-                                    speciesFilter = pSpecies,
-                                    strainFilter  = pStrain,
-                                    inclUncertain = pInclUncertain))
-  else
-    # Multiple species selected - execute filtering for species/strain per species
-    # - combine all outputs into one table and return
-    return(data.table::rbindlist(lapply(pSpecies,
-                                        function(species) {execFilter(species)}),
-                                 use.names=TRUE, fill=TRUE))
-}
-
-
+################################################################################
+# Execute extraction of animals based on the  user specified  filter conditions.
+# The final extracted set of animals are returned.
+#
+# For each of the filtering functions
+#   - If a set of condition(s) is specified, the function is executed with the
+#     condition(s)
+#   - else the function is execute with no conditions to add the relevant
+#     variables to the set of extracted animals
+#
+# First time the function is called in a session, all the extraction functions
+# are executed
+# The set of given conditions is saved internally (in the sendigR specific
+# environment '.sendigRenv').
+# And sets of data are saved in the same environment:
+#   - studiesAll        - all the extracted studies based on the specified filter
+#                         conditions
+#   - controlAnimalsAll - all the control animals extracted for the extracted
+#                         studies (before the conditional filtering)
+#   - controlAnimals    - the set of control animals from the execution of
+#                         the filtering extraction functions - i.e. the set of
+#                         data which is returned
+#
+# In the subsequent execution of the function, only the necessary extraction
+# functions are executed - i.e. extractions/filterings which need to be
+# re-executed due to changes in the user specified conditions.
+#
+# If the given set of conditions is equal to the conditions for last execution
+# of function, none of the extraction functions are executed and the last final
+# set of extracted animals is returned.
+#
+# If any of the study level conditions (study dates, design) are changed, all
+# the extraction functions are executed, like an initial execution of the
+# function.
+#
+# If any of the animal level filter conditions (sex, route, species/strain) are
+# changed, only the animal level extraction functions are executed, using the
+# saved data table controlAnimalsAll as the initial input.
+#
+# In the last two scenarios, the set of given conditions and any new extracted
+# set of data are saved as described above.
+################################################################################
 GetFilteredControlAnimals <- function(pFromDTC,
                                       pToDTC,
                                       pStudyDesign,
@@ -89,7 +93,6 @@ GetFilteredControlAnimals <- function(pFromDTC,
     execFilterControlAnimals <- TRUE
   }
   else {
-    #prevLastFilterValues <<- lastFilterValues
     # Check for refresh of output data
     # - first check if any differences since last execution
     if ((length(setdiff(thisFilterValues, .sendigRenv$lastFilterValues)) +
@@ -150,6 +153,10 @@ GetFilteredControlAnimals <- function(pFromDTC,
       studiesAllPrev <- .sendigRenv$studiesAll[,c('STUDYID')]
     }
 
+    print(paste0(' - pStudyDesign: ',pStudyDesign))
+    print(paste0(' - pfromDTC: ',pFromDTC))
+    print(paste0(' - ptoDTC: ',pToDTC))
+
     # Extract list of studies based on study-only filter parameters
     #  - save in a retained variable
     assign('studiesAll',
@@ -204,7 +211,8 @@ GetFilteredControlAnimals <- function(pFromDTC,
            envir = .sendigRenv)
 
   }
-  #print(.sendigRenv$controlAnimalsAll)
+  print(.sendigRenv$controlAnimalsAll)
+
   if (execFilterControlAnimals) {
     # Copy to a table used as input/output in the animal filtering tables
     assign('controlAnimals',
@@ -212,10 +220,10 @@ GetFilteredControlAnimals <- function(pFromDTC,
            envir = .sendigRenv)
 
     print('filterAnimalsSex')
-    print(pSex)
     if (pSex != 'All') {
-      # Limit to set of animals to relevant sex
+      print(paste0(' - pSex: ',pSex))
 
+      # Limit to set of animals to relevant sex
       assign('controlAnimals',
              sendigR::getSubjSex(.sendigRenv$dbToken,
                                  animalList    = .sendigRenv$controlAnimals,
@@ -230,20 +238,36 @@ GetFilteredControlAnimals <- function(pFromDTC,
                                  inclUncertain = pInclUncertain),
              envir = .sendigRenv)
 
-      print(.sendigRenv$controlAnimals)
     }
+    print(.sendigRenv$controlAnimals)
+
     print('FilterAnimalsSpeciesStrain')
     if (!is.null(pSpecies)) {
+      print(paste0(' - pSpecies: ',pSpecies))
+      print(paste0(' - pStrain: ',pStrain))
+
       # Limit to set of animals to relevant species/strain(s)
       assign('controlAnimals',
-             doFilterAnimalsSpeciesStrain(.sendigRenv$controlAnimals,
-                                          pSpecies,
-                                          pStrain,
-                                          pInclUncertain),
+             sendigR::getSubjSpeciesStrain(.sendigRenv$dbToken,
+                                           animalList    = .sendigRenv$controlAnimals,
+                                           speciesFilter = pSpecies,
+                                           strainFilter = pStrain,
+                                           inclUncertain = pInclUncertain),
              envir = .sendigRenv)
+    }else {
+      assign('controlAnimals',
+             sendigR::getSubjSpeciesStrain(.sendigRenv$dbToken,
+                                           animalList    = .sendigRenv$controlAnimals,
+                                           inclUncertain = pInclUncertain),
+             envir = .sendigRenv)
+
     }
+    print(.sendigRenv$controlAnimals)
+
     print('FilterAnimalListRoute')
     if (!is.null(pRoute)) {
+      print(paste0(' - pRoute: ',pRoute))
+
       # Limit to set of animals to relevant route(s) of administration
       assign('controlAnimals',
              sendigR::getSubjRoute(.sendigRenv$dbToken,
@@ -258,17 +282,15 @@ GetFilteredControlAnimals <- function(pFromDTC,
                                    inclUncertain = pInclUncertain),
              envir = .sendigRenv)
     }
+    print(.sendigRenv$controlAnimals)
+
     print('Animal filtering done!')
 
   }
-  #print(.sendigRenv$controlAnimals)
 
   return(.sendigRenv$controlAnimals)
 }
 
-
-
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
-#lastFilterValues  <- controlAnimalsAll <- controlAnimals <- NULL
 .sendigRenv <- NULL
