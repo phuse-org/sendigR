@@ -342,17 +342,11 @@ getSubjRoute <- function(dbToken,
   }
   else {
     # Include all animals
-    foundAnimals <- allAnimals[, c('STUDYID', 'USUBJID', 'ROUTE')]
-    if (noFilterReportUncertain)
-      # Add the uncertain animals
-      foundAnimals <- data.table::rbindlist(list(foundAnimals,
-                                                 allAnimals[!is.na(NOT_VALID_MSG),
-                                                            c('STUDYID',
-                                                              'USUBJID',
-                                                              'ROUTE',
-                                                              'NOT_VALID_MSG')]),
-                                            use.names = TRUE,
-                                            fill = TRUE)
+    foundAnimals <-
+      if (noFilterReportUncertain)
+        allAnimals[,c('STUDYID', 'USUBJID', 'ROUTE', 'NOT_VALID_MSG')]
+      else
+        allAnimals[, c('STUDYID', 'USUBJID', 'ROUTE')]
   }
 
   # Merge the list of extracted animals with the input set of animals to keep

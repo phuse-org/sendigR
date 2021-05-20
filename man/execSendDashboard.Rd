@@ -7,11 +7,10 @@
 execSendDashboard(dbToken)
 }
 \arguments{
-\item{dbToken}{Mandatory\cr
-Token for the open database connection (see \code{\link{initEnvironment}}).}
+\item{dbToken}{Mandatory - token for the open database connection}
 }
 \value{
-The function does not return anything, but it is possible to extract
+The function dores not return anything, but it is possible to extract
 data from the app in different formats to use for further processing
 }
 \description{
