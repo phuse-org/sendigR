@@ -524,7 +524,7 @@ execSendDashboard <- function(dbToken) {
           "Table :", htmltools::strong("Filtered Control Animal")
         ),
         options = list(
-          dom = "lfrtipB",
+          dom = "lfrtip",
           #buttons = c("csv", "excel", "copy", "pdf"),
           # buttons=list(list(
           #   extend = 'collection',
@@ -807,21 +807,21 @@ execSendDashboard <- function(dbToken) {
       tab <- DT::datatable(tab,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtipB",
+                             dom = "lfrtip",
                              #buttons = c("csv", "excel", "pdf"),
-                             buttons=list(list(
-                               extend = 'collection',
-                               buttons = list(list(extend='csv',
-                                                   filename = 'MI Individual Record Table'),
-                                              list(extend='excel',
-                                                   filename = 'MI Individual Record Table')
-                                              # list(extend='pdf',
-                                              #      pageSize = 'A4',
-                                              #      orientation = 'landscape',
-                                              #      filename= 'MI Individual Table')
-                                              ),
-                               text = 'Download'
-                             )),
+                             # buttons=list(list(
+                             #   extend = 'collection',
+                             #   buttons = list(list(extend='csv',
+                             #                       filename = 'MI Individual Record Table'),
+                             #                  list(extend='excel',
+                             #                       filename = 'MI Individual Record Table')
+                             #                  # list(extend='pdf',
+                             #                  #      pageSize = 'A4',
+                             #                  #      orientation = 'landscape',
+                             #                  #      filename= 'MI Individual Table')
+                             #                  ),
+                             #   text = 'Download'
+                             # )),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
@@ -917,16 +917,16 @@ execSendDashboard <- function(dbToken) {
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtipB",
+                             dom = "lfrtip",
                              # buttons = c("csv", "excel", "pdf"),
-                             
-                             buttons=list(list(
-                               extend = 'collection',
-                               buttons = list(list(extend='csv',
-                                                   filename = 'MI Aggregate Table'),
-                                              list(extend='excel',
-                                                   filename = 'MI Aggregate Table')),
-                               text = 'Download')),
+                             # 
+                             # buttons=list(list(
+                             #   extend = 'collection',
+                             #   buttons = list(list(extend='csv',
+                             #                       filename = 'MI Aggregate Table'),
+                             #                  list(extend='excel',
+                             #                       filename = 'MI Aggregate Table')),
+                             #   text = 'Download')),
                              
                              #colReorder = TRUE,
                              scrollY = TRUE,
@@ -1022,16 +1022,16 @@ execSendDashboard <- function(dbToken) {
         tab,
         filter = list(position = 'top'),
         options = list(
-          dom = "lfrtipB",
+          dom = "lfrtip",
           # buttons = c("csv", "excel", "pdf"),
           
-          buttons=list(list(
-            extend = 'collection',
-            buttons = list(list(extend='csv',
-                                filename = 'LB Individual Record  Table'),
-                           list(extend='excel',
-                                filename = 'LB Individual Record Table')),
-            text = 'Download')),
+          # buttons=list(list(
+          #   extend = 'collection',
+          #   buttons = list(list(extend='csv',
+          #                       filename = 'LB Individual Record  Table'),
+          #                  list(extend='excel',
+          #                       filename = 'LB Individual Record Table')),
+          #   text = 'Download')),
           #colReorder = TRUE,
           scrollY = TRUE,
           scrollX = TRUE,
@@ -1147,15 +1147,15 @@ execSendDashboard <- function(dbToken) {
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtipB",
+                             dom = "lfrtip",
                              # buttons = c("csv", "excel", "pdf"),
-                             buttons=list(list(
-                               extend = 'collection',
-                               buttons = list(list(extend='csv',
-                                                   filename = 'LB Aggregate Table'),
-                                              list(extend='excel',
-                                                   filename = 'LB Aggregate Table')),
-                               text = 'Download')),
+                             # buttons=list(list(
+                             #   extend = 'collection',
+                             #   buttons = list(list(extend='csv',
+                             #                       filename = 'LB Aggregate Table'),
+                             #                  list(extend='excel',
+                             #                       filename = 'LB Aggregate Table')),
+                             #   text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
@@ -1363,15 +1363,15 @@ execSendDashboard <- function(dbToken) {
       tab <- DT::datatable(tab,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtipB",
+                             dom = "lfrtip",
                              # buttons = c("csv", "excel", "pdf"),
-                             buttons=list(list(
-                               extend = 'collection',
-                               buttons = list(list(extend='csv',
-                                                   filename = 'BW Individual Record Table'),
-                                              list(extend='excel',
-                                                   filename = 'BW Individual Record Table')),
-                               text = 'Download')),
+                             # buttons=list(list(
+                             #   extend = 'collection',
+                             #   buttons = list(list(extend='csv',
+                             #                       filename = 'BW Individual Record Table'),
+                             #                  list(extend='excel',
+                             #                       filename = 'BW Individual Record Table')),
+                             #   text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
@@ -1427,15 +1427,15 @@ execSendDashboard <- function(dbToken) {
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtipB",
+                             dom = "lfrtip",
                              # buttons = c("csv", "excel", "pdf"),
-                             buttons=list(list(
-                               extend = 'collection',
-                               buttons = list(list(extend='csv',
-                                                   filename = 'BW Aggregate Table'),
-                                              list(extend='excel',
-                                                   filename = 'BW Aggregate Table')),
-                               text = 'Download')),
+                             # buttons=list(list(
+                             #   extend = 'collection',
+                             #   buttons = list(list(extend='csv',
+                             #                       filename = 'BW Aggregate Table'),
+                             #                  list(extend='excel',
+                             #                       filename = 'BW Aggregate Table')),
+                             #   text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
