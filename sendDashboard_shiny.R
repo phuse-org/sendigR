@@ -418,7 +418,10 @@ execSendDashboard <- function(dbToken) {
                                      htmltools::br(),
                                      download_rds_UI('download_BW_agg_rds'),
                                      htmltools::br(),
-                                     htmltools::br())))
+                                     htmltools::br()))),
+                 shiny::tabPanel("Download",
+                                 br(),
+                                 shiny::downloadButton('download_all', "Download"))
 
                  )))
 
@@ -1175,10 +1178,10 @@ execSendDashboard <- function(dbToken) {
     ####### Download Lb Aggregate table csv and rds ----
     
     shiny::callModule(download_csv, id = "download_LB_agg",
-                      data=table_to_show, filename="LB_Aggregate_Table")
+                      data=LB_agg_table, filename="LB_Aggregate_Table")
     
     shiny::callModule(download_rds, id="download_LB_agg_rds",
-                      data=table_to_show, filename="LB_Aggregate_Table")
+                      data=LB_agg_table, filename="LB_Aggregate_Table")
 
 
     #### CL TAB ########################
@@ -1515,6 +1518,53 @@ execSendDashboard <- function(dbToken) {
                             size=4)
 
     })
+    
+    
+    
+    filter_criteria <- reactive({
+      filter_selected <- list(
+        From=as.character(input$STSTDTC[1]),
+        To=as.character(input$STSTDTC[2]),
+        Design=input$SDESIGN,
+        Route=input$ROUTE,
+        Species=input$SPECIES,
+        Strain=input$STRAIN,
+        Sex=input$SEX,
+        Uncertain=input$INCL_UNCERTAIN
+      )
+      filter_selected
+    })
+    
+    
+    # download all data as RData file
+    output$download_all <- downloadHandler(
+      filename <- function(){
+        paste0("All_Table_", Sys.Date(),".RData")
+      },
+      
+      content = function(file) {
+        Control_Animal <- animalList()
+        MI_Findings <- findings_table_after_filter()
+        MI_Individual <- table_to_show()
+        MI_Aggregate <- MI_agg_table()
+        LB_Individual <- lb_table_to_show()
+        LB_Aggregate <- LB_agg_table()
+        BW_Individual <- bw_table_to_show()
+        BW_Aggregate <- BW_agg_table()
+        Filtered_option <- filter_criteria()
+        
+        save(Control_Animal,
+             MI_Findings,
+             MI_Individual,
+             MI_Aggregate,
+             LB_Individual,
+             LB_Aggregate,
+             BW_Individual,
+             BW_Aggregate,
+             Filtered_option,
+             file = file)
+      }
+    )
 
     # # CLose connection to database at end of execution
     # shiny::onSessionEnded(function() {
@@ -1522,6 +1572,9 @@ execSendDashboard <- function(dbToken) {
     # })
 
   }
+  
+  
+  
 
   ##### Run the application ----
   shiny::shinyApp(ui = ui, server = server)
