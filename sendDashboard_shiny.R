@@ -420,7 +420,7 @@ execSendDashboard <- function(dbToken) {
                                      htmltools::br(),
                                      htmltools::br()))),
                  shiny::tabPanel("Download",
-                                 br(),
+                                 htmltools::br(),
                                  shiny::downloadButton('download_all', "Download"))
 
                  )))
@@ -848,7 +848,7 @@ execSendDashboard <- function(dbToken) {
     shiny::callModule(download_rds, id="download_MI_individual_rds",
                       data=table_to_show, filename="MI_Individual_Table")
     
-    MI_agg_table <- reactive({
+    MI_agg_table <- shiny::reactive({
       animal_list <- animalList()
       mi_sub <- MI_subject()
       
@@ -1400,7 +1400,7 @@ execSendDashboard <- function(dbToken) {
 
     ###### BW aggregate table ----
     
-    BW_agg_table <- reactive({
+    BW_agg_table <- shiny::reactive({
       animal_list <- animalList()
       bw_sub <- BW_subject()
       
@@ -1521,7 +1521,7 @@ execSendDashboard <- function(dbToken) {
     
     
     
-    filter_criteria <- reactive({
+    filter_criteria <- shiny::reactive({
       filter_selected <- list(
         From=as.character(input$STSTDTC[1]),
         To=as.character(input$STSTDTC[2]),
@@ -1537,7 +1537,7 @@ execSendDashboard <- function(dbToken) {
     
     
     # download all data as RData file
-    output$download_all <- downloadHandler(
+    output$download_all <- shiny::downloadHandler(
       filename <- function(){
         paste0("All_Table_", Sys.Date(),".RData")
       },
