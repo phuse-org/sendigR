@@ -313,20 +313,13 @@ execSendDashboard <- function(dbToken) {
                                     shiny::uiOutput('mi_indiv_table'),
                                     htmltools::br(),
                                     htmltools::br(),
-                                    download_csv_UI('download_MI_individual'),
                                     htmltools::br(),
-                                    htmltools::br(),
-                                    download_rds_UI('download_MI_individual_rds'),
                                     htmltools::br()),
 
                             shiny::tabPanel("Aggregate Table",
                                      DT::dataTableOutput('mi_agg_tab'),
                                      htmltools::br(),
                                      htmltools::br(),
-                                     download_csv_UI('download_MI_agg'),
-                                     htmltools::br(),
-                                     htmltools::br(),
-                                     download_rds_UI('download_MI_agg_rds'),
                                      htmltools::br(),
                                      htmltools::br()))),
 
@@ -354,21 +347,13 @@ execSendDashboard <- function(dbToken) {
                                      shiny::uiOutput('lb_indiv_table'),
                                      htmltools::br(),
                                      htmltools::br(),
-                                     download_csv_UI('download_LB_individual'),
-                                     htmltools::br(),
-                                     htmltools::br(),
-                                     download_rds_UI('download_LB_individual_rds'),
                                      htmltools::br(),
                                      htmltools::br()),
 
                             shiny::tabPanel("Aggregate Table",
-                                     DT::dataTableOutput('lb_agg_tab_render'),
+                                     DT::dataTableOutput('lb_agg_tab'),
                                      htmltools::br(),
                                      htmltools::br(),
-                                     download_csv_UI('download_LB_agg'),
-                                     htmltools::br(),
-                                     htmltools::br(),
-                                     download_rds_UI('download_LB_agg_rds'),
                                      htmltools::br(),
                                      htmltools::br())
 
@@ -403,25 +388,14 @@ execSendDashboard <- function(dbToken) {
                                      shiny::uiOutput("bw_indiv_table"),
                                      htmltools::br(),
                                      htmltools::br(),
-                                     download_csv_UI('download_BW'),
-                                     htmltools::br(),
-                                     htmltools::br(),
-                                     download_rds_UI('download_BW_rds'),
                                      htmltools::br(),
                                      htmltools::br()),
                             shiny::tabPanel("Aggregate Table",
-                                     DT::dataTableOutput('bw_agg_tab_render'),
+                                     DT::dataTableOutput('bw_agg_tab'),
                                      htmltools::br(),
                                      htmltools::br(),
-                                     download_csv_UI('download_BW_agg'),
                                      htmltools::br(),
-                                     htmltools::br(),
-                                     download_rds_UI('download_BW_agg_rds'),
-                                     htmltools::br(),
-                                     htmltools::br()))),
-                 shiny::tabPanel("Download",
-                                 htmltools::br(),
-                                 shiny::downloadButton('download_all', "Download"))
+                                     htmltools::br())))
 
                  )))
 
@@ -527,7 +501,7 @@ execSendDashboard <- function(dbToken) {
           "Table :", htmltools::strong("Filtered Control Animal")
         ),
         options = list(
-          dom = "lfrtip",
+          dom = "lfrtipB",
           #buttons = c("csv", "excel", "copy", "pdf"),
           # buttons=list(list(
           #   extend = 'collection',
@@ -571,12 +545,12 @@ execSendDashboard <- function(dbToken) {
    
     shiny::callModule(download_csv, id = "download_filter_animal",
                       data = animalList,
-                      filename='filtered_Control_Animal')
+                      filename='filtered Control Animal')
     
     # call module to download rds data
     shiny::callModule(download_rds, id = "download_filter_animal_rds",
                       data = animalList,
-                      filename='filtered_Control_Animal')
+                      filename='filtered Control Animal')
     
     
     
@@ -810,21 +784,21 @@ execSendDashboard <- function(dbToken) {
       tab <- DT::datatable(tab,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtip",
+                             dom = "lfrtipB",
                              #buttons = c("csv", "excel", "pdf"),
-                             # buttons=list(list(
-                             #   extend = 'collection',
-                             #   buttons = list(list(extend='csv',
-                             #                       filename = 'MI Individual Record Table'),
-                             #                  list(extend='excel',
-                             #                       filename = 'MI Individual Record Table')
-                             #                  # list(extend='pdf',
-                             #                  #      pageSize = 'A4',
-                             #                  #      orientation = 'landscape',
-                             #                  #      filename= 'MI Individual Table')
-                             #                  ),
-                             #   text = 'Download'
-                             # )),
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'MI Individual Record Table'),
+                                              list(extend='excel',
+                                                   filename = 'MI Individual Record Table')
+                                              # list(extend='pdf',
+                                              #      pageSize = 'A4',
+                                              #      orientation = 'landscape',
+                                              #      filename= 'MI Individual Table')
+                                              ),
+                               text = 'Download'
+                             )),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
@@ -838,64 +812,58 @@ execSendDashboard <- function(dbToken) {
       tab
 
     })
-    
-    
-    ####### Download MI individual table csv and rds ----
-    
-    shiny::callModule(download_csv, id = "download_MI_individual",
-                      data=table_to_show, filename="MI_Individual_Table")
-    
-    shiny::callModule(download_rds, id="download_MI_individual_rds",
-                      data=table_to_show, filename="MI_Individual_Table")
-    
-    MI_agg_table <- shiny::reactive({
+
+   ###### MI aggregate table ----
+
+    output$mi_agg_tab <- DT::renderDataTable(server = T,{
+
       animal_list <- animalList()
       mi_sub <- MI_subject()
-      
-      
+
+
       # TODO: The columns to display/aggregate
       # should be chosen by the user, however
       # I think the sendigR package always
       # return certain columns, e.g., EPOCH
       grpByCols <- c('SPECIES', 'STRAIN', 'ROUTE', 'SEX',
                      'MISPEC', 'MISTRESC')
-      
+
       domainData <- merge(animal_list,
                           mi_sub,
                           on = c('STUDYID', 'USUBJID'),
                           allow.cartesian = TRUE)
-      
+
       # normalize results by the number of
       # animals that have data in the MI domain
       numAnimalsMI <- nrow(unique(domainData[,c('USUBJID', 'STUDYID')]))
-      
+
       domainData$MISPEC <- toupper(domainData$MISPEC)
       domainData$MISTRESC <- toupper(domainData$MISTRESC)
-      
+
       # replace Null values with NORMAL
       #domainData$MISTRESC[domainData$MISTRESC == ''] <- 'NORMAL'
       remove_index <- which(domainData$MISTRESC=='')
       domainData <- domainData[-remove_index,]
-      
+
       # TODO: Do we account for animals that do not have
       # MI (or maybe other domains?) for which there is
       # no record? I know sometimes if result is normal
       # they will not get recorded.  Maybe this could be
       # a flag to toggle.
-      
+
       shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
-                                            includeUncertain=input$INCL_UNCERTAIN))
-      
+                             includeUncertain=input$INCL_UNCERTAIN))
+
       # number of animals with observations b MISPEC
       tissueCounts <- domainData %>%
-        dplyr::group_by(MISPEC) %>%
-        dplyr::summarise(Animals.In.MISPEC = dplyr::n_distinct(USUBJID))
+                      dplyr::group_by(MISPEC) %>%
+                      dplyr::summarise(Animals.In.MISPEC = dplyr::n_distinct(USUBJID))
       tableData <- merge(tableData, tissueCounts, on='MISPEC')
-      
+
       tableData['%MISPEC'] <- tableData$N / tableData$Animals.In.MISPEC
       tableData['%MI'] <- tableData$N / numAnimalsMI
-      
-      
+
+
       tableData['%MISPEC'] <- sapply(tableData['%MISPEC'],
                                      function(x) scales::percent(x,
                                                                  big.mark = 1,
@@ -904,32 +872,23 @@ execSendDashboard <- function(dbToken) {
                                  function(x) scales::percent(x,
                                                              big.mark = 1,
                                                              accuracy = 0.2))
-      
-      
-      tableData <- dplyr::select(tableData, -Animals.In.MISPEC)
-      tableData
-    })
-    
-    
-    
-   ###### MI aggregate table ----
 
-    output$mi_agg_tab <- DT::renderDataTable(server = T,{
-      tableData <- MI_agg_table()
+
+      tableData <- dplyr::select(tableData, -Animals.In.MISPEC)
 
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtip",
+                             dom = "lfrtipB",
                              # buttons = c("csv", "excel", "pdf"),
-                             # 
-                             # buttons=list(list(
-                             #   extend = 'collection',
-                             #   buttons = list(list(extend='csv',
-                             #                       filename = 'MI Aggregate Table'),
-                             #                  list(extend='excel',
-                             #                       filename = 'MI Aggregate Table')),
-                             #   text = 'Download')),
+                             
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'MI Aggregate Table'),
+                                              list(extend='excel',
+                                                   filename = 'MI Aggregate Table')),
+                               text = 'Download')),
                              
                              #colReorder = TRUE,
                              scrollY = TRUE,
@@ -945,12 +904,7 @@ execSendDashboard <- function(dbToken) {
 
     })
 
-    ####### Download MI aggregate table csv and rds ----
-    shiny::callModule(download_csv, id = "download_MI_agg",
-                      data=MI_agg_table, filename="MI_Aggregate_Table")
-    
-    shiny::callModule(download_rds, id="download_MI_agg_rds",
-                      data=MI_agg_table, filename="MI_Aggregate_Table")
+
 
     #### LB TAB #######################################
 
@@ -1025,16 +979,16 @@ execSendDashboard <- function(dbToken) {
         tab,
         filter = list(position = 'top'),
         options = list(
-          dom = "lfrtip",
+          dom = "lfrtipB",
           # buttons = c("csv", "excel", "pdf"),
           
-          # buttons=list(list(
-          #   extend = 'collection',
-          #   buttons = list(list(extend='csv',
-          #                       filename = 'LB Individual Record  Table'),
-          #                  list(extend='excel',
-          #                       filename = 'LB Individual Record Table')),
-          #   text = 'Download')),
+          buttons=list(list(
+            extend = 'collection',
+            buttons = list(list(extend='csv',
+                                filename = 'LB Individual Record  Table'),
+                           list(extend='excel',
+                                filename = 'LB Individual Record Table')),
+            text = 'Download')),
           #colReorder = TRUE,
           scrollY = TRUE,
           scrollX = TRUE,
@@ -1051,14 +1005,6 @@ execSendDashboard <- function(dbToken) {
       tab
 
     })
-    
-    ####### Download LB individual table csv and rds ----
-    shiny::callModule(download_csv, id = "download_LB_individual",
-                      data=lb_table_to_show, filename="LB_Individual_Table")
-    
-    shiny::callModule(download_rds, id="download_LB_individual_rds",
-                      data=lb_table_to_show, filename="LB_Individual_Table")
-    
 
     # LB displays a histogram
     # and probability density
@@ -1121,12 +1067,12 @@ execSendDashboard <- function(dbToken) {
     
     ###### LB aggregate table ----
     
-    
-    LB_agg_table <- reactive({
+    output$lb_agg_tab <- DT::renderDataTable(server = T,{
+      
       animal_list <- animalList()
       lb_sub <- LB_subject()
       
-      
+     
       # 
       # df <- sendigR::getFindingsSubjAge(dbToken,findings=lb_sub,animalList = animal_list,
       #                          fromAge = NULL,toAge = NULL,inclUncertain = input$INCL_UNCERTAIN,
@@ -1140,25 +1086,20 @@ execSendDashboard <- function(dbToken) {
       
       shiny::isolate(tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'lb', input$INCL_UNCERTAIN))
       
-      tableData
       
       
-    })
-    
-    output$lb_agg_tab_render <- DT::renderDataTable(server = T,{
-      tableData <- LB_agg_table()
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtip",
+                             dom = "lfrtipB",
                              # buttons = c("csv", "excel", "pdf"),
-                             # buttons=list(list(
-                             #   extend = 'collection',
-                             #   buttons = list(list(extend='csv',
-                             #                       filename = 'LB Aggregate Table'),
-                             #                  list(extend='excel',
-                             #                       filename = 'LB Aggregate Table')),
-                             #   text = 'Download')),
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'LB Aggregate Table'),
+                                              list(extend='excel',
+                                                   filename = 'LB Aggregate Table')),
+                               text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
@@ -1175,13 +1116,7 @@ execSendDashboard <- function(dbToken) {
     })
     
     
-    ####### Download Lb Aggregate table csv and rds ----
     
-    shiny::callModule(download_csv, id = "download_LB_agg",
-                      data=LB_agg_table, filename="LB_Aggregate_Table")
-    
-    shiny::callModule(download_rds, id="download_LB_agg_rds",
-                      data=LB_agg_table, filename="LB_Aggregate_Table")
 
 
     #### CL TAB ########################
@@ -1366,15 +1301,15 @@ execSendDashboard <- function(dbToken) {
       tab <- DT::datatable(tab,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtip",
+                             dom = "lfrtipB",
                              # buttons = c("csv", "excel", "pdf"),
-                             # buttons=list(list(
-                             #   extend = 'collection',
-                             #   buttons = list(list(extend='csv',
-                             #                       filename = 'BW Individual Record Table'),
-                             #                  list(extend='excel',
-                             #                       filename = 'BW Individual Record Table')),
-                             #   text = 'Download')),
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'BW Individual Record Table'),
+                                              list(extend='excel',
+                                                   filename = 'BW Individual Record Table')),
+                               text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
@@ -1388,57 +1323,45 @@ execSendDashboard <- function(dbToken) {
       tab
 
     })
-    
-    
-    ####### Download BW_Individual_Table csv and rds ----
-    
-    shiny::callModule(download_csv, id = "download_BW",
-                      data=bw_table_to_show, filename="BW_Individual_Table")
-    
-    shiny::callModule(download_rds, id="download_BW_rds",
-                      data=bw_table_to_show, filename="BW_Individual_Table")
 
     ###### BW aggregate table ----
-    
-    BW_agg_table <- shiny::reactive({
+
+    output$bw_agg_tab <- DT::renderDataTable(server = T,{
+      # req(input$refreshData)
+      
       animal_list <- animalList()
       bw_sub <- BW_subject()
       
-      
+     
       #get age at finding
-      shiny::isolate(df <- sendigR::getFindingsSubjAge(dbToken = .sendigRenv$dbToken,
-                                                       findings=bw_sub,
-                                                       animalList = animal_list,
-                                                       fromAge = NULL,toAge = NULL,
-                                                       inclUncertain = input$INCL_UNCERTAIN,
-                                                       noFilterReportUncertain = TRUE))
+     shiny::isolate(df <- sendigR::getFindingsSubjAge(dbToken = .sendigRenv$dbToken,
+                                        findings=bw_sub,
+                                        animalList = animal_list,
+                                        fromAge = NULL,toAge = NULL,
+                                        inclUncertain = input$INCL_UNCERTAIN,
+                                        noFilterReportUncertain = TRUE))
       
       # df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
       #                           sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
       #                           noFilterReportUncertain = TRUE)
       domainData <- merge(animal_list, df, by = c('STUDYID', 'USUBJID'),
-                          all=T, suffixes = c("_Control_animal", "_BW_AGE"))
+                         all=T, suffixes = c("_Control_animal", "_BW_AGE"))
       shiny::isolate(tableData <- aggDomain_bw_lb(domainData = domainData,domain = 'bw',
                                                   includeUncertain =input$INCL_UNCERTAIN))
-    })
 
-    output$bw_agg_tab_render <- DT::renderDataTable(server = T,{
-      # req(input$refreshData)
-      tableData <- BW_agg_table()
-      
       
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtip",
+                             dom = "lfrtipB",
                              # buttons = c("csv", "excel", "pdf"),
-                             # buttons=list(list(
-                             #   extend = 'collection',
-                             #   buttons = list(list(extend='csv',
-                             #                       filename = 'BW Aggregate Table'),
-                             #                  list(extend='excel',
-                             #                       filename = 'BW Aggregate Table')),
-                             #   text = 'Download')),
+                             buttons=list(list(
+                               extend = 'collection',
+                               buttons = list(list(extend='csv',
+                                                   filename = 'BW Aggregate Table'),
+                                              list(extend='excel',
+                                                   filename = 'BW Aggregate Table')),
+                               text = 'Download')),
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
@@ -1454,14 +1377,6 @@ execSendDashboard <- function(dbToken) {
       
     })
     
-    
-    ####### Download BW_Aggregate_Table csv and rds ----
-    
-    shiny::callModule(download_csv, id = "download_BW_agg",
-                      data=BW_agg_table, filename="BW_Aggregate_Table")
-    
-    shiny::callModule(download_rds, id="download_BW_agg_rds",
-                      data=BW_agg_table, filename="BW_Aggregate_Table")
     
 
 
@@ -1518,53 +1433,6 @@ execSendDashboard <- function(dbToken) {
                             size=4)
 
     })
-    
-    
-    
-    filter_criteria <- shiny::reactive({
-      filter_selected <- list(
-        From=as.character(input$STSTDTC[1]),
-        To=as.character(input$STSTDTC[2]),
-        Design=input$SDESIGN,
-        Route=input$ROUTE,
-        Species=input$SPECIES,
-        Strain=input$STRAIN,
-        Sex=input$SEX,
-        Uncertain=input$INCL_UNCERTAIN
-      )
-      filter_selected
-    })
-    
-    
-    # download all data as RData file
-    output$download_all <- shiny::downloadHandler(
-      filename <- function(){
-        paste0("All_Table_", Sys.Date(),".RData")
-      },
-      
-      content = function(file) {
-        Control_Animal <- animalList()
-        MI_Findings <- findings_table_after_filter()
-        MI_Individual <- table_to_show()
-        MI_Aggregate <- MI_agg_table()
-        LB_Individual <- lb_table_to_show()
-        LB_Aggregate <- LB_agg_table()
-        BW_Individual <- bw_table_to_show()
-        BW_Aggregate <- BW_agg_table()
-        Filtered_option <- filter_criteria()
-        
-        save(Control_Animal,
-             MI_Findings,
-             MI_Individual,
-             MI_Aggregate,
-             LB_Individual,
-             LB_Aggregate,
-             BW_Individual,
-             BW_Aggregate,
-             Filtered_option,
-             file = file)
-      }
-    )
 
     # # CLose connection to database at end of execution
     # shiny::onSessionEnded(function() {
@@ -1572,9 +1440,6 @@ execSendDashboard <- function(dbToken) {
     # })
 
   }
-  
-  
-  
 
   ##### Run the application ----
   shiny::shinyApp(ui = ui, server = server)
