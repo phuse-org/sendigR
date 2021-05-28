@@ -38,7 +38,7 @@ MiFindings_table <- function(animalList, mispec) {
   # given a set of USUBJIDs and and target organ
   # will return the frequency counts of counts
   # of the findings
-  
+
   # query MI and remove findings not in
   # our target animals. Convert
   # all findings to uppercase for
@@ -198,16 +198,20 @@ GetUniqueDesign <- function() {
 
 
 GetUniqueSpecies <- function() {
-  toupper(sendigR::genericQuery(.sendigRenv$dbToken, "select distinct tsval as SPECIES
-                          from ts
-                         where upper(tsparmcd) = 'SPECIES'
-                        union
-                        select distinct txval as SPECIES
-                          from tx
-                         where upper(txparmcd) = 'SPECIES'
-                        union
-                        select distinct SPECIES
-                          from dm
+  return(sendigR::genericQuery(.sendigRenv$dbToken,
+                       "select SPECIES
+                          from (select upper(tsval) as SPECIES
+                                 from ts
+                                 where upper(tsparmcd) = 'SPECIES'
+                                 union
+                                 select  upper(txval) as SPECIES
+                                 from tx
+                                 where upper(txparmcd) = 'SPECIES'
+                                 union
+                                 select upper(SPECIES) as SPECIES
+                                 from dm)
+                         where SPECIES is  not null
+                           and SPECIES != ''
                          order by SPECIES")$SPECIES)
 }
 
@@ -227,8 +231,8 @@ GetUniqueStrains <- function(species) {
     selectStrDM <- "species || ': ' || strain"
   }
 
-  return(sort(toupper(
-    sendigR::genericQuery(.sendigRenv$dbToken, sprintf("select distinct %s as STRAIN
+  return(sort(
+    sendigR::genericQuery(.sendigRenv$dbToken, sprintf("select  upper(%s) as STRAIN
                             from ts ts1
                             join ts ts2
                               on upper(ts2.tsparmcd) = 'SPECIES'
@@ -236,8 +240,10 @@ GetUniqueStrains <- function(species) {
                              and ts1.tsgrpid = ts2.tsgrpid
                              and ts1.studyid = ts2.studyid
                            where upper(ts1.tsparmcd) = 'STRAIN'
+                             and ts1.tsval is not null
+                             and ts1.tsval != ''
                           union
-                         select distinct trim(%s) as STRAIN
+                         select upper(trim(%s)) as STRAIN
                             from tx tx1
                             join tx tx2
                               on upper(tx2.txparmcd) = 'SPECIES'
@@ -245,14 +251,18 @@ GetUniqueStrains <- function(species) {
                              and tx1.setcd = tx2.setcd
                              and tx1.studyid = tx2.studyid
                            where upper(tx1.txparmcd) = 'STRAIN'
+                             and tx1.txval is not null
+                             and tx1.txval != ''
                          union
-                         select distinct trim(%s)
+                         select upper(trim(%s))
                            from dm
-                          where species in (:1)",
+                          where species in (:1)
+                            and strain is not null
+                            and strain != ''",
                          selectStrTS,
                          selectStrTX,
                          selectStrDM),
-                 species)$STRAIN)))
+                 species)$STRAIN))
 }
 
 
@@ -309,7 +319,7 @@ GetAnimalGroupsStudy <- function(studyid) {
 GetUniqueSex <- function() {
   uniqueSex <- sendigR::genericQuery(.sendigRenv$dbToken,
                                      'SELECT DISTINCT SEX FROM DM')
-  
+
   return(uniqueSex)
 }
 
@@ -371,61 +381,61 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
 # control animal list and domain subject data merged to create doaminData
 #domain should be "lb" or "bw"
 aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
-  
+
   domain <- tolower(domain)
-  
+
   if (domain=='bw') {
     grpByCols <- c("AGEDAYS_BW_AGE","SEX","BWORRESU")
     result <- 'BWSTRESN'
     result_unit <- 'BWORRESU'
-    
+
   } else if (domain=='lb') {
     grpByCols <- c("LBSPEC","LBTESTCD", "LBTEST","SEX","LBSTRESU")
     result <- 'LBSTRESN'
     result_unit <- 'LBSTRESU'
-    
+
   }
   mean_result <- paste0('Mean_',result)
   sd_result <- paste0('SD_',result)
-  
+
   if (includeUncertain==F) {
-    
+
     agg_tb_certain <- domainData%>%
-      dplyr::group_by_at(grpByCols) %>% 
+      dplyr::group_by_at(grpByCols) %>%
       dplyr::summarize(!!mean_result := mean(get(result)),
                        !!sd_result := stats::sd(get(result)),
                        N = dplyr::n())
     agg_tb_certain <- dplyr::relocate(agg_tb_certain,{{result_unit}}, .after = (!!sd_result))
-    
+
     return(agg_tb_certain)
   } else if (includeUncertain==T) {
-    
+
     agg_tb_uncer <- domainData%>%
-      dplyr::group_by_at(grpByCols) %>% 
+      dplyr::group_by_at(grpByCols) %>%
       dplyr::summarize(!!mean_result := mean(get(result)),
                        !!sd_result := stats::sd(get(result)),
                        N = dplyr::n())
-    
-    aggDataNonConf <- domainData%>% 
-      dplyr::filter(!is.na(UNCERTAIN_MSG)) %>% 
+
+    aggDataNonConf <- domainData%>%
+      dplyr::filter(!is.na(UNCERTAIN_MSG)) %>%
       dplyr::group_by_at(grpByCols) %>%
       dplyr::summarize(Uncertain.Matches = dplyr::n())
-    
-    aggDataConf <- domainData%>% 
+
+    aggDataConf <- domainData%>%
       dplyr::filter(is.na(UNCERTAIN_MSG)) %>%
       dplyr::group_by_at(grpByCols) %>%
-      dplyr::summarize(Certain.Matches = dplyr::n()) 
-    
+      dplyr::summarize(Certain.Matches = dplyr::n())
+
     df <- merge(agg_tb_uncer, aggDataConf, by=grpByCols, all=TRUE)
     df <- merge(df, aggDataNonConf, by=grpByCols, all=TRUE)
     df <- dplyr::relocate(df,{{result_unit}}, .after = {{sd_result}})
-    
+
     for(j in seq_along(df)){
       data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
     }
-    
+
     return(df)
-    
+
   }
 }
 

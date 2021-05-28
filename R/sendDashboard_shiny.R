@@ -297,7 +297,7 @@ execSendDashboard <- function(dbToken) {
                                                                                availableOrgans,
                                                                                selected='KIDNEY'),
                                                             shiny::uiOutput('mi_findings_filter')),
-          
+
                                        shiny::column(width = 6, offset = 1,
                                               DT::dataTableOutput("findingsTable"),
                                               htmltools::br(),
@@ -468,7 +468,7 @@ execSendDashboard <- function(dbToken) {
 
 
 ##### AnimalList ----
-    # Get the list of studies and animals based on new/changed filter criterion 
+    # Get the list of studies and animals based on new/changed filter criterion
     animalList<-shiny::eventReactive(input$refreshData, {
 
       # print(c(as.character(input$STSTDTC[1]),
@@ -542,7 +542,7 @@ execSendDashboard <- function(dbToken) {
           #                  ),
           #   text = 'Download'
           # )),
-          
+
           #colReorder = TRUE,
           scrollY = TRUE,
           scrollX=TRUE,
@@ -555,11 +555,11 @@ execSendDashboard <- function(dbToken) {
           ))
       animal_df
       })
-    
-    
+
+
     ##### Control animal download button ----
     # output$download_filter_animal <- shiny::downloadHandler(
-    #   filename = function() { 
+    #   filename = function() {
     #     paste0("Filtered Control Animal", ".csv")
     #   },
     #   content = function(file) {
@@ -567,19 +567,19 @@ execSendDashboard <- function(dbToken) {
     #   utils::write.csv(animal, file)
     #   })
     # call module to download csv file
-    
-   
+
+
     shiny::callModule(download_csv, id = "download_filter_animal",
                       data = animalList,
                       filename='filtered_Control_Animal')
-    
+
     # call module to download rds data
     shiny::callModule(download_rds, id = "download_filter_animal_rds",
                       data = animalList,
                       filename='filtered_Control_Animal')
-    
-    
-    
+
+
+
 
     ########################### MI TAB #######################################
 
@@ -594,9 +594,9 @@ execSendDashboard <- function(dbToken) {
     # defined in sendDB.R
 
     ###### MI findings table ----
-    
-   
-    
+
+
+
     # get Mifindings whole table
    MiFindings_filter_table <- shiny::reactive({
      shiny::req(input$STRAIN)
@@ -604,25 +604,25 @@ execSendDashboard <- function(dbToken) {
      df
    })
 
-    
+
     # render mi findings filter
     output$mi_findings_filter <- shiny::renderUI({
-      
+
       df <- MiFindings_filter_table()
       df_route <- unique(df[['ROUTE']])
       df_species <- unique(df[['SPECIES']])
       df_strain <- unique(df[['STRAIN']])
       df_sex <- unique(df[['SEX']])
-      
+
       # addUIDep(shiny::selectizeInput("SPECIES",label='Select Species:',
       #                                choices= GetUniqueSpecies(),
       #                                selected='RAT',
       #                                multiple=TRUE,
       #                                options=list(plugins=list('drag_drop','remove_button'))))
-      
+
       shiny::fluidRow(
-        
-        
+
+
                      addUIDep(shiny::selectizeInput("mi_route",
                                          "Select Route:",
                                          choices=df_route,
@@ -630,8 +630,8 @@ execSendDashboard <- function(dbToken) {
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button')
                                          ))),
-        
-    
+
+
                     addUIDep(shiny::selectizeInput("mi_species",
                                          "Select Species:",
                                          df_species,
@@ -639,8 +639,8 @@ execSendDashboard <- function(dbToken) {
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button'))
                                          )),
-        
-       
+
+
                      addUIDep( shiny::selectizeInput("mi_strain",
                                          "Select Strain:",
                                          df_strain,
@@ -649,8 +649,8 @@ execSendDashboard <- function(dbToken) {
                                          options=list(plugins=list('drag_drop','remove_button'))
                                          )
                      ),
-        
-   
+
+
                    addUIDep(shiny::selectizeInput("mi_sex",
                                          "Select Sex:",
                                          df_sex,
@@ -659,15 +659,15 @@ execSendDashboard <- function(dbToken) {
                                          options=list(plugins=list('drag_drop','remove_button'))
                                          ))
       )
-      
-      
+
+
     })
 
     findings_table_after_filter <- shiny::reactive({
       shiny::req(input$STRAIN)
-      
+
       finalFindings <- MiFindings_filter_table()
-     
+
       finalFindings <- finalFindings %>% dplyr::filter(ROUTE %in% input$mi_route,
                                                        STRAIN %in% input$mi_strain,
                                                        SPECIES %in% input$mi_species,
@@ -677,7 +677,7 @@ execSendDashboard <- function(dbToken) {
         dplyr::distinct(STUDYID, USUBJID, MISTRESC) %>% # only one organ, finding per animal (input errors cause duplications)
         dplyr::count(MISTRESC) %>%
         dplyr::arrange(-n)
-      
+
       # findings = n / total animals * 100
       # round to 2 decimal places and
       # sort by descending.
@@ -685,19 +685,19 @@ execSendDashboard <- function(dbToken) {
       findingsCount$Incidence <- paste0(round(findingsCount$Incidence, 2), '%')
       findingsCount <- dplyr::select(findingsCount, -n)
       findingsCount
-      
+
     })
-    
-    
+
+
     output$findingsTable <- DT::renderDataTable(server = T,{
 
       # shiny::req(input$STRAIN)
       # findings <- MiFindings(animalList(), input$MISPEC)
       # findings <- findings %>% dplyr::mutate_if(is.character,as.factor)
       findings <- findings_table_after_filter()
-      findings_name <- paste0("MI Findings_",input$MISPEC) 
-      findings_name_tab <- paste0("MI Findings: ",input$MISPEC) 
-      
+      findings_name <- paste0("MI Findings_",input$MISPEC)
+      findings_name_tab <- paste0("MI Findings: ",input$MISPEC)
+
       findings <- DT::datatable(findings,
         class = "cell-border stripe",
         # filter = list(position = 'top'),
@@ -838,64 +838,64 @@ execSendDashboard <- function(dbToken) {
       tab
 
     })
-    
-    
+
+
     ####### Download MI individual table csv and rds ----
-    
+
     shiny::callModule(download_csv, id = "download_MI_individual",
                       data=table_to_show, filename="MI_Individual_Table")
-    
+
     shiny::callModule(download_rds, id="download_MI_individual_rds",
                       data=table_to_show, filename="MI_Individual_Table")
-    
+
     MI_agg_table <- shiny::reactive({
       animal_list <- animalList()
       mi_sub <- MI_subject()
-      
-      
+
+
       # TODO: The columns to display/aggregate
       # should be chosen by the user, however
       # I think the sendigR package always
       # return certain columns, e.g., EPOCH
       grpByCols <- c('SPECIES', 'STRAIN', 'ROUTE', 'SEX',
                      'MISPEC', 'MISTRESC')
-      
+
       domainData <- merge(animal_list,
                           mi_sub,
                           on = c('STUDYID', 'USUBJID'),
                           allow.cartesian = TRUE)
-      
+
       # normalize results by the number of
       # animals that have data in the MI domain
       numAnimalsMI <- nrow(unique(domainData[,c('USUBJID', 'STUDYID')]))
-      
+
       domainData$MISPEC <- toupper(domainData$MISPEC)
       domainData$MISTRESC <- toupper(domainData$MISTRESC)
-      
+
       # replace Null values with NORMAL
       #domainData$MISTRESC[domainData$MISTRESC == ''] <- 'NORMAL'
       remove_index <- which(domainData$MISTRESC=='')
       domainData <- domainData[-remove_index,]
-      
+
       # TODO: Do we account for animals that do not have
       # MI (or maybe other domains?) for which there is
       # no record? I know sometimes if result is normal
       # they will not get recorded.  Maybe this could be
       # a flag to toggle.
-      
+
       shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
                                             includeUncertain=input$INCL_UNCERTAIN))
-      
+
       # number of animals with observations b MISPEC
       tissueCounts <- domainData %>%
         dplyr::group_by(MISPEC) %>%
         dplyr::summarise(Animals.In.MISPEC = dplyr::n_distinct(USUBJID))
       tableData <- merge(tableData, tissueCounts, on='MISPEC')
-      
+
       tableData['%MISPEC'] <- tableData$N / tableData$Animals.In.MISPEC
       tableData['%MI'] <- tableData$N / numAnimalsMI
-      
-      
+
+
       tableData['%MISPEC'] <- sapply(tableData['%MISPEC'],
                                      function(x) scales::percent(x,
                                                                  big.mark = 1,
@@ -904,14 +904,14 @@ execSendDashboard <- function(dbToken) {
                                  function(x) scales::percent(x,
                                                              big.mark = 1,
                                                              accuracy = 0.2))
-      
-      
+
+
       tableData <- dplyr::select(tableData, -Animals.In.MISPEC)
       tableData
     })
-    
-    
-    
+
+
+
    ###### MI aggregate table ----
 
     output$mi_agg_tab <- DT::renderDataTable(server = T,{
@@ -922,7 +922,7 @@ execSendDashboard <- function(dbToken) {
                            options = list(
                              dom = "lfrtip",
                              # buttons = c("csv", "excel", "pdf"),
-                             # 
+                             #
                              # buttons=list(list(
                              #   extend = 'collection',
                              #   buttons = list(list(extend='csv',
@@ -930,7 +930,7 @@ execSendDashboard <- function(dbToken) {
                              #                  list(extend='excel',
                              #                       filename = 'MI Aggregate Table')),
                              #   text = 'Download')),
-                             
+
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
@@ -948,7 +948,7 @@ execSendDashboard <- function(dbToken) {
     ####### Download MI aggregate table csv and rds ----
     shiny::callModule(download_csv, id = "download_MI_agg",
                       data=MI_agg_table, filename="MI_Aggregate_Table")
-    
+
     shiny::callModule(download_rds, id="download_MI_agg_rds",
                       data=MI_agg_table, filename="MI_Aggregate_Table")
 
@@ -1027,7 +1027,7 @@ execSendDashboard <- function(dbToken) {
         options = list(
           dom = "lfrtip",
           # buttons = c("csv", "excel", "pdf"),
-          
+
           # buttons=list(list(
           #   extend = 'collection',
           #   buttons = list(list(extend='csv',
@@ -1051,14 +1051,14 @@ execSendDashboard <- function(dbToken) {
       tab
 
     })
-    
+
     ####### Download LB individual table csv and rds ----
     shiny::callModule(download_csv, id = "download_LB_individual",
                       data=lb_table_to_show, filename="LB_Individual_Table")
-    
+
     shiny::callModule(download_rds, id="download_LB_individual_rds",
                       data=lb_table_to_show, filename="LB_Individual_Table")
-    
+
 
     # LB displays a histogram
     # and probability density
@@ -1070,20 +1070,20 @@ execSendDashboard <- function(dbToken) {
     # of displaying as normal
     # or log-normal distribution.
 
-    
+
     # output$labTestHist <- shiny::renderPlot({
-    # 
+    #
     #   # LiverFindings() gets
     #   # lab test results for
     #   # a user-defined LBTESTCD
-    # 
+    #
     #   labResults <- LiverFindings(animalList(), input$LBTESTCD)
-    # 
-    # 
+    #
+    #
     #   # change the distbution
     #   # function depending on
     #   # user input
-    # 
+    #
     #   if (input$dist == 'norm') {
     #     labResults$distribution <- labResults$LBSTRESC_TRANS
     #     dist <- MASS::fitdistr(labResults$distribution, 'normal')
@@ -1093,11 +1093,11 @@ execSendDashboard <- function(dbToken) {
     #     dist <- MASS::fitdistr(labResults$distribution, 'lognormal')
     #     fun <- stats::dlnorm
     #   }
-    # 
+    #
     #   # plot the probability
     #   # distribution and
     #   # the pdf
-    # 
+    #
     #   ggplot2::ggplot(labResults) +
     #     ggplot2::geom_histogram(ggplot2::aes(x = distribution, y = ..density..),
     #                    fill = "blue",
@@ -1105,7 +1105,7 @@ execSendDashboard <- function(dbToken) {
     #     ggplot2::stat_function(fun = fun,
     #                   args = list(mean = dist$estimate[1], sd = dist$estimate[2], log = F),
     #                   color="grey", lwd=1, alpha=0.6)
-    # 
+    #
     # })
 
 
@@ -1118,33 +1118,33 @@ execSendDashboard <- function(dbToken) {
     # user selected x and y
     # axis as liver enzyme
     # responses.
-    
+
     ###### LB aggregate table ----
-    
-    
-    LB_agg_table <- reactive({
+
+
+    LB_agg_table <- shiny::reactive({
       animal_list <- animalList()
       lb_sub <- LB_subject()
-      
-      
-      # 
+
+
+      #
       # df <- sendigR::getFindingsSubjAge(dbToken,findings=lb_sub,animalList = animal_list,
       #                          fromAge = NULL,toAge = NULL,inclUncertain = input$INCL_UNCERTAIN,
       #                          noFilterReportUncertain = TRUE)
-      # 
+      #
       # df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
       #                           sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
       #                           noFilterReportUncertain = TRUE)
-      
+
       domainData <- merge(animal_list, lb_sub, by = c('STUDYID', 'USUBJID'), all=T)
-      
+
       shiny::isolate(tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'lb', input$INCL_UNCERTAIN))
-      
+
       tableData
-      
-      
+
+
     })
-    
+
     output$lb_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- LB_agg_table()
       tab <- DT::datatable(tableData,
@@ -1169,17 +1169,17 @@ execSendDashboard <- function(dbToken) {
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
       tab <- DT::formatRound(table = tab,columns = c(5,6),digits = 2)
-      
+
       tab
-      
+
     })
-    
-    
+
+
     ####### Download Lb Aggregate table csv and rds ----
-    
+
     shiny::callModule(download_csv, id = "download_LB_agg",
                       data=LB_agg_table, filename="LB_Aggregate_Table")
-    
+
     shiny::callModule(download_rds, id="download_LB_agg_rds",
                       data=LB_agg_table, filename="LB_Aggregate_Table")
 
@@ -1388,23 +1388,23 @@ execSendDashboard <- function(dbToken) {
       tab
 
     })
-    
-    
+
+
     ####### Download BW_Individual_Table csv and rds ----
-    
+
     shiny::callModule(download_csv, id = "download_BW",
                       data=bw_table_to_show, filename="BW_Individual_Table")
-    
+
     shiny::callModule(download_rds, id="download_BW_rds",
                       data=bw_table_to_show, filename="BW_Individual_Table")
 
     ###### BW aggregate table ----
-    
+
     BW_agg_table <- shiny::reactive({
       animal_list <- animalList()
       bw_sub <- BW_subject()
-      
-      
+
+
       #get age at finding
       shiny::isolate(df <- sendigR::getFindingsSubjAge(dbToken = .sendigRenv$dbToken,
                                                        findings=bw_sub,
@@ -1412,7 +1412,7 @@ execSendDashboard <- function(dbToken) {
                                                        fromAge = NULL,toAge = NULL,
                                                        inclUncertain = input$INCL_UNCERTAIN,
                                                        noFilterReportUncertain = TRUE))
-      
+
       # df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
       #                           sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
       #                           noFilterReportUncertain = TRUE)
@@ -1425,8 +1425,8 @@ execSendDashboard <- function(dbToken) {
     output$bw_agg_tab_render <- DT::renderDataTable(server = T,{
       # req(input$refreshData)
       tableData <- BW_agg_table()
-      
-      
+
+
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
@@ -1449,20 +1449,20 @@ execSendDashboard <- function(dbToken) {
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
       tab <- DT::formatRound(table = tab,columns = c(3,4),digits = 2)
-      
+
       tab
-      
+
     })
-    
-    
+
+
     ####### Download BW_Aggregate_Table csv and rds ----
-    
+
     shiny::callModule(download_csv, id = "download_BW_agg",
                       data=BW_agg_table, filename="BW_Aggregate_Table")
-    
+
     shiny::callModule(download_rds, id="download_BW_agg_rds",
                       data=BW_agg_table, filename="BW_Aggregate_Table")
-    
+
 
 
     ##### eDish #############################
@@ -1518,9 +1518,9 @@ execSendDashboard <- function(dbToken) {
                             size=4)
 
     })
-    
-    
-    
+
+
+
     filter_criteria <- shiny::reactive({
       filter_selected <- list(
         From=as.character(input$STSTDTC[1]),
@@ -1534,14 +1534,14 @@ execSendDashboard <- function(dbToken) {
       )
       filter_selected
     })
-    
-    
+
+
     # download all data as RData file
     output$download_all <- shiny::downloadHandler(
       filename <- function(){
         paste0("All_Table_", Sys.Date(),".RData")
       },
-      
+
       content = function(file) {
         Control_Animal <- animalList()
         MI_Findings <- findings_table_after_filter()
@@ -1552,7 +1552,7 @@ execSendDashboard <- function(dbToken) {
         BW_Individual <- bw_table_to_show()
         BW_Aggregate <- BW_agg_table()
         Filtered_option <- filter_criteria()
-        
+
         save(Control_Animal,
              MI_Findings,
              MI_Individual,
@@ -1572,9 +1572,9 @@ execSendDashboard <- function(dbToken) {
     # })
 
   }
-  
-  
-  
+
+
+
 
   ##### Run the application ----
   shiny::shinyApp(ui = ui, server = server)

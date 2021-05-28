@@ -133,13 +133,13 @@
 #' getSubjSpeciesStrain(dbToken, controlAnimals,
 #'                      noFilterReportUncertain = FALSE)
 #' }
-getSubjSpeciesStrain<-function(dbToken,
-                                  animalList,
-                                  speciesFilter = NULL,
-                                  strainFilter = NULL,
-                                  inclUncertain = FALSE,
-                                  exclusively = FALSE,
-                                  noFilterReportUncertain = TRUE) {
+getSubjSpeciesStrain <- function(dbToken,
+                                 animalList,
+                                 speciesFilter = NULL,
+                                 strainFilter = NULL,
+                                 inclUncertain = FALSE,
+                                 exclusively = FALSE,
+                                 noFilterReportUncertain = TRUE) {
 
 
   ##  Evaluate input parameters
@@ -176,27 +176,27 @@ getSubjSpeciesStrain<-function(dbToken,
                          dm.usubjid   as USUBJID,
                          case ts1.tsval
                             when '' then null
-                            else ts1.tsval
+                            else upper(ts1.tsval)
                          end          as SPECIES_TS,
                          case ts2.tsval
                             when '' then null
-                            else ts2.tsval
+                            else upper(ts2.tsval)
                          end          as STRAIN_TS,
                          case tx2.txval
                             when '' then null
-                            else tx2.txval
+                            else upper(tx2.txval)
                          end          as SPECIES_TX,
                          case tx3.txval
                             when '' then null
-                            else tx3.txval
+                            else upper(tx3.txval)
                          end          as STRAIN_TX,
                          case dm.species
                             when '' then null
-                            else dm.species
+                            else upper(dm.species)
                          end          as SPECIES_DM,
                          case dm.strain
                             when '' then null
-                            else dm.strain
+                            else upper(dm.strain)
                          end          as STRAIN_DM
                     from dm
                     left join (select distinct studyid, setcd
@@ -372,7 +372,7 @@ getSubjSpeciesStrain<-function(dbToken,
     else
       # Multiple species selected - execute filtering for species/strain per species
       # - combine all outputs into one table
-      foundAnimalSpeciesStrain <-
+      foundAnimalSpeciesStrain <- unique(
         data.table::rbindlist(lapply(speciesFilter,
                                      function(species) {
                                        execOneSpeciesFilter(animalSpeciesStrainAll,
@@ -381,7 +381,7 @@ getSubjSpeciesStrain<-function(dbToken,
                                                             inclUncertain,
                                                             exclusively)
                                     }),
-                              use.names=TRUE, fill=TRUE)
+                              use.names=TRUE, fill=TRUE))
   }
   else
     foundAnimalSpeciesStrain <- animalSpeciesStrainAll
