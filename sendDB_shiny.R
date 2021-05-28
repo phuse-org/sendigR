@@ -198,16 +198,20 @@ GetUniqueDesign <- function() {
 
 
 GetUniqueSpecies <- function() {
-  toupper(sendigR::genericQuery(.sendigRenv$dbToken, "select distinct tsval as SPECIES
+  return(sendigR::genericQuery(.sendigRenv$dbToken,
+                       "select SPECIES
+                          from (select upper(tsval) as SPECIES
                           from ts
                          where upper(tsparmcd) = 'SPECIES'
                         union
-                        select distinct txval as SPECIES
+                                 select  upper(txval) as SPECIES
                           from tx
                          where upper(txparmcd) = 'SPECIES'
                         union
-                        select distinct SPECIES
-                          from dm
+                                 select upper(SPECIES) as SPECIES
+                                 from dm)
+                         where SPECIES is  not null
+                           and SPECIES != ''
                          order by SPECIES")$SPECIES)
 }
 
@@ -227,8 +231,8 @@ GetUniqueStrains <- function(species) {
     selectStrDM <- "species || ': ' || strain"
   }
 
-  return(sort(toupper(
-    sendigR::genericQuery(.sendigRenv$dbToken, sprintf("select distinct %s as STRAIN
+  return(sort(
+    sendigR::genericQuery(.sendigRenv$dbToken, sprintf("select  upper(%s) as STRAIN
                             from ts ts1
                             join ts ts2
                               on upper(ts2.tsparmcd) = 'SPECIES'
@@ -236,8 +240,10 @@ GetUniqueStrains <- function(species) {
                              and ts1.tsgrpid = ts2.tsgrpid
                              and ts1.studyid = ts2.studyid
                            where upper(ts1.tsparmcd) = 'STRAIN'
+                             and ts1.tsval is not null
+                             and ts1.tsval != ''
                           union
-                         select distinct trim(%s) as STRAIN
+                         select upper(trim(%s)) as STRAIN
                             from tx tx1
                             join tx tx2
                               on upper(tx2.txparmcd) = 'SPECIES'
@@ -245,14 +251,18 @@ GetUniqueStrains <- function(species) {
                              and tx1.setcd = tx2.setcd
                              and tx1.studyid = tx2.studyid
                            where upper(tx1.txparmcd) = 'STRAIN'
+                             and tx1.txval is not null
+                             and tx1.txval != ''
                          union
-                         select distinct trim(%s)
+                         select upper(trim(%s))
                            from dm
-                          where species in (:1)",
+                          where species in (:1)
+                            and strain is not null
+                            and strain != ''",
                          selectStrTS,
                          selectStrTX,
                          selectStrDM),
-                 species)$STRAIN)))
+                 species)$STRAIN))
 }
 
 
