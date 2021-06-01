@@ -9,6 +9,7 @@ dbImportStudies(
   dbToken,
   xptPathRoot,
   overWrite = FALSE,
+  checkRequiredVars = TRUE,
   verbose = FALSE,
   logFilePath = NULL
 )
@@ -26,6 +27,10 @@ hierarchy is allowed.}
 \item{overWrite}{Mandatory, boolean\cr
 Whether an already existing study in the database may be overwritten by
 newly imported data.}
+
+\item{checkRequiredVars}{Mandatory, boolean\cr
+Whether not-required domains are checked for existence and content of
+required variables}
 
 \item{verbose}{Mandatory, boolean\cr
 Whether the status of the import shall be continuously written to the

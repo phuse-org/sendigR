@@ -21,34 +21,34 @@ test_that('01 - No input study list, no filtering',
                                       'STUDYID'))
     })
 
-test_that('02 - No input study list, start day filter, open end',
-  {
-    expect_equal(data.table::setorder(getStudiesSTSTDTC(db,...), 'STUDYID'),
-                 data.table::setorder(data.table::as.data.table(readxl::read_xls(normalizePath(paste0(rootPath, 'expected_getStudiesSTSTDTC.xls')),
-                                                                                 sheet='expect02')),
-                                      'STUDYID'))
-
-
-  })
-
-test_that('03 - No input study list, end day filter, open start',
-  {
-    expect_equal(data.table::setorder(getStudiesSTSTDTC(db,...), 'STUDYID'),
-                 data.table::setorder(data.table::as.data.table(readxl::read_xls(normalizePath(paste0(rootPath, 'expected_getStudiesSTSTDTC.xls')),
-                                                                                 sheet='expect03')),
-                                      'STUDYID'))
-
-
-  })
-
-test_that('04 - No input study list, start and end day filters',
-  {
-    expect_equal(data.table::setorder(getStudiesSTSTDTC(db,...), 'STUDYID'),
-                 data.table::setorder(data.table::as.data.table(readxl::read_xls(normalizePath(paste0(rootPath, 'expected_getStudiesSTSTDTC.xls')),
-                                                                                 sheet='expect04')),
-                                      'STUDYID'))
-
-
-  })
+# test_that('02 - No input study list, start day filter, open end',
+#   {
+#     expect_equal(data.table::setorder(getStudiesSTSTDTC(db,...), 'STUDYID'),
+#                  data.table::setorder(data.table::as.data.table(readxl::read_xls(normalizePath(paste0(rootPath, 'expected_getStudiesSTSTDTC.xls')),
+#                                                                                  sheet='expect02')),
+#                                       'STUDYID'))
+#
+#
+#   })
+#
+# test_that('03 - No input study list, end day filter, open start',
+#   {
+#     expect_equal(data.table::setorder(getStudiesSTSTDTC(db,...), 'STUDYID'),
+#                  data.table::setorder(data.table::as.data.table(readxl::read_xls(normalizePath(paste0(rootPath, 'expected_getStudiesSTSTDTC.xls')),
+#                                                                                  sheet='expect03')),
+#                                       'STUDYID'))
+#
+#
+#   })
+#
+# test_that('04 - No input study list, start and end day filters',
+#   {
+#     expect_equal(data.table::setorder(getStudiesSTSTDTC(db,...), 'STUDYID'),
+#                  data.table::setorder(data.table::as.data.table(readxl::read_xls(normalizePath(paste0(rootPath, 'expected_getStudiesSTSTDTC.xls')),
+#                                                                                  sheet='expect04')),
+#                                       'STUDYID'))
+#
+#
+#   })
 
 disconnectDB(db)

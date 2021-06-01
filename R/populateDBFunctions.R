@@ -78,33 +78,45 @@ dbCreateSchema <- function(dbToken) {
 #' open database.
 #'
 #' These requirements to the content of the folder must be fulfilled:
-#' \itemize{
+#' \enumerate{
 #'   \item The folder must contain some SAS xport files named
 #'   \code{[send domain].xpt} - the case of the file names doesn't care
 #'   \item A minimum set of required domain files must be included:
 #'   \code{ts.xpt}, \code{tx.xpt}, \code{dm.xpt}.
 #'   \item Each xpt file must contain one data table with same name as the file
 #'   name - i.e. a send domain name.
+#'   \item Each xpt file must contain a non-empty STUDYID value in each row equal
+#'   to the value of TS.STUDYID.
 #'   \item Each xpt file must contain a set of required column(s).\cr
 #'   In general it's (where relevant for the different kinds of domains):\cr
 #'    \code{STUDYID, DOMAIN, --SEQ, USUBJID, --TESTCD, --TEST,--ORRES, --ORRESU,
 #'    --STRESC, --STRESN, --STRESU}
-#'   \item Each xpt file must contain a non-empty STUDYID value equal to the
-#'   value of TS.STUDYID.
+#'    \item The DOMAIN variable must contain the name of the actual domain in
+#'    all rows
 #' }
+#'
+#' The last two requirements are checked for the required domains in all cases.
+#' For other domains, these two requirements are only checked if parameter
+#' \code{checkRequiredVars = TRUE}.\cr
 #'
 #' If an error is detected, the import and load of data is canceled, and further
 #' execution is aborted (i.e. error message is written to the console).\cr
 #' These error situations are checked and reported:
 #' \itemize{
-#'   \item The requirements described above are not fulfilled.
+#'   \item Any of the requirements 1 to 3 are not fulfilled or any of the
+#'   following requirements are not fulfilled for one of the required domains
 #'   \item A study with the same value if STUDYID exists in the database and
 #'   parameter \code{overWrite = FALSE}.
 #' }
 #'
+#' If one of the requirements 4 to 6 are not fulfilled for a not-required
+#' domain, this domain is excluded from the import. These kinds of issues are
+#' reported as one warning message to the console when data has been loaded.\cr
+#'
 #' Some non-critical issues, which doesn't prohibit data to be loaded to the
 #' database may be detected. These are reported as one warning message to the
-#' console when data has been loaded.\cr
+#' console when data has been loaded (together with eventual warning messages
+#' for skipped domains).\cr
 #' These non-critical issues are checked and reported:
 #' \itemize{
 #'   \item The study folder contains one or more xpt file(s) with names(s) not
@@ -121,9 +133,12 @@ dbCreateSchema <- function(dbToken) {
 #'   Token for the open database connection (see \code{\link{initEnvironment}}).
 #' @param xptPath Mandatory, character\cr
 #'  Location of the SAS xport files
-#' @param overWrite Mandatory, boolean, default = FALSE\cr
-#'   Whether an already existing study in the database may be overwritten by
-#'   newly imported data.
+#' @param overWrite Mandatory, boolean\cr
+#'  Whether an already existing study in the database may be overwritten by
+#'  newly imported data.
+#' @param checkRequiredVars Mandatory, boolean\cr
+#'  Whether not-required domains are checked for existence and content of
+#'  required variables
 #'
 #' @export
 #'
@@ -136,7 +151,8 @@ dbCreateSchema <- function(dbToken) {
 #' }
 dbImportOneStudy <- function(dbToken,
                              xptPath,
-                             overWrite = FALSE)
+                             overWrite = FALSE,
+                             checkRequiredVars = TRUE)
 {
   if (dbToken$dbType != 'sqlite')
     stop("Function is only valid to execute for dbType = 'sqlite'")
@@ -144,7 +160,7 @@ dbImportOneStudy <- function(dbToken,
   if (!file.exists(xptPath))
     stop(sprintf('Specified path %s cannot be found', xptPath))
 
-  loadStudyData(dbToken, xptPath, overWrite)
+  loadStudyData(dbToken, xptPath, overWrite, checkRequiredVars)
 }
 
 
@@ -177,6 +193,9 @@ dbImportOneStudy <- function(dbToken,
 #' @param overWrite Mandatory, boolean\cr
 #'   Whether an already existing study in the database may be overwritten by
 #'   newly imported data.
+#' @param checkRequiredVars Mandatory, boolean\cr
+#'  Whether not-required domains are checked for existence and content of
+#'  required variables
 #' @param verbose Mandatory, boolean\cr
 #'   Whether the status of the import shall be continuously written to the
 #'   console for for each processed sub folder.
@@ -218,6 +237,7 @@ dbImportOneStudy <- function(dbToken,
 dbImportStudies <- function(dbToken,
                             xptPathRoot,
                             overWrite = FALSE,
+                            checkRequiredVars = TRUE,
                             verbose = FALSE,
                             logFilePath = NULL)
 {
@@ -248,7 +268,7 @@ dbImportStudies <- function(dbToken,
       statusTxt <-
         tryCatch(
           {
-            loadStudyData(dbToken, pathNameFull, overWrite)
+            loadStudyData(dbToken, pathNameFull, overWrite, checkRequiredVars)
             'OK'
           }
           ,
@@ -441,7 +461,10 @@ loadStudyData <- function(dbToken,
                           xptPath,
                             # Whether already exiting data for actual study shall
                             # be replaced or not:
-                          overWrite = FALSE)
+                          overWrite = FALSE,
+                            # Whether domain is only imported if required columns
+                            # are included
+                          checkRequiredVars = TRUE)
 {
 
   ##############################################################################
@@ -492,40 +515,74 @@ loadStudyData <- function(dbToken,
   ##############################################################################
   # If imported domain data  fulfills minimum requirements, insert data into
   # the database
-  loadDomainData <- function(dtDomain, domain) {
+  loadDomainData <- function(dtDomain, domain, checkRequiredVars) {
     warnTxt <- c()
+    errMsg <- ''
     requiredCols <- sendIGcolumns[TABLE_NAME == domain & REQUIRED == 'Y']$COLUMN_NAME
+    requiredTab <- (nrow(sendIGtables[TABLE_NAME == domain & REQUIRED == 'Y']) == 1)
 
-    # Check for existence of required columns
-    missCols <- setdiff(requiredCols, names(dtDomain))
-    if (length(missCols) != 0)
-      stop(sprintf('Imported domain %s misses variable(s): %s', domain, missCols))
-
-    # Check STUDYID column (for other domains than TS)
+    # Do checks for other domains than TS (these are already done for TS)
     if (domain != 'TS') {
-      studyIdDomain <- unique(dtDomain$STUDYID)
-      if (typeof(studyIdDomain) != 'character' | studyIdDomain == '')
-        stop(sprintf('Imported domain %s misses a study ID value', domain))
-      else if (length(studyIdDomain) != 1)
-        stop(sprintf('Imported domain %s contains more than one STUDYID value', domain))
-      if (studyIdDomain != studyId)
-        stop(sprintf('Imported domain %s contains another STUDYID value than TS', domain))
+      if (nrow(dtDomain) == 0)
+        errMsg <- sprintf('Domain %s is empty', domain)
+      else  # Check existence of studyid var
+        if (! 'STUDYID' %in% names(dtDomain))
+          errMsg <- sprintf('Domain %s misses a STUDYID variable',
+                            domain)
+        else {
+          #  Check STUDYID column
+          studyIdDomain <- as.character(unique(dtDomain$STUDYID))
+          if ('' %in% studyIdDomain | NA %in% studyIdDomain) {
+            errMsg <- sprintf('Domain %s misses a study ID value in one or more rows',
+                              domain)
+          }
+          else if (length(studyIdDomain) != 1) {
+            errMsg <- sprintf('Domain %s contains more than one distinct STUDYID value',
+                              domain)
+          } else if (studyIdDomain != studyId) {
+            errMsg <- sprintf('Domain %s contains another STUDYID value than TS',
+                              domain)
+        }
+      }
     }
 
-    # Check for correct value of col DOMAIN
-    if ('DOMAIN' %in% names(dtDomain)) {
-      domainvalue <- unique(dtDomain$DOMAIN)
-      if (length(domainvalue) != 1 | domainvalue != domain )
-        stop(sprintf('Imported domain %s contains a DOMAIN value different from domain name', domain))
+    if (errMsg == '' &
+        (checkRequiredVars | requiredTab ) ) {
+      # Check for required column condtions
+      #  - always for required domains and option for other domains
+
+      # Check for existence of required columns
+      missCols <- setdiff(requiredCols, names(dtDomain))
+      if (length(missCols) != 0)
+        errMsg <- sprintf('Domain %s misses variable(s): %s',
+                          domain, missCols)
+      else
+        # Check for correct value of col DOMAIN
+        if ('DOMAIN' %in% names(dtDomain)) {
+          domainvalue <- unique(dtDomain$DOMAIN)
+          if (length(domainvalue) != 1 | domainvalue != domain )
+            errMsg <- sprintf('Domain %s contains a DOMAIN value different from domain name',
+                              domain)
+        }
+    }
+
+    if (errMsg != '') {
+      # An error has been identified
+      # - if it's in a required domain, report as an error
+      # - else report as a warning
+      if (requiredTab)
+        stop(errMsg)
+      else
+        return(paste0(errMsg, ' (skipped)'))
     }
 
     # Check if imported table contains columns not in the database table
     extraCols <- setdiff(names(dtDomain), dbListFields(dbToken, domain))
     if (length(extraCols) != 0) {
       # delete additional columns from imported data
-      data.table::set(dtDomain,, extraCols, NULL)
+      data.table::set(dtDomain, extraCols, NULL)
       warnTxt <- c(warnTxt,
-                   sprintf('Additional columns in imported domain %s has been ignored: %s',
+                   sprintf('Additional columns in domain %s has been ignored: %s',
                            domain, paste(extraCols, collapse=',')))
     }
 
@@ -564,12 +621,20 @@ loadStudyData <- function(dbToken,
   fileTS <- stringr::str_match(filesAll, stringr::regex('ts.xpt', ignore_case = TRUE))
     dtTS <- importXptFile(fileTS[!is.na(fileTS)], 'TS')
 
+  # Check it's not empty
+  if (nrow(dtTS) == 0)
+    stop('TS domain is empty')
+
+  # Check existence of studyid var
+  if (! 'STUDYID' %in% names(dtTS))
+    stop('TS domain misses a STUDYID variable')
+
   # Get studyid and check if it's unique
-  studyId <- unique(dtTS$STUDYID)
-  if (typeof(studyId) != 'character' | studyId == '')
-    stop('TS domain misses a STUDYID value')
+  studyId <- as.character(unique(dtTS$STUDYID))
+  if ('' %in% studyId | NA %in% studyId)
+    stop('TS domain misses a STUDYID value in one or more rows')
   else if (length(studyId) != 1)
-    stop('TS domain contains more than one STUDYID value')
+    stop('TS domain contains more than one distinct STUDYID value')
 
   # Check if study already exists in the database
   studyExists <- (genericQuery(dbToken, 'select count(1) as n from ts where studyid = :1', studyId)$n != 0)
@@ -602,9 +667,13 @@ loadStudyData <- function(dbToken,
         }
         # Import data from xpt file and load into the database
         domain <- toupper(strsplit(file, '\\.')[[1]][1])
-        dt <- importXptFile(file, domain)
+        if (domain == 'TS')
+          # TS has already been imported
+          dt <- dtTS
+        else
+          dt <- importXptFile(file, domain)
         loadWarnings <- c(loadWarnings,
-                          loadDomainData(dt, domain))
+                          loadDomainData(dt, domain, checkRequiredVars))
       }
     }
     ,

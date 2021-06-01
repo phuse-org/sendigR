@@ -5,7 +5,7 @@
 \title{Import SEND study data in SAS xport format into a SEND database from a single
 study folder}
 \usage{
-dbImportOneStudy(dbToken, xptPath, overWrite = FALSE)
+dbImportOneStudy(dbToken, xptPath, overWrite = FALSE, checkRequiredVars = TRUE)
 }
 \arguments{
 \item{dbToken}{Mandatory\cr
@@ -14,9 +14,13 @@ Token for the open database connection (see \code{\link{initEnvironment}}).}
 \item{xptPath}{Mandatory, character\cr
 Location of the SAS xport files}
 
-\item{overWrite}{Mandatory, boolean, default = FALSE\cr
+\item{overWrite}{Mandatory, boolean\cr
 Whether an already existing study in the database may be overwritten by
 newly imported data.}
+
+\item{checkRequiredVars}{Mandatory, boolean\cr
+Whether not-required domains are checked for existence and content of
+required variables}
 }
 \description{
 Check each of the SAS xpt file located in the specified folder - import
@@ -25,33 +29,45 @@ open database.
 }
 \details{
 These requirements to the content of the folder must be fulfilled:
-\itemize{
+\enumerate{
 \item The folder must contain some SAS xport files named
 \code{[send domain].xpt} - the case of the file names doesn't care
 \item A minimum set of required domain files must be included:
 \code{ts.xpt}, \code{tx.xpt}, \code{dm.xpt}.
 \item Each xpt file must contain one data table with same name as the file
 name - i.e. a send domain name.
+\item Each xpt file must contain a non-empty STUDYID value in each row equal
+to the value of TS.STUDYID.
 \item Each xpt file must contain a set of required column(s).\cr
 In general it's (where relevant for the different kinds of domains):\cr
 \code{STUDYID, DOMAIN, --SEQ, USUBJID, --TESTCD, --TEST,--ORRES, --ORRESU,
    --STRESC, --STRESN, --STRESU}
-\item Each xpt file must contain a non-empty STUDYID value equal to the
-value of TS.STUDYID.
+\item The DOMAIN variable must contain the name of the actual domain in
+all rows
 }
+
+The last two requirements are checked for the required domains in all cases.
+For other domains, these two requirements are only checked if parameter
+\code{checkRequiredVars = TRUE}.\cr
 
 If an error is detected, the import and load of data is canceled, and further
 execution is aborted (i.e. error message is written to the console).\cr
 These error situations are checked and reported:
 \itemize{
-\item The requirements described above are not fulfilled.
+\item Any of the requirements 1 to 3 are not fulfilled or any of the
+following requirements are not fulfilled for one of the required domains
 \item A study with the same value if STUDYID exists in the database and
 parameter \code{overWrite = FALSE}.
 }
 
+If one of the requirements 4 to 6 are not fulfilled for a not-required
+domain, this domain is excluded from the import. These kinds of issues are
+reported as one warning message to the console when data has been loaded.\cr
+
 Some non-critical issues, which doesn't prohibit data to be loaded to the
 database may be detected. These are reported as one warning message to the
-console when data has been loaded.\cr
+console when data has been loaded (together with eventual warning messages
+for skipped domains).\cr
 These non-critical issues are checked and reported:
 \itemize{
 \item The study folder contains one or more xpt file(s) with names(s) not
