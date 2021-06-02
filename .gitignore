@@ -14,7 +14,10 @@ sysParameters*.R
 /datasets
 /SEND_DATASETS
 /database
-sendDashboard.ini
+#sendDashboard.ini
 /ignore
 /metadata
-/test_data
+#/test_data
+
+# shiny folders
+/rsconnect
