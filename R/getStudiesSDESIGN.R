@@ -143,12 +143,11 @@ getStudiesSDESIGN <- function(dbToken,
   }
 
   if (msgCol != '') {
-    # Check SDESIGN value for uncertainty for each extracted row.
-
     # Get values of codelist DESIGN from CDISC CT
     ctDESIGN<-getCTCodListValues(dbToken, "DESIGN")
 
-    # Verify if SEX is within the SEX code list
+    # Check SDESIGN value for uncertainty for each extracted row.
+    # I.e is missing or not a vlaid CT value
     tsSDESIGN[, MSG :=  ifelse(! (toupper(SDESIGN) %in% ctDESIGN),
                                ifelse(is.na(SDESIGN),
                                      'SDESIGN: TS parameter SDESIGN is missing',

@@ -166,9 +166,8 @@ getStudiesSTSTDTC <- function(dbToken,
   }
 
   if (msgCol != '') {
-    # Check STSTDTC value for uncertainty for each extracted row.
-
-    # Verify if SEX is within the SEX code list
+    # Check STSTDTC value for uncertainty for each extracted row,
+    # i.e. is missing or has invalid ISO8601 format
     tsSTSTDTC[, MSG :=  ifelse(is.na(parsedate::parse_iso_8601(STSTDTC)),
                                                 ifelse(is.na(STSTDTC),
                                                        'STSTDTC: TS parameter STSTDTC is missing',
