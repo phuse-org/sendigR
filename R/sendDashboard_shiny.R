@@ -893,17 +893,17 @@ execSendDashboard <- function(dbToken) {
       tableData <- merge(tableData, tissueCounts, on='MISPEC')
 
       tableData['%MISPEC'] <- tableData$N / tableData$Animals.In.MISPEC
-      tableData['%MI'] <- tableData$N / numAnimalsMI
+      #tableData['%MI'] <- tableData$N / numAnimalsMI
 
 
       tableData['%MISPEC'] <- sapply(tableData['%MISPEC'],
                                      function(x) scales::percent(x,
                                                                  big.mark = 1,
                                                                  accuracy = 0.2))
-      tableData['%MI'] <- sapply(tableData['%MI'],
-                                 function(x) scales::percent(x,
-                                                             big.mark = 1,
-                                                             accuracy = 0.2))
+      #tableData['%MI'] <- sapply(tableData['%MI'],
+      #                           function(x) scales::percent(x,
+      #                                                       big.mark = 1,
+      #                                                       accuracy = 0.2))
 
 
       tableData <- dplyr::select(tableData, -Animals.In.MISPEC)
