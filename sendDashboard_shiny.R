@@ -518,6 +518,26 @@ execSendDashboard <- function(dbToken) {
     # Control Animal Table ----
 
     output$animals <- DT::renderDataTable(server = T,{
+      
+      title_list <- c("Study Identifier", "Study Start Date", "Study Design", "Control Type", 
+                      "Unique Subject Identifier", "Subject Reference Start Date/Time", 
+                      "Age in Days", "Sex", "Species", "Strain", "Route of Administration",
+                      "No age message", "Not valid message")
+      
+      if (input$INCL_UNCERTAIN==TRUE) {
+        title_list <- c(title_list, "Uncertain Message")
+      }
+      
+      
+      headerCallback <- c(
+        "function(thead, data, start, end, display){",
+        sprintf("  var tooltips = [%s];", toString(paste0("'", title_list, "'"))),
+        "  for(var i = 1; i <= tooltips.length; i++){",
+        "    $('th:eq('+i+')',thead).attr('title', tooltips[i-1]);",
+        "  }",
+        "}"
+      )
+      
       animal_df <- animalList()
       # make last column as date
 
@@ -557,6 +577,7 @@ execSendDashboard <- function(dbToken) {
           scrollY = TRUE,
           scrollX=TRUE,
           pageLength = 10,
+          headerCallback= DT::JS(headerCallback),
           #columnDefs = list(list(className = "dt-center", targets = "_all")),
           initComplete = DT::JS(
             "function(settings, json) {",
