@@ -160,6 +160,16 @@ execSendDashboard <- function(dbToken) {
                  #             timeFormat="%Y-%m",
                  #             dragRange=TRUE),
 ##### Date Range, Design, Route, Species, Strain, Sex, Uncertain ----
+                htmltools::br(),
+                shiny::actionButton("refreshData", "Generate/Update Data",
+                                    style = "background-color:#FFFFFF;
+                                            color:#E31616;
+                                            border-color:#BEBEBE;
+                                            border-style:solid;
+                                            border-width:1px;
+                                            border-radius:5%;
+                                            font-weight:bold;
+                                            font-size:18px;"),
                  shiny::dateRangeInput("STSTDTC",
                                 "Select Study Start Date Range:",
                                 start = minStudyStartDate,
@@ -228,7 +238,7 @@ execSendDashboard <- function(dbToken) {
                                'Include uncertain rows',
                                value = FALSE),
 
-                 shiny::actionButton("refreshData", "Generate/Update Data"),
+                 
                  htmltools::br()
 
         )
@@ -1423,7 +1433,6 @@ execSendDashboard <- function(dbToken) {
     })
 
     output$bw_agg_tab_render <- DT::renderDataTable(server = T,{
-      # req(input$refreshData)
       tableData <- BW_agg_table()
       
       
