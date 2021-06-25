@@ -45,9 +45,9 @@
 #'   a vector or a list of multiple strings.
 #' @param exclusively  Mandatory, boolean.
 #'   \itemize{
-#'     \item TRUE: Include studies only for studies with no other study design
-#'   then included in \code{studyDesignFilter}.
-#'     \item FALSE: Include animals for all studies with study design matching
+#'     \item TRUE: Include studies only for studies with no other study
+#' design(s) than included in \code{studyDesignFilter}.
+#'     \item FALSE: Include all studies with study design matching
 #'   \code{studyDesignFilter}.
 #'   }
 #' @param inclUncertain Mandatory, boolean.\cr
@@ -61,9 +61,11 @@
 #' @return The function returns a data.table with columns:
 #'   \itemize{
 #'   \item STUDYID       (character)
-#'   \item Additional columns contained in the \code{studyList} table (if such an input
-#'   table is given)
-#'   \item SDESIGN       (character)
+#'   \item Additional columns contained in the \code{studyList} table (if such
+#' an input table is given)
+#'   \item SDESIGN       (character)\cr
+#' If multiple TSPARMCD 'SDESIGN' values are extratced for a studies, all the
+#' values are merged into a comma separated string.
 #'   \item UNCERTAIN_MSG (character)\cr
 #' Included when parameter \code{inclUncertain=TRUE}.\cr
 #' Contains indication of whether STSTDTC is missing of has wrong
@@ -88,7 +90,6 @@
 #' \dontrun{
 #' GetStudyListSDESIGN(myDbToken, 'PARALLEL')
 #' }
-
 
 getStudiesSDESIGN <- function(dbToken,
                               studyList=NULL,
@@ -130,7 +131,8 @@ getStudiesSDESIGN <- function(dbToken,
 
   if (studyListIncl) {
     # Limit to the set of studies given as input
-    tsSDESIGN<-data.table::merge.data.table(tsSDESIGN, studyList[,list(STUDYID)], by='STUDYID')
+    tsSDESIGN<-data.table::merge.data.table(tsSDESIGN, studyList[,list(STUDYID)],
+                                            by='STUDYID')
   }
 
   # Check if a message column for uncertainties shall be included
@@ -150,35 +152,75 @@ getStudiesSDESIGN <- function(dbToken,
     # I.e is missing or not a vlaid CT value
     tsSDESIGN[, MSG :=  ifelse(! (toupper(SDESIGN) %in% ctDESIGN),
                                ifelse(is.na(SDESIGN),
-                                     'SDESIGN: TS parameter SDESIGN is missing',
-                                     'SDESIGN: TS parameter SDESIGN does not contain a valid CT value'),
+                                     'TS parameter SDESIGN is missing',
+                                     'TS parameter SDESIGN does not contain a valid CT value'),
                                as.character(NA))]
-    # Rename MSG col to correct name
-    data.table::setnames(tsSDESIGN, 'MSG' ,msgCol)
   }
 
-  if (execFilter) {
-    # Execute filtering
-
-    # Add variable with count of distinct study designs specified per study
-    tsSDESIGN[, `:=` (NUM_SDESIGN = .N), by = STUDYID]
-
-    # Construct the statement to apply the specified design
-    designFilter<-'toupper(SDESIGN) %in% toupper(trimws(studyDesignFilter))'
-    if (exclusively) {
-      designFilter<-paste(designFilter, ' & NUM_SDESIGN==1', sep='')
+  # Save a copy of all the extracted study/designs, add variable
+  # - all SDESIGN values concatenated per study (i.e. combine all TSVAL if TS
+  #   contains multiple rows where TSPARMCD='SDEISGN')
+  # - number of SDESIGN values per study
+  tsSDESIGN_ALL <- data.table::copy(tsSDESIGN)
+  tsSDESIGN_ALL[,`:=`('N_ALL' = .N, 'SDESIGN_ALL' = paste(unlist(list(.SD)), collapse = ',')),
+                 by = c('STUDYID'), .SDcols='SDESIGN'][,'SDESIGN' := NULL]
+  data.table::setnames(tsSDESIGN_ALL, 'SDESIGN_ALL', 'SDESIGN')
+  if (msgCol != '') {
+    # Concatenated non-empty message columns contents per study
+    tsSDESIGN_ALL_MSG <- tsSDESIGN_ALL[!is.na(MSG)]
+    if (nrow(tsSDESIGN_ALL_MSG) != 0) {
+      tsSDESIGN_ALL_MSG[,`:=`('MSG_ALL' = paste(unlist(list(.SD)), collapse = ',')),
+                         by = c('STUDYID'), .SDcols='MSG'][,'MSG' := NULL]
+      # Add concatenated message to complete list of studies/designs
+      tsSDESIGN_ALL <-
+        data.table::merge.data.table(unique(tsSDESIGN_ALL[,'MSG' := NULL]),
+                                     unique(tsSDESIGN_ALL_MSG[,list(STUDYID,
+                                                 MSG = paste0('SDESIGN: ', MSG_ALL))]),
+                         all.x = TRUE)
     }
+  }
+  else
+    # Remove duplicates
+    tsSDESIGN_ALL <- unique(tsSDESIGN_ALL)
+
+  if (execFilter) {
+    # Execute filtering - extract list of studies matching the filter
 
     if (inclUncertain)
       # Include condition for inclusion of identified uncertain rows
-      designFilter<-paste(paste("(", designFilter), ") | ! is.na(UNCERTAIN_MSG)")
+      foundStudies0 <- tsSDESIGN[toupper(SDESIGN) %in% toupper(trimws(studyDesignFilter))
+                                 | ! is.na(MSG),
+                                 c('STUDYID')]
+    else
+      # Include condition for inclusion of identified uncertain rows
+      foundStudies0 <- tsSDESIGN[toupper(SDESIGN) %in% toupper(trimws(studyDesignFilter)),
+                                 c('STUDYID')]
 
-    # Build the statement to extract studies fulfilling the condition(s) and execute
-    foundStudies <- eval(parse(text=paste0('tsSDESIGN[',designFilter,']')))
-    foundStudies[,NUM_SDESIGN := NULL]
+    # Add variable with count of distinct study designs specified per study
+    foundStudies0[, `:=` ('N' = .N), by = 'STUDYID']
+    # Join with total list of extracted studies
+    foundStudies <- data.table::merge.data.table(tsSDESIGN_ALL, unique(foundStudies0),
+                                                 by = 'STUDYID')
+
+
+    if (exclusively) {
+      # Only include rows for found studies where number of found SDESIGN values
+      # matches the total number of SDESIGN values from TS
+      filter <- 'N == N_ALL'
+      if (inclUncertain)
+        filter <- paste0(filter, ' | !is.na(MSG)')
+      foundStudies <- foundStudies[eval(parse(text = filter))]
+    }
+    # Remove temp columns
+    foundStudies[,`:=` ('N' = NULL, 'N_ALL' = NULL)]
   }
   else
-     foundStudies <- tsSDESIGN
+     foundStudies <- tsSDESIGN_ALL[,'N_ALL' := NULL]
+
+  if (msgCol != '')
+    # Rename MSG col to correct name
+    data.table::setnames(foundStudies, 'MSG' ,msgCol)
+
 
   if (studyListIncl) {
     # Merge the list of extracted studies with the input set of studies to keep
@@ -196,8 +238,7 @@ getStudiesSDESIGN <- function(dbToken,
 
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
-STUDYID <- NULL
-NUM_SDESIGN <- SDESIGN <- NULL
+ SDESIGN <- NULL
 
 
 

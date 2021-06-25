@@ -29,9 +29,9 @@ a vector or a list of multiple strings.}
 
 \item{exclusively}{Mandatory, boolean.
 \itemize{
-\item TRUE: Include studies only for studies with no other study design
-then included in \code{studyDesignFilter}.
-\item FALSE: Include animals for all studies with study design matching
+\item TRUE: Include studies only for studies with no other study
+design(s) than included in \code{studyDesignFilter}.
+\item FALSE: Include all studies with study design matching
 \code{studyDesignFilter}.
 }}
 
@@ -48,9 +48,11 @@ confidently decided for an animal.}
 The function returns a data.table with columns:
 \itemize{
 \item STUDYID       (character)
-\item Additional columns contained in the \code{studyList} table (if such an input
-table is given)
-\item SDESIGN       (character)
+\item Additional columns contained in the \code{studyList} table (if such
+an input table is given)
+\item SDESIGN       (character)\cr
+If multiple TSPARMCD 'SDESIGN' values are extratced for a studies, all the
+values are merged into a comma separated string.
 \item UNCERTAIN_MSG (character)\cr
 Included when parameter \code{inclUncertain=TRUE}.\cr
 Contains indication of whether STSTDTC is missing of has wrong

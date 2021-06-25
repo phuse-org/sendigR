@@ -57,39 +57,59 @@ test_that('01 - No input study list, no filtering',
                  getExpected('expect01')[,NOT_VALID_MSG := as.character(NOT_VALID_MSG)])
   })
 
-test_that('02 - No input study list, specified filter',
+test_that('02 - No input study list, specified one filter value',
   {
-    # 1a - One filter value, do not include uncertain rows
+    # 1a - Do not include uncertain rows, include all matching studies
     expect_equal(data.table::setkey(getStudiesSDESIGN(db,
                                                       studyDesignFilter = 'PARALLEL',
+                                                      exclusively = FALSE,
                                                       inclUncertain = FALSE),
                                     STUDYID),
                  getExpected('expect02_1')[is.na(UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL])
 
     # 1b - Verify inclUncertain is FALSE as default
     expect_equal(data.table::setkey(getStudiesSDESIGN(db,
+                                                      exclusively = FALSE,
                                                       studyDesignFilter = 'PARALLEL'),
                                     STUDYID),
                  getExpected('expect02_1')[is.na(UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL])
 
-    # 2 - Include uncertain rows
+    # 2 - Include uncertain rows, include all matching studies
     expect_equal(data.table::setkey(getStudiesSDESIGN(db,
                                                       studyDesignFilter = 'PARALLEL',
+                                                      exclusively = FALSE,
                                                       inclUncertain = TRUE),
                                     STUDYID),
                  getExpected('expect02_1'))
 
-    # 3 - Multiple filter values
+    # 3a - Do not include uncertain rows, include exclusive set of matching studies
     expect_equal(data.table::setkey(getStudiesSDESIGN(db,
-                                                      studyDesignFilter = c('CROSSOVER', 'DOSE ESCALATION','PARALLEL'),
+                                                      studyDesignFilter = 'PARALLEL',
+                                                      exclusively = TRUE,
                                                       inclUncertain = FALSE),
+                                    STUDYID),
+                 getExpected('expect02_3')[is.na(UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL])
+
+    # 3b - Verify exclusive is TRUE as default
+    expect_equal(data.table::setkey(getStudiesSDESIGN(db,
+                                                      studyDesignFilter = 'PARALLEL',
+                                                      inclUncertain = FALSE),
+                                    STUDYID),
+                 getExpected('expect02_3')[is.na(UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL])
+
+    # 4 - Include uncertain rows, include exclusive set of matching studies
+    expect_equal(data.table::setkey(getStudiesSDESIGN(db,
+                                                      studyDesignFilter = 'PARALLEL',
+                                                      exclusively = TRUE,
+                                                      inclUncertain = TRUE),
                                     STUDYID),
                  getExpected('expect02_3'))
 
-    # 4 - Parameter noFilterReportUncertain have no influence of inclusion of unceratin rows
+    # 5 - Parameter noFilterReportUncertain have no influence of inclusion of uncertain rows
     #   a - Do not include uncertain rows
     expect_equal(data.table::setkey(getStudiesSDESIGN(db,
                                                       studyDesignFilter = 'PARALLEL',
+                                                      exclusively = FALSE,
                                                       inclUncertain = FALSE,
                                                       noFilterReportUncertain = TRUE),
                                     STUDYID),
@@ -97,14 +117,33 @@ test_that('02 - No input study list, specified filter',
     #   b - Include uncertain rows
     expect_equal(data.table::setkey(getStudiesSDESIGN(db,
                                                       studyDesignFilter = 'PARALLEL',
+                                                      exclusively = FALSE,
                                                       inclUncertain = TRUE,
                                                       noFilterReportUncertain = FALSE),
                                     STUDYID),
                  getExpected('expect02_1'))
   })
 
-#### ADDE TEST FOR param exclusively
+  test_that('03 - No input study list, specified multiple filter values',
+  {
+    # 4 - include all matching studies
+    expect_equal(data.table::setkey(getStudiesSDESIGN(db,
+                                                      studyDesignFilter = c('CROSSOVER', 'PARALLEL'),
+                                                      exclusively = FALSE,
+                                                      inclUncertain = FALSE),
+                                    STUDYID),
+                 getExpected('expect03_1'))
 
+    # 4 - include all matching studies
+    expect_equal(data.table::setkey(getStudiesSDESIGN(db,
+                                                      studyDesignFilter = c('CROSSOVER', 'PARALLEL'),
+                                                      exclusively = TRUE,
+                                                      inclUncertain = FALSE),
+                                    STUDYID),
+                 getExpected('expect03_2'))
+
+
+  })
 
 #
 #
