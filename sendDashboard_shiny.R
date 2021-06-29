@@ -160,6 +160,13 @@ execSendDashboard <- function(dbToken) {
     )
     return(headerCallback)
   }
+  
+  # JavaScript code for cllick
+  click_jscode <- '
+Shiny.addCustomMessageHandler("mymessage", function(message) {
+  document.getElementById(message).click();
+});
+'
 
   # shortcut for find not in
   '%ni%' <- Negate('%in%')
@@ -319,6 +326,8 @@ execSendDashboard <- function(dbToken) {
     # that particular domain.
 
     shinydashboard::dashboardBody(
+      
+      htmltools::tags$head(tags$script(HTML(click_jscode))),
       # shiny::fluidRow(
       #   column(12,
                # tabBox(
@@ -523,8 +532,7 @@ execSendDashboard <- function(dbToken) {
 ##### AnimalList ----
     # Get the list of studies and animals based on new/changed filter criterion 
     animalList<-shiny::eventReactive(
-      {input$refreshData
-      input$refreshData_02}, {
+      input$refreshData, {
 
       # print(c(as.character(input$STSTDTC[1]),
       #       as.character(input$STSTDTC[2]),
@@ -543,6 +551,11 @@ execSendDashboard <- function(dbToken) {
                                 input$STRAIN,
                                 input$SEX,
                                 input$INCL_UNCERTAIN)
+    })
+    
+    # when click on upper left (generate) button, this will click bottom left button
+    shiny::observeEvent(input$refreshData_02, {
+      session$sendCustomMessage("mymessage", "refreshData")
     })
 
     # findings <- reactive({ MiFindings(animalList(), input$MISPEC) })
@@ -1085,19 +1098,7 @@ execSendDashboard <- function(dbToken) {
       )
     })
 
-    observeEvent(input$refreshData, {
-      tab <- lb_table_to_show()
-      print(colnames(tab))
-      print("LB_tooltip")
-      print(LB_tooltip)
-      LB_tooltip_list <- match_tooltip(LB_tooltip, tab)
-      print(LB_tooltip_list)
-      LB_headerCallback <- tooltipCallback(tooltip_list = LB_tooltip_list)
-      print(LB_headerCallback)
-
-    })
     
-
     ###### output datatable for LB individual table ----
     output$lb_subj <- DT::renderDataTable(server = T,{
       tab <- lb_table_to_show()
