@@ -127,6 +127,41 @@ execSendDashboard <- function(dbToken) {
   bw_col_names_selected <- c('STUDYID','USUBJID','BWTEST','BWSTRESN'
                              ,'BWSTRESU','VISITDY')
 
+  # load named vector for all column and description
+  base::load("column_toolip.RData")
+  # this will load following named vectors
+  # control_animal_tooltip
+  # MI_tooltip
+  # LB_tooltip
+  # BW_tooltip
+  # MI_agg_tooltip
+  # LB_agg_tooltip
+  # BW_agg_tooltip
+  
+  #domain_tooltip is the named vector contain all column name and description
+  #datatable is the table will be shown to UI side
+  match_tooltip <- function(domain_tooltip, datatable) {
+    index <- which(names(domain_tooltip) %in% colnames(datatable))
+    tooltip_list <- domain_tooltip[index]
+    return(tooltip_list)
+  }
+  
+  #function to create tooltip for column in the table
+  #tooltip_list is the list of column description (returned from match_tooltip function)
+  #to show as hover text on column
+  tooltipCallback <- function(tooltip_list) {
+    headerCallback <- c(
+      "function(thead, data, start, end, display){",
+      sprintf("  var tooltips = [%s];", toString(paste0("'", tooltip_list, "'"))),
+      "  for(var i = 1; i <= tooltips.length; i++){",
+      "    $('th:eq('+i+')',thead).attr('title', tooltips[i-1]);",
+      "  }",
+      "}"
+    )
+    return(headerCallback)
+  }
+
+  # shortcut for find not in
   '%ni%' <- Negate('%in%')
 
 ########### UI #######
@@ -161,15 +196,15 @@ execSendDashboard <- function(dbToken) {
                  #             dragRange=TRUE),
 ##### Date Range, Design, Route, Species, Strain, Sex, Uncertain ----
                 htmltools::br(),
-                shiny::actionButton("refreshData", "Generate/Update Data",
-                                    style = "background-color:#FFFFFF;
-                                            color:#E31616;
-                                            border-color:#BEBEBE;
-                                            border-style:solid;
-                                            border-width:1px;
-                                            border-radius:5%;
-                                            font-weight:bold;
-                                            font-size:18px;"),
+                shiny::actionButton("refreshData_02", "Generate/Update Data",
+                  style = "background-color:#FFFFFF;
+                  color:#E31616;
+                  border-color:#BEBEBE;
+                  border-style:solid;
+                  border-width:1px;
+                  border-radius:5%;
+                  font-weight:bold;
+                  font-size:18px;"),
                  shiny::dateRangeInput("STSTDTC",
                                 "Select Study Start Date Range:",
                                 start = minStudyStartDate,
@@ -226,6 +261,7 @@ execSendDashboard <- function(dbToken) {
                              "Select Sex:",
                              availableSex,
                              selected='M'),
+                             
 
                  # TODO: Get phase of study working.
                  #
@@ -233,13 +269,20 @@ execSendDashboard <- function(dbToken) {
                  #                           "Select phase of study:",
                  #                           availablePhases)
 
-
+ 
                  shiny::checkboxInput('INCL_UNCERTAIN',
                                'Include uncertain rows',
                                value = FALSE),
-
-                 
-                 htmltools::br()
+                shiny::actionButton("refreshData", "Generate/Update Data",
+                                    style = "background-color:#FFFFFF;
+                                            color:#E31616;
+                                            border-color:#BEBEBE;
+                                            border-style:solid;
+                                            border-width:1px;
+                                            border-radius:5%;
+                                            font-weight:bold;
+                                            font-size:18px;"), 
+                htmltools::br()
 
         )
 
@@ -479,7 +522,9 @@ execSendDashboard <- function(dbToken) {
 
 ##### AnimalList ----
     # Get the list of studies and animals based on new/changed filter criterion 
-    animalList<-shiny::eventReactive(input$refreshData, {
+    animalList<-shiny::eventReactive(
+      {input$refreshData
+      input$refreshData_02}, {
 
       # print(c(as.character(input$STSTDTC[1]),
       #       as.character(input$STSTDTC[2]),
@@ -518,25 +563,7 @@ execSendDashboard <- function(dbToken) {
     # Control Animal Table ----
 
     output$animals <- DT::renderDataTable(server = T,{
-      
-      title_list <- c("Study Identifier", "Study Start Date", "Study Design", "Control Type", 
-                      "Unique Subject Identifier", "Subject Reference Start Date/Time", 
-                      "Age in Days", "Sex", "Species", "Strain", "Route of Administration",
-                      "No age message", "Not valid message")
-      
-      if (input$INCL_UNCERTAIN==TRUE) {
-        title_list <- c(title_list, "Uncertain Message")
-      }
-      
-      
-      headerCallback <- c(
-        "function(thead, data, start, end, display){",
-        sprintf("  var tooltips = [%s];", toString(paste0("'", title_list, "'"))),
-        "  for(var i = 1; i <= tooltips.length; i++){",
-        "    $('th:eq('+i+')',thead).attr('title', tooltips[i-1]);",
-        "  }",
-        "}"
-      )
+     
       
       animal_df <- animalList()
       # make last column as date
@@ -545,7 +572,10 @@ execSendDashboard <- function(dbToken) {
       animal_df <- animal_df %>% dplyr::mutate_if(is.character,as.factor)
 
       # cols <- c('STUDYID','USUBJID','ROUTE','SPECIES','STRAIN','SEX','TCNTRL','SDESIGN')
-
+# find the column label to show on hover
+      tooltip_list <- match_tooltip(control_animal_tooltip, animal_df)
+      headerCallback <- tooltipCallback(tooltip_list = tooltip_list)
+      
       animal_df <- DT::datatable(
         animal_df,
         class = "cell-border stripe",
@@ -837,7 +867,9 @@ execSendDashboard <- function(dbToken) {
     output$mi_subj <- DT::renderDataTable(server = T,{
       tab <- table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
-
+      # find tooltip list
+      MI_tooltip_list <- match_tooltip(MI_tooltip, tab)
+      headerCallback <- tooltipCallback(tooltip_list = MI_tooltip_list)
       tab <- DT::datatable(tab,
                            filter = list(position = 'top'),
                            options = list(
@@ -860,6 +892,7 @@ execSendDashboard <- function(dbToken) {
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
+                             headerCallback= DT::JS(headerCallback),
                              #columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -947,6 +980,11 @@ execSendDashboard <- function(dbToken) {
 
     output$mi_agg_tab <- DT::renderDataTable(server = T,{
       tableData <- MI_agg_table()
+      
+      
+      MI_agg_tooltip_list <- match_tooltip(MI_agg_tooltip, tableData)
+      headerCallback <- tooltipCallback(tooltip_list = MI_agg_tooltip_list)
+      
 
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
@@ -966,6 +1004,7 @@ execSendDashboard <- function(dbToken) {
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
+                             headerCallback= DT::JS(headerCallback),
                              columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -1046,11 +1085,26 @@ execSendDashboard <- function(dbToken) {
       )
     })
 
+    observeEvent(input$refreshData, {
+      tab <- lb_table_to_show()
+      print(colnames(tab))
+      print("LB_tooltip")
+      print(LB_tooltip)
+      LB_tooltip_list <- match_tooltip(LB_tooltip, tab)
+      print(LB_tooltip_list)
+      LB_headerCallback <- tooltipCallback(tooltip_list = LB_tooltip_list)
+      print(LB_headerCallback)
+
+    })
+    
 
     ###### output datatable for LB individual table ----
     output$lb_subj <- DT::renderDataTable(server = T,{
       tab <- lb_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character, as.factor)
+      
+      LB_tooltip_list <- match_tooltip(LB_tooltip, tab)
+      LB_headerCallback <- tooltipCallback(tooltip_list = LB_tooltip_list)
 
       tab <- DT::datatable(
         tab,
@@ -1070,6 +1124,7 @@ execSendDashboard <- function(dbToken) {
           scrollY = TRUE,
           scrollX = TRUE,
           pageLength = 25,
+         headerCallback= DT::JS(LB_headerCallback),
           #columnDefs = list(list(className = "dt-center", targets = "_all")),
           initComplete = DT::JS(
             "function(settings, json) {",
@@ -1178,6 +1233,11 @@ execSendDashboard <- function(dbToken) {
     
     output$lb_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- LB_agg_table()
+      
+      LB_agg_tooltip_list <- match_tooltip(LB_agg_tooltip, tableData)
+      headerCallback <- tooltipCallback(tooltip_list = LB_agg_tooltip_list)
+      
+      
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
@@ -1194,6 +1254,7 @@ execSendDashboard <- function(dbToken) {
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
+                             headerCallback= DT::JS(headerCallback),
                              columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -1393,6 +1454,9 @@ execSendDashboard <- function(dbToken) {
     output$bw_subj <- DT::renderDataTable(server = T,{
       tab <- bw_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
+      
+      BW_tooltip_list <- match_tooltip(BW_tooltip, tab)
+      headerCallback <- tooltipCallback(tooltip_list = BW_tooltip_list)
 
       tab <- DT::datatable(tab,
                            filter = list(position = 'top'),
@@ -1410,6 +1474,7 @@ execSendDashboard <- function(dbToken) {
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
+                             headerCallback= DT::JS(headerCallback),
                              #columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
@@ -1453,9 +1518,12 @@ execSendDashboard <- function(dbToken) {
                                                   includeUncertain =input$INCL_UNCERTAIN))
     })
 
+    ###### BW aggregate table render ----
     output$bw_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- BW_agg_table()
       
+      BW_agg_tooltip_list <- match_tooltip(BW_agg_tooltip, tableData)
+      headerCallback <- tooltipCallback(tooltip_list = BW_agg_tooltip_list)
       
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
@@ -1473,6 +1541,7 @@ execSendDashboard <- function(dbToken) {
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
+                             headerCallback= DT::JS(headerCallback),
                              columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
