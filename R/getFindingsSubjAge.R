@@ -277,11 +277,11 @@ getFindingsSubjAge<-function(dbToken,
                                   # We have and DM age in days:
                                   ifelse(!is.na(dy),
                                          #  --DY is populated and used for calculation:
-                                         AGEDAYS_DM + ifelse(dy>0, dy-1, dy),
+                                         DM_AGEDAYS + ifelse(dy>0, dy-1, dy),
                                          ifelse(!is.na(parsedate::parse_iso_8601(DTC)),
                                                 #  --DTC is populated and used for calculation instead:
                                                 ifelse(!is.na(parsedate::parse_iso_8601(RFSTDTC)),
-                                                       AGEDAYS_DM + as.numeric(parsedate::parse_iso_8601(dtc) - parsedate::parse_iso_8601(RFSTDTC)),
+                                                       DM_AGEDAYS + as.numeric(parsedate::parse_iso_8601(dtc) - parsedate::parse_iso_8601(RFSTDTC)),
                                                        # No RFSTDTC has been populated
                                                        as.numeric(NA)),
                                                 # Neither --DY nor --DTC is populated
@@ -303,7 +303,7 @@ getFindingsSubjAge<-function(dbToken,
                                             as.character(NA))))][,`:=` (
                                               dy = NULL,
                                               dtc = NULL,
-                                              AGEDAYS_DM = NULL,
+                                              DM_AGEDAYS = NULL,
                                               RFSTDTC = NULL
                                             )]
     }
@@ -320,7 +320,7 @@ getFindingsSubjAge<-function(dbToken,
             animalList[,list(STUDYID,
                              USUBJID,
                              RFSTDTC,
-                             AGEDAYS_DM = AGEDAYS,
+                             DM_AGEDAYS,
                              NO_AGE_MSG)],
             by=c("STUDYID", "USUBJID"))
     # Calculate the age of each subject at finding time
@@ -371,7 +371,7 @@ getFindingsSubjAge<-function(dbToken,
           #    then pool level age cannot be decided
           #  - set message if AGEDAYS cannot be decided
           #  - set message if RFSTDTC cannot be decided at pool level
-          poolAges[,`:=` (AGEDAYS_DM =
+          poolAges[,`:=` (DM_AGEDAYS =
                             ifelse(is.na(MIN_AGE),
                                            as.numeric(NA),
                                            ifelse(MIN_AGE == MAX_AGE,
@@ -485,6 +485,6 @@ getFindingsSubjAge<-function(dbToken,
 
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
-AGEDAYS <- AGEDAYS_DM <- MAX_AGE <- MIN_AGE <- NULL
+AGEDAYS <- DM_AGEDAYS <- MAX_AGE <- MIN_AGE <- NULL
 MSG_AGEDAYS <- MSG_RFSTDTC <- NO_AGE_MSG <- NULL
 dtc <- dy <- NULL

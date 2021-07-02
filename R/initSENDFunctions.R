@@ -212,6 +212,8 @@ initEnvironment<-function(dbType=NULL,
   ))
 }
 
+################################################################################
+
 #' Disconnect from the open database.
 #'
 #' Close database session and disconnect from open database.
@@ -229,6 +231,8 @@ disconnectDB <- function(dbToken) {
   # Execute the disconnect function specific for the current database type.
   dbToken$disconnectDB(dbToken$dbHandle)
 }
+
+################################################################################
 
 #' Execute database query and returns fetched rows.
 #'
@@ -266,6 +270,38 @@ genericQuery <- function(dbToken, queryString, queryParams=NULL) {
                                                   queryString),
                               queryParams))
 }
+
+################################################################################
+
+#' Get labels for columns in a data.table
+#'
+#' @param table Mandatory\cr
+#'  The data.table to get column labels for
+#'
+#' @return A named vector with each column/label pair. If a column have no
+#'   defined label, the label is 'na'
+#' @export
+#'
+#' @examples
+#'
+#' \dontrun{
+#' colLabels = getTabColLabels(controlAnimalsAll)
+#' }
+getTabColLabels <- function(table) {
+  tabCols <- data.table::setnames(data.table::as.data.table(colnames(table), keep.rownames=T), 'V1', 'COLUMN_NAME')
+  tabCols$seq <- seq.int(nrow(tabCols))
+  dt <- data.table::setorder(
+    data.table::merge.data.table(tabCols,
+                                    data.table::rbindlist(list(unique(sendIGcolumns[,list(COLUMN_NAME, LABEL)]),
+                                                               additionalColumns),
+                                                          use.names = TRUE, fill = TRUE),
+                                    by='COLUMN_NAME',
+                                    all.x = TRUE),'seq')[,list(COLUMN_NAME,
+                                                        LABEL = ifelse(is.na(LABEL), 'na', LABEL))]
+
+  return(setNames(dt$LABEL, dt$COLUMN_NAME))
+}
+
 
 ################################################################################
 ## Helper functions

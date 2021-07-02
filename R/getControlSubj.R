@@ -237,12 +237,12 @@ getControlSubj<-function(dbToken,
   txCtrlSet <- unique(txDmCtrlSet[!is.na(TCNTRL),c('TCNTRL')])
 
   # Calculate age at RFSTDTC
-  txDmCtrlSet[,AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)]
+  txDmCtrlSet[,DM_AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)]
   # If an age has been calculated - convert returned value from function to
   # numeric age in days value - else save returned error message
-  txDmCtrlSet[,`:=` (AGEDAYS=suppressWarnings(as.numeric(AGEDAYStxt)),
-                     NO_AGE_MSG=ifelse(!grepl("^[0-9]+$",AGEDAYStxt),
-                                       AGEDAYStxt,
+  txDmCtrlSet[,`:=` (DM_AGEDAYS=suppressWarnings(as.numeric(DM_AGEDAYStxt)),
+                     NO_AGE_MSG=ifelse(!grepl("^[0-9]+$",DM_AGEDAYStxt),
+                                       DM_AGEDAYStxt,
                                        as.character(NA)))]
 
 
@@ -303,7 +303,7 @@ getControlSubj<-function(dbToken,
   return(prepareFinalResults(dmCtrlSet, names(studyList), c('TCNTRL',
                                                             'USUBJID',
                                                             'RFSTDTC',
-                                                            'AGEDAYS')))
+                                                            'DM_AGEDAYS')))
 }
 
 ################################################################################
@@ -311,4 +311,4 @@ getControlSubj<-function(dbToken,
 TCNTRL <- NULL
 USUBJID <- NULL
 STUDYID <- NULL
-AGE <- AGEDAYStxt <- AGETXT <- AGEU <- BRTHDTC <- RFSTDTC <- NULL
+AGE <- DM_AGEDAYStxt <- AGETXT <- AGEU <- BRTHDTC <- RFSTDTC <- NULL
