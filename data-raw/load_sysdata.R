@@ -40,10 +40,10 @@ CDISCctCodeValues = merge(ctAll[!is.na(CodelistCode),
 ## Labels for columns not part of SEND IG added to tables by the package
 
 additionalColumns <- data.table::rbindlist(list(
-  # TS/TX parameters
+  # TS/TX parameters - exclude parameters which is equal to SEND IG column names
   merge(setnames(ctAll[CodelistCode == ctAll[CDISCSubmissionValue == 'STSPRMCD']$Code, list(Code, CDISCSubmissionValue)], 'CDISCSubmissionValue', 'COLUMN_NAME'),
         setnames(ctAll[CodelistCode == ctAll[CDISCSubmissionValue == 'STSPRM']$Code, list(Code, CDISCSubmissionValue)], 'CDISCSubmissionValue', 'LABEL'),
-        by = 'Code')[,`:=` (Code = NULL)],
+        by = 'Code')[,`:=` (Code = NULL)][!(COLUMN_NAME %in% sendIGcolumns$COLUMN_NAME)],
   # Additional sendigR specific columns
   as.data.table(readxl::read_xls("data-raw/sendigR_columns.xls",
                                  sheet='sendigR_columns'))),

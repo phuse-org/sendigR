@@ -288,18 +288,41 @@ genericQuery <- function(dbToken, queryString, queryParams=NULL) {
 #' colLabels = getTabColLabels(controlAnimalsAll)
 #' }
 getTabColLabels <- function(table) {
+  # Extract column names from input table and add sequence to ensure the output is sorted in the same order
   tabCols <- data.table::setnames(data.table::as.data.table(colnames(table), keep.rownames=T), 'V1', 'COLUMN_NAME')
   tabCols$seq <- seq.int(nrow(tabCols))
+  # Extract the labels for the set of columns from the lists of
+  #  - SEND IG columns
+  #  - additional sendigR specific columns
+  #  where column names are equal
   dt <- data.table::setorder(
     data.table::merge.data.table(tabCols,
-                                    data.table::rbindlist(list(unique(sendIGcolumns[,list(COLUMN_NAME, LABEL)]),
-                                                               additionalColumns),
-                                                          use.names = TRUE, fill = TRUE),
-                                    by='COLUMN_NAME',
-                                    all.x = TRUE),'seq')[,list(COLUMN_NAME,
-                                                        LABEL = ifelse(is.na(LABEL), 'na', LABEL))]
+                                 data.table::rbindlist(list(unique(sendIGcolumns[,list(COLUMN_NAME, LABEL)]),
+                                                            additionalColumns[is.na(REGEXP)]),
+                                                       use.names = TRUE, fill = TRUE),
+                                 by='COLUMN_NAME',
+                                 all.x = TRUE),'seq')[,list(COLUMN_NAME,
+                                                            LABEL = ifelse(is.na(LABEL),
+                                                                           'na',
+                                                                           LABEL))]
+  # For columns where an input column does not match any column/label pair,
+  # check if they match any of the column/label pairs defined by regular expression
+  naCols <- dt[LABEL == 'na', which=TRUE]
+  if (length(naCols) > 0) {
+    regexCols <- additionalColumns[REGEXP == 'Y']
+    if (length(regexCols) > 0)
+      for (i in 1:length(naCols)) {
+        for (j in 1:nrow(regexCols)) {
+          if (grepl(paste0('^',regexCols[j]$COLUMN_NAME,'$'), dt[naCols[i]]$COLUMN_NAME)) {
+            dt[naCols[i]]$LABEL <- regexCols[j]$LABEL
+            break
+          }
+        }
+      }
+  }
 
-  return(setNames(dt$LABEL, dt$COLUMN_NAME))
+
+  return(stats::setNames(dt$LABEL, dt$COLUMN_NAME))
 }
 
 
@@ -471,8 +494,7 @@ prepareFinalResults <- function(dt, srcCols, addCols) {
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
 db_type <- NULL
-# CDISCctCodeLists <- CodeList <- NULL
-# CDISCctCodeValues <- CodelistCode <- NULL
 CodeList <- NULL
 CodelistCode <- NULL
+LABEL <- REGEXP <- NULL
 
