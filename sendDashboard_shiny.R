@@ -127,27 +127,27 @@ execSendDashboard <- function(dbToken) {
   bw_col_names_selected <- c('STUDYID','USUBJID','BWTEST','BWSTRESN'
                              ,'BWSTRESU','VISITDY')
 
-  # load named vector for all column and description
-  base::load("column_toolip.RData")
-  # this will load following named vectors
-  # control_animal_tooltip
-  # MI_tooltip
-  # LB_tooltip
-  # BW_tooltip
-  # MI_agg_tooltip
-  # LB_agg_tooltip
-  # BW_agg_tooltip
-  
+  # # load named vector for all column and description
+  base::load("\\\\FSDKHQ001\\dep402$\\000-4284\\DATA MANAGEMENT\\@Data Science\\BioCelerate\\sendDashboard\\column_toolip.RData")
+  # # this will load following named vectors
+  # # control_animal_tooltip
+  # # MI_tooltip
+  # # LB_tooltip
+  # # BW_tooltip
+  # # MI_agg_tooltip
+  # # LB_agg_tooltip
+  # # BW_agg_tooltip
+
   #domain_tooltip is the named vector contain all column name and description
   #datatable is the table will be shown to UI side
-  match_tooltip <- function(domain_tooltip, datatable) {
-    index <- which(names(domain_tooltip) %in% colnames(datatable))
-    tooltip_list <- domain_tooltip[index]
-    return(tooltip_list)
-  }
-  
+  # match_tooltip <- function(domain_tooltip, datatable) {
+  #   index <- which(names(domain_tooltip) %in% colnames(datatable))
+  #   tooltip_list <- domain_tooltip[index]
+  #   return(tooltip_list)
+  # }
+
   #function to create tooltip for column in the table
-  #tooltip_list is the list of column description (returned from match_tooltip function)
+  #tooltip_list is the list of column description (returned from getTabColLabels function)
   #to show as hover text on column
   tooltipCallback <- function(tooltip_list) {
     headerCallback <- c(
@@ -160,7 +160,7 @@ execSendDashboard <- function(dbToken) {
     )
     return(headerCallback)
   }
-  
+
   # JavaScript code for cllick
   click_jscode <- '
 Shiny.addCustomMessageHandler("mymessage", function(message) {
@@ -268,7 +268,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                              "Select Sex:",
                              availableSex,
                              selected='M'),
-                             
+
 
                  # TODO: Get phase of study working.
                  #
@@ -276,7 +276,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                  #                           "Select phase of study:",
                  #                           availablePhases)
 
- 
+
                  shiny::checkboxInput('INCL_UNCERTAIN',
                                'Include uncertain rows',
                                value = FALSE),
@@ -288,7 +288,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                             border-width:1px;
                                             border-radius:5%;
                                             font-weight:bold;
-                                            font-size:18px;"), 
+                                            font-size:18px;"),
                 htmltools::br()
 
         )
@@ -326,8 +326,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # that particular domain.
 
     shinydashboard::dashboardBody(
-      
-      htmltools::tags$head(tags$script(HTML(click_jscode))),
+
+      htmltools::tags$head(shiny::tags$script(shiny::HTML(click_jscode))),
       # shiny::fluidRow(
       #   column(12,
                # tabBox(
@@ -359,7 +359,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                                                                availableOrgans,
                                                                                selected='KIDNEY'),
                                                             shiny::uiOutput('mi_findings_filter')),
-          
+
                                        shiny::column(width = 6, offset = 1,
                                               DT::dataTableOutput("findingsTable"),
                                               htmltools::br(),
@@ -530,7 +530,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
 
 ##### AnimalList ----
-    # Get the list of studies and animals based on new/changed filter criterion 
+    # Get the list of studies and animals based on new/changed filter criterion
     animalList<-shiny::eventReactive(
       input$refreshData, {
 
@@ -552,7 +552,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                 input$SEX,
                                 input$INCL_UNCERTAIN)
     })
-    
+
     # when click on upper left (generate) button, this will click bottom left button
     shiny::observeEvent(input$refreshData_02, {
       session$sendCustomMessage("mymessage", "refreshData")
@@ -576,19 +576,17 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # Control Animal Table ----
 
     output$animals <- DT::renderDataTable(server = T,{
-     
-      
+
+
       animal_df <- animalList()
       # make last column as date
 
       #convert character to factor to make filter work
       animal_df <- animal_df %>% dplyr::mutate_if(is.character,as.factor)
 
-      # cols <- c('STUDYID','USUBJID','ROUTE','SPECIES','STRAIN','SEX','TCNTRL','SDESIGN')
-# find the column label to show on hover
-      tooltip_list <- match_tooltip(control_animal_tooltip, animal_df)
-      headerCallback <- tooltipCallback(tooltip_list = tooltip_list)
-      
+      # Associate table header with labels
+      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(animal_df))
+
       animal_df <- DT::datatable(
         animal_df,
         class = "cell-border stripe",
@@ -615,7 +613,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
           #                  ),
           #   text = 'Download'
           # )),
-          
+
           #colReorder = TRUE,
           scrollY = TRUE,
           scrollX=TRUE,
@@ -629,11 +627,11 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
           ))
       animal_df
       })
-    
-    
+
+
     ##### Control animal download button ----
     # output$download_filter_animal <- shiny::downloadHandler(
-    #   filename = function() { 
+    #   filename = function() {
     #     paste0("Filtered Control Animal", ".csv")
     #   },
     #   content = function(file) {
@@ -641,19 +639,19 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #   utils::write.csv(animal, file)
     #   })
     # call module to download csv file
-    
-   
+
+
     shiny::callModule(download_csv, id = "download_filter_animal",
                       data = animalList,
                       filename='filtered_Control_Animal')
-    
+
     # call module to download rds data
     shiny::callModule(download_rds, id = "download_filter_animal_rds",
                       data = animalList,
                       filename='filtered_Control_Animal')
-    
-    
-    
+
+
+
 
     ########################### MI TAB #######################################
 
@@ -668,9 +666,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # defined in sendDB.R
 
     ###### MI findings table ----
-    
-   
-    
+
+
+
     # get Mifindings whole table
    MiFindings_filter_table <- shiny::reactive({
      shiny::req(input$STRAIN)
@@ -678,25 +676,25 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
      df
    })
 
-    
+
     # render mi findings filter
     output$mi_findings_filter <- shiny::renderUI({
-      
+
       df <- MiFindings_filter_table()
       df_route <- unique(df[['ROUTE']])
       df_species <- unique(df[['SPECIES']])
       df_strain <- unique(df[['STRAIN']])
       df_sex <- unique(df[['SEX']])
-      
+
       # addUIDep(shiny::selectizeInput("SPECIES",label='Select Species:',
       #                                choices= GetUniqueSpecies(),
       #                                selected='RAT',
       #                                multiple=TRUE,
       #                                options=list(plugins=list('drag_drop','remove_button'))))
-      
+
       shiny::fluidRow(
-        
-        
+
+
                      addUIDep(shiny::selectizeInput("mi_route",
                                          "Select Route:",
                                          choices=df_route,
@@ -704,8 +702,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button')
                                          ))),
-        
-    
+
+
                     addUIDep(shiny::selectizeInput("mi_species",
                                          "Select Species:",
                                          df_species,
@@ -713,8 +711,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button'))
                                          )),
-        
-       
+
+
                      addUIDep( shiny::selectizeInput("mi_strain",
                                          "Select Strain:",
                                          df_strain,
@@ -723,8 +721,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                          options=list(plugins=list('drag_drop','remove_button'))
                                          )
                      ),
-        
-   
+
+
                    addUIDep(shiny::selectizeInput("mi_sex",
                                          "Select Sex:",
                                          df_sex,
@@ -733,15 +731,15 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                          options=list(plugins=list('drag_drop','remove_button'))
                                          ))
       )
-      
-      
+
+
     })
 
     findings_table_after_filter <- shiny::reactive({
       shiny::req(input$STRAIN)
-      
+
       finalFindings <- MiFindings_filter_table()
-     
+
       finalFindings <- finalFindings %>% dplyr::filter(ROUTE %in% input$mi_route,
                                                        STRAIN %in% input$mi_strain,
                                                        SPECIES %in% input$mi_species,
@@ -751,7 +749,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         dplyr::distinct(STUDYID, USUBJID, MISTRESC) %>% # only one organ, finding per animal (input errors cause duplications)
         dplyr::count(MISTRESC) %>%
         dplyr::arrange(-n)
-      
+
       # findings = n / total animals * 100
       # round to 2 decimal places and
       # sort by descending.
@@ -759,19 +757,19 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       findingsCount$Incidence <- paste0(round(findingsCount$Incidence, 2), '%')
       findingsCount <- dplyr::select(findingsCount, -n)
       findingsCount
-      
+
     })
-    
-    
+
+
     output$findingsTable <- DT::renderDataTable(server = T,{
 
       # shiny::req(input$STRAIN)
       # findings <- MiFindings(animalList(), input$MISPEC)
       # findings <- findings %>% dplyr::mutate_if(is.character,as.factor)
       findings <- findings_table_after_filter()
-      findings_name <- paste0("MI Findings_",input$MISPEC) 
-      findings_name_tab <- paste0("MI Findings: ",input$MISPEC) 
-      
+      findings_name <- paste0("MI Findings_",input$MISPEC)
+      findings_name_tab <- paste0("MI Findings: ",input$MISPEC)
+
       findings <- DT::datatable(findings,
         class = "cell-border stripe",
         # filter = list(position = 'top'),
@@ -880,9 +878,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     output$mi_subj <- DT::renderDataTable(server = T,{
       tab <- table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
-      # find tooltip list
-      MI_tooltip_list <- match_tooltip(MI_tooltip, tab)
-      headerCallback <- tooltipCallback(tooltip_list = MI_tooltip_list)
+
+      # Associate table header with labels
+      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tab))
       tab <- DT::datatable(tab,
                            filter = list(position = 'top'),
                            options = list(
@@ -915,64 +913,64 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tab
 
     })
-    
-    
+
+
     ####### Download MI individual table csv and rds ----
-    
+
     shiny::callModule(download_csv, id = "download_MI_individual",
                       data=table_to_show, filename="MI_Individual_Table")
-    
+
     shiny::callModule(download_rds, id="download_MI_individual_rds",
                       data=table_to_show, filename="MI_Individual_Table")
-    
+
     MI_agg_table <- shiny::reactive({
       animal_list <- animalList()
       mi_sub <- MI_subject()
-      
-      
+
+
       # TODO: The columns to display/aggregate
       # should be chosen by the user, however
       # I think the sendigR package always
       # return certain columns, e.g., EPOCH
       grpByCols <- c('SPECIES', 'STRAIN', 'ROUTE', 'SEX',
                      'MISPEC', 'MISTRESC')
-      
+
       domainData <- merge(animal_list,
                           mi_sub,
                           on = c('STUDYID', 'USUBJID'),
                           allow.cartesian = TRUE)
-      
+
       # normalize results by the number of
       # animals that have data in the MI domain
       numAnimalsMI <- nrow(unique(domainData[,c('USUBJID', 'STUDYID')]))
-      
+
       domainData$MISPEC <- toupper(domainData$MISPEC)
       domainData$MISTRESC <- toupper(domainData$MISTRESC)
-      
+
       # replace Null values with NORMAL
       #domainData$MISTRESC[domainData$MISTRESC == ''] <- 'NORMAL'
       remove_index <- which(domainData$MISTRESC=='')
       domainData <- domainData[-remove_index,]
-      
+
       # TODO: Do we account for animals that do not have
       # MI (or maybe other domains?) for which there is
       # no record? I know sometimes if result is normal
       # they will not get recorded.  Maybe this could be
       # a flag to toggle.
-      
+
       shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
                                             includeUncertain=input$INCL_UNCERTAIN))
-      
+
       # number of animals with observations b MISPEC
       tissueCounts <- domainData %>%
         dplyr::group_by(MISPEC) %>%
         dplyr::summarise(Animals.In.MISPEC = dplyr::n_distinct(USUBJID))
       tableData <- merge(tableData, tissueCounts, on='MISPEC')
-      
+
       tableData['%MISPEC'] <- tableData$N / tableData$Animals.In.MISPEC
       tableData['%MI'] <- tableData$N / numAnimalsMI
-      
-      
+
+
       tableData['%MISPEC'] <- sapply(tableData['%MISPEC'],
                                      function(x) scales::percent(x,
                                                                  big.mark = 1,
@@ -981,30 +979,29 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                  function(x) scales::percent(x,
                                                              big.mark = 1,
                                                              accuracy = 0.2))
-      
-      
+
+
       tableData <- dplyr::select(tableData, -Animals.In.MISPEC)
+
       tableData
     })
-    
-    
-    
+
+
+
    ###### MI aggregate table ----
 
     output$mi_agg_tab <- DT::renderDataTable(server = T,{
       tableData <- MI_agg_table()
-      
-      
-      MI_agg_tooltip_list <- match_tooltip(MI_agg_tooltip, tableData)
-      headerCallback <- tooltipCallback(tooltip_list = MI_agg_tooltip_list)
-      
+
+      # Associate table header with labels
+      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
 
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtip",
                              # buttons = c("csv", "excel", "pdf"),
-                             # 
+                             #
                              # buttons=list(list(
                              #   extend = 'collection',
                              #   buttons = list(list(extend='csv',
@@ -1012,7 +1009,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                              #                  list(extend='excel',
                              #                       filename = 'MI Aggregate Table')),
                              #   text = 'Download')),
-                             
+
                              #colReorder = TRUE,
                              scrollY = TRUE,
                              scrollX=TRUE,
@@ -1031,7 +1028,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     ####### Download MI aggregate table csv and rds ----
     shiny::callModule(download_csv, id = "download_MI_agg",
                       data=MI_agg_table, filename="MI_Aggregate_Table")
-    
+
     shiny::callModule(download_rds, id="download_MI_agg_rds",
                       data=MI_agg_table, filename="MI_Aggregate_Table")
 
@@ -1098,14 +1095,14 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       )
     })
 
-    
+
     ###### output datatable for LB individual table ----
     output$lb_subj <- DT::renderDataTable(server = T,{
       tab <- lb_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character, as.factor)
-      
-      LB_tooltip_list <- match_tooltip(LB_tooltip, tab)
-      LB_headerCallback <- tooltipCallback(tooltip_list = LB_tooltip_list)
+
+      # Associate table header with labels
+      LB_headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tab))
 
       tab <- DT::datatable(
         tab,
@@ -1113,7 +1110,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         options = list(
           dom = "lfrtip",
           # buttons = c("csv", "excel", "pdf"),
-          
+
           # buttons=list(list(
           #   extend = 'collection',
           #   buttons = list(list(extend='csv',
@@ -1138,14 +1135,14 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tab
 
     })
-    
+
     ####### Download LB individual table csv and rds ----
     shiny::callModule(download_csv, id = "download_LB_individual",
                       data=lb_table_to_show, filename="LB_Individual_Table")
-    
+
     shiny::callModule(download_rds, id="download_LB_individual_rds",
                       data=lb_table_to_show, filename="LB_Individual_Table")
-    
+
 
     # LB displays a histogram
     # and probability density
@@ -1157,20 +1154,20 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # of displaying as normal
     # or log-normal distribution.
 
-    
+
     # output$labTestHist <- shiny::renderPlot({
-    # 
+    #
     #   # LiverFindings() gets
     #   # lab test results for
     #   # a user-defined LBTESTCD
-    # 
+    #
     #   labResults <- LiverFindings(animalList(), input$LBTESTCD)
-    # 
-    # 
+    #
+    #
     #   # change the distbution
     #   # function depending on
     #   # user input
-    # 
+    #
     #   if (input$dist == 'norm') {
     #     labResults$distribution <- labResults$LBSTRESC_TRANS
     #     dist <- MASS::fitdistr(labResults$distribution, 'normal')
@@ -1180,11 +1177,11 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #     dist <- MASS::fitdistr(labResults$distribution, 'lognormal')
     #     fun <- stats::dlnorm
     #   }
-    # 
+    #
     #   # plot the probability
     #   # distribution and
     #   # the pdf
-    # 
+    #
     #   ggplot2::ggplot(labResults) +
     #     ggplot2::geom_histogram(ggplot2::aes(x = distribution, y = ..density..),
     #                    fill = "blue",
@@ -1192,7 +1189,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #     ggplot2::stat_function(fun = fun,
     #                   args = list(mean = dist$estimate[1], sd = dist$estimate[2], log = F),
     #                   color="grey", lwd=1, alpha=0.6)
-    # 
+    #
     # })
 
 
@@ -1205,40 +1202,39 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # user selected x and y
     # axis as liver enzyme
     # responses.
-    
+
     ###### LB aggregate table ----
-    
-    
-    LB_agg_table <- reactive({
+
+
+    LB_agg_table <- shiny::reactive({
       animal_list <- animalList()
       lb_sub <- LB_subject()
-      
-      
-      # 
+
+
+      #
       # df <- sendigR::getFindingsSubjAge(dbToken,findings=lb_sub,animalList = animal_list,
       #                          fromAge = NULL,toAge = NULL,inclUncertain = input$INCL_UNCERTAIN,
       #                          noFilterReportUncertain = TRUE)
-      # 
+      #
       # df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
       #                           sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
       #                           noFilterReportUncertain = TRUE)
-      
+
       domainData <- merge(animal_list, lb_sub, by = c('STUDYID', 'USUBJID'), all=T)
-      
+
       shiny::isolate(tableData <- aggDomain_bw_lb(domainData = domainData, domain = 'lb', input$INCL_UNCERTAIN))
-      
+
       tableData
-      
-      
+
+
     })
-    
+
     output$lb_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- LB_agg_table()
-      
-      LB_agg_tooltip_list <- match_tooltip(LB_agg_tooltip, tableData)
-      headerCallback <- tooltipCallback(tooltip_list = LB_agg_tooltip_list)
-      
-      
+
+      # Associate table header with labels
+      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
+
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
@@ -1262,17 +1258,17 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
       tab <- DT::formatRound(table = tab,columns = c(5,6),digits = 2)
-      
+
       tab
-      
+
     })
-    
-    
+
+
     ####### Download Lb Aggregate table csv and rds ----
-    
+
     shiny::callModule(download_csv, id = "download_LB_agg",
                       data=LB_agg_table, filename="LB_Aggregate_Table")
-    
+
     shiny::callModule(download_rds, id="download_LB_agg_rds",
                       data=LB_agg_table, filename="LB_Aggregate_Table")
 
@@ -1455,9 +1451,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     output$bw_subj <- DT::renderDataTable(server = T,{
       tab <- bw_table_to_show()
       tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
-      
-      BW_tooltip_list <- match_tooltip(BW_tooltip, tab)
-      headerCallback <- tooltipCallback(tooltip_list = BW_tooltip_list)
+
+      # Associate table header with labels
+      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tab))
 
       tab <- DT::datatable(tab,
                            filter = list(position = 'top'),
@@ -1485,23 +1481,23 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tab
 
     })
-    
-    
+
+
     ####### Download BW_Individual_Table csv and rds ----
-    
+
     shiny::callModule(download_csv, id = "download_BW",
                       data=bw_table_to_show, filename="BW_Individual_Table")
-    
+
     shiny::callModule(download_rds, id="download_BW_rds",
                       data=bw_table_to_show, filename="BW_Individual_Table")
 
     ###### BW aggregate table ----
-    
+
     BW_agg_table <- shiny::reactive({
       animal_list <- animalList()
       bw_sub <- BW_subject()
-      
-      
+
+
       #get age at finding
       shiny::isolate(df <- sendigR::getFindingsSubjAge(dbToken = .sendigRenv$dbToken,
                                                        findings=bw_sub,
@@ -1509,7 +1505,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                                        fromAge = NULL,toAge = NULL,
                                                        inclUncertain = input$INCL_UNCERTAIN,
                                                        noFilterReportUncertain = TRUE))
-      
+
       # df <- sendigR::getSubjSex(dbToken = dbToken, animalList = df,
       #                           sexFilter = NULL,inclUncertain = input$INCL_UNCERTAIN,
       #                           noFilterReportUncertain = TRUE)
@@ -1522,10 +1518,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     ###### BW aggregate table render ----
     output$bw_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- BW_agg_table()
-      
-      BW_agg_tooltip_list <- match_tooltip(BW_agg_tooltip, tableData)
-      headerCallback <- tooltipCallback(tooltip_list = BW_agg_tooltip_list)
-      
+
+      # Associate table header with labels
+      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
+
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
@@ -1549,20 +1545,20 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
       tab <- DT::formatRound(table = tab,columns = c(3,4),digits = 2)
-      
+
       tab
-      
+
     })
-    
-    
+
+
     ####### Download BW_Aggregate_Table csv and rds ----
-    
+
     shiny::callModule(download_csv, id = "download_BW_agg",
                       data=BW_agg_table, filename="BW_Aggregate_Table")
-    
+
     shiny::callModule(download_rds, id="download_BW_agg_rds",
                       data=BW_agg_table, filename="BW_Aggregate_Table")
-    
+
 
 
     ##### eDish #############################
@@ -1618,9 +1614,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                             size=4)
 
     })
-    
-    
-    
+
+
+
     filter_criteria <- shiny::reactive({
       filter_selected <- list(
         From=as.character(input$STSTDTC[1]),
@@ -1634,14 +1630,14 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       )
       filter_selected
     })
-    
-    
+
+
     # download all data as RData file
     output$download_all <- shiny::downloadHandler(
       filename <- function(){
         paste0("All_Table_", Sys.Date(),".RData")
       },
-      
+
       content = function(file) {
         Control_Animal <- animalList()
         MI_Findings <- findings_table_after_filter()
@@ -1652,7 +1648,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         BW_Individual <- bw_table_to_show()
         BW_Aggregate <- BW_agg_table()
         Filtered_option <- filter_criteria()
-        
+
         save(Control_Animal,
              MI_Findings,
              MI_Individual,
@@ -1672,9 +1668,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # })
 
   }
-  
-  
-  
+
+
+
 
   ##### Run the application ----
   shiny::shinyApp(ui = ui, server = server)
