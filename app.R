@@ -13,7 +13,7 @@ library(ini)
 # Source functions
 source('https://raw.githubusercontent.com/phuse-org/BioCelerate/c5dd2daf7665a064ecfc015aaee9486f0746f5df/R/sendDB_shiny.R')
 source('https://raw.githubusercontent.com/phuse-org/BioCelerate/429044c36a0697017c77247c9ed3f2184801c660/R/controlFiltering_shiny.R')
-source('https://raw.githubusercontent.com/phuse-org/BioCelerate/c5dd2daf7665a064ecfc015aaee9486f0746f5df/R/sendDashboard_shiny.R')
+source('https://raw.githubusercontent.com/phuse-org/BioCelerate/036a825b70a75dfb173d1f5a094b722cbfe8e9f4/R/sendDashboard_shiny.R')
 source('https://raw.githubusercontent.com/phuse-org/BioCelerate/5913b2251e97cfe7eb6075e935df7a1bbae0e523/R/downloadModule_shiny.R')
 
 # Import parameter file from same folder as program is located
