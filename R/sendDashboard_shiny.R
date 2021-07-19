@@ -128,7 +128,8 @@ execSendDashboard <- function(dbToken) {
                              ,'BWSTRESU','VISITDY')
 
   # # load named vector for all column and description
-  base::load("\\\\FSDKHQ001\\dep402$\\000-4284\\DATA MANAGEMENT\\@Data Science\\BioCelerate\\sendDashboard\\column_toolip.RData")
+  #base::load("\\\\FSDKHQ001\\dep402$\\000-4284\\DATA MANAGEMENT\\@Data Science\\BioCelerate\\sendDashboard\\column_toolip.RData")
+  base::load("column_toolip.RData")
   # # this will load following named vectors
   # # control_animal_tooltip
   # # MI_tooltip
