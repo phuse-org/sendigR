@@ -4,8 +4,6 @@
 ## Expected data is located in: 021_expected_getStudiesSTSTDTC.xls
 ################################################################################
 
-# rootPath <- '//FSDKHQ001/dep402$/000-4284/DATA MANAGEMENT/@Data Science/BioCelerate/sendigR/tests/data/'
-
 #### Prepare for test execution
 rootPath <-  '../data/'
 

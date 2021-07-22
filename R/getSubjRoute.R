@@ -25,8 +25,8 @@
 #'   \item TS - if a distinct TS parameter 'ROUTE' value exists for the study,
 #'   this is included in the output.\cr
 #' }
-# The comparison of route values is done case insensitive.
-#
+#' The comparison of route values is done case insensitive.
+#'
 #' If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
 #' in the output set. These uncertain situations are identified and reported (in
 #' column UNCERTAIN_MSG):
@@ -50,27 +50,27 @@
 #'  A table with the list of animals to process.\cr
 #'  The table must include at least columns named 'STUDYID' and 'USUBJID'.
 #' @param routeFilter  Optional, character.\cr
-#'  The rout of administration value(s) to use as criterion for filtering of the
+#'  The route of administration value(s) to use as criterion for filtering of the
 #'  input data table.\cr
 #'  It can be a single string, a vector or a list of multiple strings.
-#' @param inclUncertain  Mandatory, boolean,.\cr
-#'  Indicates whether animals for which the route cannot be confidently
-#'  identified shall be included or not in the output data table.
-#' @param exclusively Mandatory, boolean.
+#' @param exclusively Mandatory if \code{routeFilter} is non empty, boolean.
 #'   \itemize{
 #'   \item TRUE: Include animals only for studies with no other routes then
 #'   included in \code{routeFilter}.
 #'   \item FALSE: Include animals for all studies with route
 #'   matching \code{routeFilter}.
 #' }
-#' @param matchAll Mandatory, boolean.
+#' @param matchAll Mandatory if \code{routeFilter} is non empty, boolean.
 #'   \itemize{
 #'   \item TRUE: Include animals only for studies with route(s) matching all
 #'   values in \code{routeFilter}.
 #'   \item FALSE: Include animals for all studies with route matching at least
 #'   one value in \code{routeFilter}.
 #' }
-#' @param noFilterReportUncertain Mandatory, boolean\cr
+#' @param inclUncertain  Mandatory if \code{routeFilter} is non empty, boolean,.\cr
+#'  Indicates whether animals for which the route cannot be confidently
+#'  identified shall be included or not in the output data table.
+#' @param noFilterReportUncertain Mandatory if \code{routeFilter} is empty, boolean\cr
 #'  Only relevant if the \code{routeFilter} is empty.\cr
 #'  Indicates if the reason should be included if the route cannot be
 #'  confidently decided for an animal.
@@ -125,9 +125,9 @@
 getSubjRoute <- function(dbToken,
                             animalList,
                             routeFilter = NULL,
-                            inclUncertain = FALSE,
                             exclusively  = FALSE,
                             matchAll = FALSE,
+                            inclUncertain = FALSE,
                             noFilterReportUncertain = TRUE) {
 
   ##################################################################################################################

@@ -9,9 +9,9 @@ getSubjRoute(
   dbToken,
   animalList,
   routeFilter = NULL,
-  inclUncertain = FALSE,
   exclusively = FALSE,
   matchAll = FALSE,
+  inclUncertain = FALSE,
   noFilterReportUncertain = TRUE
 )
 }
@@ -24,15 +24,11 @@ A table with the list of animals to process.\cr
 The table must include at least columns named 'STUDYID' and 'USUBJID'.}
 
 \item{routeFilter}{Optional, character.\cr
-The rout of administration value(s) to use as criterion for filtering of the
+The route of administration value(s) to use as criterion for filtering of the
 input data table.\cr
 It can be a single string, a vector or a list of multiple strings.}
 
-\item{inclUncertain}{Mandatory, boolean,.\cr
-Indicates whether animals for which the route cannot be confidently
-identified shall be included or not in the output data table.}
-
-\item{exclusively}{Mandatory, boolean.
+\item{exclusively}{Mandatory if \code{routeFilter} is non empty, boolean.
 \itemize{
 \item TRUE: Include animals only for studies with no other routes then
 included in \code{routeFilter}.
@@ -40,7 +36,7 @@ included in \code{routeFilter}.
 matching \code{routeFilter}.
 }}
 
-\item{matchAll}{Mandatory, boolean.
+\item{matchAll}{Mandatory if \code{routeFilter} is non empty, boolean.
 \itemize{
 \item TRUE: Include animals only for studies with route(s) matching all
 values in \code{routeFilter}.
@@ -48,7 +44,11 @@ values in \code{routeFilter}.
 one value in \code{routeFilter}.
 }}
 
-\item{noFilterReportUncertain}{Mandatory, boolean\cr
+\item{inclUncertain}{Mandatory if \code{routeFilter} is non empty, boolean,.\cr
+Indicates whether animals for which the route cannot be confidently
+identified shall be included or not in the output data table.}
+
+\item{noFilterReportUncertain}{Mandatory if \code{routeFilter} is empty, boolean\cr
 Only relevant if the \code{routeFilter} is empty.\cr
 Indicates if the reason should be included if the route cannot be
 confidently decided for an animal.}
@@ -93,6 +93,8 @@ is included in the output.\cr
 \item TS - if a distinct TS parameter 'ROUTE' value exists for the study,
 this is included in the output.\cr
 }
+The comparison of route values is done case insensitive.
+
 If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
 in the output set. These uncertain situations are identified and reported (in
 column UNCERTAIN_MSG):

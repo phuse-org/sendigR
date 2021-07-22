@@ -86,8 +86,7 @@
 #'         The calculated age in days of the animal at the reference start day
 #'         - i.e. the age registered in DM.
 #'   \item NO_AGE_MSG    (character)\cr
-#'         Included when parameter \code{inclUncertain=TRUE}.\cr
-#'         Contains the reason if a DM_AGEDAYS couldn't be calculated
+#'         Empty or contains the reason if a DM_AGEDAYS couldn't be calculated
 #'   \item UNCERTAIN_MSG (character)\cr
 #'         Included when parameter \code{inclUncertain=TRUE}.\cr
 #'         Contains the reason for an uncertain animal is NA for rows for
@@ -109,30 +108,34 @@ getControlSubj<-function(dbToken,
 
   ###################################################################################################
   # calculate the age for an animal at the reference start date in DM to days
-  # - returns either the calculated age or a test with reason why the age couldn't be calculated.
+  # - returns either the calculated age or a text with reason why the age couldn't be calculated.
   ###################################################################################################
   calcDMAgeDays<-function(RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU) {
     if (!(RFSTDTC == "" | is.na(RFSTDTC) | BRTHDTC == "" | is.na(BRTHDTC))) {
       # BRTHDTC is populated
-      return(as.numeric(parsedate::parse_iso_8601(RFSTDTC) - parsedate::parse_iso_8601(BRTHDTC)))
-    } else if (!((AGEU == "" | is.na(AGEU)) | ((AGE == "" | is.na(AGE)) & (AGETXT == "" | is.na(AGETXT))))) {
-      ageCalc<-NA
+      if (is.na(parsedate::parse_iso_8601(RFSTDTC)) |  is.na(parsedate::parse_iso_8601(BRTHDTC)))
+        return("DMAnimalAge: RFSTDTC or BRTHDTC is not a valid ISO 8601 date")
+      return(ceiling(as.numeric(parsedate::parse_iso_8601(RFSTDTC) - parsedate::parse_iso_8601(BRTHDTC))))
+    } else if (!(((AGE == "" | is.na(AGE)) & (AGETXT == "" | is.na(AGETXT))))) {
+      ageCalc <- NA
       if (!(AGE == "" | is.na(AGE))) {
-        # AGE is populated
-        ageCalc<-as.numeric(AGE)
-      } else if (grepl("^\\d+-\\d+$", AGETXT)) {
-        # AGETXT is populated - use the mid value for calculation
-        ageCalc<-(as.numeric(stringr::word(AGETXT,1,sep = "-")) + as.numeric(stringr::word(AGETXT,2,sep = "-")))/2
+        ageCalc <- as.numeric(AGE)
+      } else  {
+        # AGETXT is populated
+        if (!grepl("^\\d+-\\d+$", AGETXT))
+          return("DMAnimalAge: AGETXT does not have a valid format (number-number)")
+        # Use the mid value for calculation
+        ageCalc <- (as.numeric(stringr::word(AGETXT,1,sep = "-")) + as.numeric(stringr::word(AGETXT,2,sep = "-")))/2
       }
       # Convert age to number of days:
       if (AGEU=='DAYS') {
-        return(as.character(round(ageCalc)))
+        return(as.character(ceiling(ageCalc)))
       } else if (AGEU=='WEEKS') {
-        return(as.character(round(ageCalc*7)))
+        return(as.character(ceiling(ageCalc*7)))
       } else if (AGEU=='MONTHS') {
-        return(as.character(round(ageCalc*365/12)))
+        return(as.character(ceiling(ageCalc*365/12)))
       } else if (AGEU=='YEARS') {
-        return(as.character(round(ageCalc*365)))
+        return(as.character(ceiling(ageCalc*365)))
       } else {
         # Not supported AGEU - cannot calculate
         return("DMAnimalAge: Not supported or missing AGEU value has been populated")
@@ -149,7 +152,7 @@ getControlSubj<-function(dbToken,
   negModifiers <- c('negative', 'saline', 'peg', 'vehicle', 'citrate',
                     'dextrose', 'water', 'air')
 
-  # Definition of the search words for negative control terms
+  # Definition of the search words for positive control terms
   posModifiers <- c('positive','reference')
 
   # Definition of the search words for common for negative/positive control terms

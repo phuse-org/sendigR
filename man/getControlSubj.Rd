@@ -34,8 +34,7 @@ of whether its a negative control group or not
 The calculated age in days of the animal at the reference start day
 - i.e. the age registered in DM.
 \item NO_AGE_MSG    (character)\cr
-Included when parameter \code{inclUncertain=TRUE}.\cr
-Contains the reason if a DM_AGEDAYS couldn't be calculated
+Empty or contains the reason if a DM_AGEDAYS couldn't be calculated
 \item UNCERTAIN_MSG (character)\cr
 Included when parameter \code{inclUncertain=TRUE}.\cr
 Contains the reason for an uncertain animal is NA for rows for
