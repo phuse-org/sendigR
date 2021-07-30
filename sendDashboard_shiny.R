@@ -671,7 +671,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
     # get Mifindings whole table
    MiFindings_filter_table <- shiny::reactive({
-     shiny::req(input$STRAIN)
+     #shiny::req(input$STRAIN)
      df <- MiFindings_table(animalList(), input$MISPEC)
      df
    })
@@ -736,7 +736,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     })
 
     findings_table_after_filter <- shiny::reactive({
-      shiny::req(input$STRAIN)
+      #shiny::req(input$STRAIN)
 
       finalFindings <- MiFindings_filter_table()
 
@@ -928,6 +928,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       mi_sub <- MI_subject()
 
 
+
       # TODO: The columns to display/aggregate
       # should be chosen by the user, however
       # I think the sendigR package always
@@ -957,7 +958,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # no record? I know sometimes if result is normal
       # they will not get recorded.  Maybe this could be
       # a flag to toggle.
-
+      
+      # filter duplicate
+      domainData <- domainData[!duplicated(domainData, by=c("STUDYID","USUBJID", "MISTRESC", "MISPEC")),]
+      
       shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
                                             includeUncertain=input$INCL_UNCERTAIN))
 
