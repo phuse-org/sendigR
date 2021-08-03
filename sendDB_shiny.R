@@ -338,6 +338,7 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
   aggData <- domainData %>%
     dplyr::group_by_at(grpByCols) %>%
     dplyr::summarize(N = dplyr::n())
+  aggData <- data.table::as.data.table(aggData)
 
   # if include uncertain is not
   # selected, we dont need to calc.
@@ -372,6 +373,7 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
   for(j in seq_along(df)){
     data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
   }
+  df <- data.table::as.data.table(df)
 
   return(df)
 
@@ -406,6 +408,7 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
                        !!sd_result := stats::sd(get(result)),
                        N = dplyr::n())
     agg_tb_certain <- dplyr::relocate(agg_tb_certain,{{result_unit}}, .after = (!!sd_result))
+    agg_tb_certain <- data.table::as.data.table(agg_tb_certain)
     
     return(agg_tb_certain)
   } else if (includeUncertain==T) {
@@ -433,7 +436,7 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
     for(j in seq_along(df)){
       data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
     }
-    
+    df <- data.table::as.data.table(df)
     return(df)
     
   }
