@@ -754,7 +754,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # round to 2 decimal places and
       # sort by descending.
       findingsCount$Incidence <- (findingsCount$n / length(unique(finalFindings$USUBJID))) * 100
-      findingsCount$Incidence <- paste0(round(findingsCount$Incidence, 2), '%')
+      findingsCount$Incidence <- round(findingsCount$Incidence, 2)
       findingsCount <- dplyr::select(findingsCount, -n)
       findingsCount
 
@@ -767,6 +767,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # findings <- MiFindings(animalList(), input$MISPEC)
       # findings <- findings %>% dplyr::mutate_if(is.character,as.factor)
       findings <- findings_table_after_filter()
+      findings$Incidence <- findings$Incidence/100
       findings_name <- paste0("MI Findings_",input$MISPEC)
       findings_name_tab <- paste0("MI Findings: ",input$MISPEC)
 
@@ -806,6 +807,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
             "}")
         ))
+      findings <- DT::formatPercentage(findings, "Incidence", 2)
       findings
 
     })
@@ -923,11 +925,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     shiny::callModule(download_rds, id="download_MI_individual_rds",
                       data=table_to_show, filename="MI_Individual_Table")
 
+    ###### generate MI Aggregate table -------
     MI_agg_table <- shiny::reactive({
       animal_list <- animalList()
       mi_sub <- MI_subject()
-
-
 
       # TODO: The columns to display/aggregate
       # should be chosen by the user, however
@@ -964,30 +965,31 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       
       shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
                                             includeUncertain=input$INCL_UNCERTAIN))
+      tableData[, Incidence:=round(((N/sum(N))*100),2), by=.(SPECIES,STRAIN,ROUTE,MISPEC,SEX)]
 
       # number of animals with observations b MISPEC
-      tissueCounts <- domainData %>%
-        dplyr::group_by(MISPEC) %>%
-        dplyr::summarise(Animals.In.MISPEC = dplyr::n_distinct(USUBJID))
-      tableData <- merge(tableData, tissueCounts, on='MISPEC')
+      # tissueCounts <- domainData %>%
+      #   dplyr::group_by(MISPEC) %>%
+      #   dplyr::summarise(Animals.In.MISPEC = dplyr::n_distinct(USUBJID))
+      # tableData <- merge(tableData, tissueCounts, on='MISPEC')
+      # 
+      # tableData['%MISPEC'] <- tableData$N / tableData$Animals.In.MISPEC
+      # tableData['%MI'] <- tableData$N / numAnimalsMI
+      # 
+      # 
+      # tableData['%MISPEC'] <- sapply(tableData['%MISPEC'],
+      #                                function(x) scales::percent(x,
+      #                                                            big.mark = 1,
+      #                                                            accuracy = 0.2))
+      # tableData['%MI'] <- sapply(tableData['%MI'],
+      #                            function(x) scales::percent(x,
+      #                                                        big.mark = 1,
+      #                                                        accuracy = 0.2))
+      # 
+      # 
+      # tableData <- dplyr::select(tableData, -Animals.In.MISPEC)
 
-      tableData['%MISPEC'] <- tableData$N / tableData$Animals.In.MISPEC
-      tableData['%MI'] <- tableData$N / numAnimalsMI
-
-
-      tableData['%MISPEC'] <- sapply(tableData['%MISPEC'],
-                                     function(x) scales::percent(x,
-                                                                 big.mark = 1,
-                                                                 accuracy = 0.2))
-      tableData['%MI'] <- sapply(tableData['%MI'],
-                                 function(x) scales::percent(x,
-                                                             big.mark = 1,
-                                                             accuracy = 0.2))
-
-
-      tableData <- dplyr::select(tableData, -Animals.In.MISPEC)
-
-      tableData
+      return(tableData)
     })
 
 
@@ -996,6 +998,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
     output$mi_agg_tab <- DT::renderDataTable(server = T,{
       tableData <- MI_agg_table()
+      tableData$Incidence <- tableData$Incidence/100
 
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
@@ -1024,6 +1027,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
+    
+      tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
 
       tab
 
