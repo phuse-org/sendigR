@@ -560,7 +560,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # findings = n / total animals * 100
       # round to 2 decimal places and
       # sort by descending.
+      # denominator here is number of  unique subjects
       findingsCount$Incidence <- (findingsCount$n / length(unique(finalFindings$USUBJID))) * 100
+      # denominator here is total number of findings/incidence
+      #findingsCount$Incidence <- (findingsCount$n / sum(findingsCount$n)) * 100
       findingsCount$Incidence <- round(findingsCount$Incidence, 2)
       findingsCount <- dplyr::select(findingsCount, -n)
       findingsCount
@@ -701,8 +704,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # should be chosen by the user, however
       # I think the sendigR package always
       # return certain columns, e.g., EPOCH
-      grpByCols <- c('SPECIES', 'STRAIN', 'ROUTE', 'SEX',
-                     'MISPEC', 'MISTRESC')
+      grpByCols <- c('MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','MISTRESC')
       domainData <- merge(animal_list,
                           mi_sub,
                           on = c('STUDYID', 'USUBJID'),
@@ -720,13 +722,20 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # a flag to toggle.
       
       # filter duplicate
-      domainData <- domainData[!duplicated(domainData, 
-                                           by=c("STUDYID","USUBJID", "MISTRESC", "MISPEC")),]
+      
+      # domainData <- domainData[!duplicated(domainData, 
+      #                                      by=c("STUDYID","USUBJID", "MISTRESC", "MISPEC")),]
+      
       # apply aggDomain function from sendDB_shiny.R file, this count Incidence
       shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
                                             includeUncertain=input$INCL_UNCERTAIN))
+      
+      tissueCounts <- domainData[, .(Animals.In.MISPEC=length(unique(USUBJID))), by=c('MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE')]
+      
+      
+      tableData <- merge(tableData, tissueCounts, by=c('MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE'))
       # add Incidence variable
-      tableData[, Incidence:=round(((N/sum(N))*100),2), by=.(SPECIES,STRAIN,ROUTE,MISPEC,SEX)]
+      tableData[, Incidence:=round(((N/Animals.In.MISPEC)*100),2)]
       return(tableData)
       })
     
@@ -919,6 +928,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     ###### render LB aggregate table -----
     output$lb_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- LB_agg_table()
+      tableData <- tableData %>% 
+        dplyr::mutate_if(is.character, as.factor)
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
