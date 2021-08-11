@@ -730,18 +730,26 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
                                             includeUncertain=input$INCL_UNCERTAIN))
       
-      tissueCounts <- domainData[, .(Animals.In.MISPEC=length(unique(USUBJID))), by=c('MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE')]
+      # find number of unique subject grouped by 'MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE'
+      tissueCounts <- domainData[, .(Animals.In.MISPEC=length(unique(USUBJID))),
+                                 by=c('MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE')]
       
-      
-      tableData <- merge(tableData, tissueCounts, by=c('MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE'))
-      # add Incidence variable
+      # merge incidence count and unique subject number from tableData and tissueCount table
+      tableData <- merge(tableData, tissueCounts,
+                         by=c('MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE'))
+      # add Incidence variable, Divide number of incidence (N) by number of unique subject (Animal.In.MISPEC)
+      # then multiply by 100
       tableData[, Incidence:=round(((N/Animals.In.MISPEC)*100),2)]
+      #remove Animal.In.MISPEC column from tableData
+      tableData[, Animals.In.MISPEC:=NULL]
       return(tableData)
       })
     
    ###### MI aggregate table ----
     output$mi_agg_tab <- DT::renderDataTable(server = T,{
       tableData <- MI_agg_table()
+      tableData <- tableData %>% 
+        dplyr::mutate_if(is.character, as.factor)
       # DT::formatPercentage() function applied later, function multiply Incidence by 100, 
       # so Incidence divide by 100 here
       tableData$Incidence <- tableData$Incidence/100
