@@ -740,6 +740,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # add Incidence variable, Divide number of incidence (N) by number of unique subject (Animal.In.MISPEC)
       # then multiply by 100
       tableData[, Incidence:=round(((N/Animals.In.MISPEC)*100),2)]
+      # if just want to change the name of the Animals.In.MISPEC column
+      #data.table::setnames(tableData, "Animals.In.MISPEC", "Unique.Subject.Number")
       #remove Animal.In.MISPEC column from tableData
       tableData[, Animals.In.MISPEC:=NULL]
       return(tableData)
@@ -953,7 +955,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
-      tab <- DT::formatRound(table = tab,columns = c(5,6),digits = 2)
+      tab <- DT::formatRound(table = tab,columns = c(8,9),digits = 2)
       tab
       })
 

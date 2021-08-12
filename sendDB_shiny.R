@@ -392,7 +392,7 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
     result_unit <- 'BWORRESU'
     
   } else if (domain=='lb') {
-    grpByCols <- c("LBSPEC","LBTESTCD", "LBTEST","SEX","LBSTRESU")
+    grpByCols <- c( "LBSPEC","SPECIES","STRAIN","SEX","ROUTE","LBTESTCD", "LBTEST","LBSTRESU")
     result <- 'LBSTRESN'
     result_unit <- 'LBSTRESU'
     
