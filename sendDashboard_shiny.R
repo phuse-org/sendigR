@@ -1161,6 +1161,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     BW_agg_table <- shiny::reactive({
       animal_list <- animalList()
       bw_sub <- BW_subject()
+      # remover terminal body weight
+      bw_sub <- bw_sub[BWTESTCD!="TERMBW", ]
       #get age at finding
       shiny::isolate(df <- sendigR::getFindingsSubjAge(dbToken = .sendigRenv$dbToken,
                                                        findings=bw_sub,
@@ -1177,6 +1179,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     ###### BW aggregate table render ----
     output$bw_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- BW_agg_table()
+      tableData <- tableData %>%
+        dplyr::mutate_if(is.character, as.factor)
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
@@ -1192,7 +1196,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
-      tab <- DT::formatRound(table = tab,columns = c(3,4),digits = 2)
+      tab <- DT::formatRound(table = tab,columns = c(6,7),digits = 2)
       tab
       })
     
