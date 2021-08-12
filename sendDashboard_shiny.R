@@ -388,7 +388,11 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                      download_csv_UI('download_BW_agg'),
                                      htmltools::br(),htmltools::br(),
                                      download_rds_UI('download_BW_agg_rds'),
-                                     htmltools::br(),htmltools::br()))),
+                                     htmltools::br(),htmltools::br()),
+                            shiny::tabPanel("Aggregate Plot",
+                                            shiny::uiOutput("bw_table_filter"),
+                                            shiny::actionButton("bw_plot_update", "Generate Plot"),
+                                            shiny::plotOutput("bw_agg_plot")))),
                  shiny::tabPanel("Download",
                                  htmltools::br(),
                                  shiny::downloadButton('download_all', "Download"))
@@ -1205,6 +1209,70 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                       data=BW_agg_table, filename="BW_Aggregate_Table")
     shiny::callModule(download_rds, id="download_BW_agg_rds",
                       data=BW_agg_table, filename="BW_Aggregate_Table")
+    
+    
+    ###### BW Aggregate Plot -----
+    
+    output$bw_table_filter <- shiny::renderUI({
+      df <- BW_agg_table()
+      df_route <- unique(df[['ROUTE']])
+      df_species <- unique(df[['SPECIES']])
+      df_strain <- unique(df[['STRAIN']])
+      
+      shiny::fluidRow(addUIDep(shiny::selectizeInput("bw_route",
+                                                     "Select Route:",
+                                                     choices=df_route,
+                                                     selected=df_route,
+                                                     multiple=FALSE,
+                                                     options=list(plugins=list('drag_drop','remove_button')
+                                                     ))),
+                      addUIDep(shiny::selectizeInput("bw_species",
+                                                     "Select Species:",
+                                                     df_species,
+                                                     selected=df_species,
+                                                     multiple=FALSE,
+                                                     options=list(plugins=list('drag_drop','remove_button'))
+                      )),
+                      addUIDep( shiny::selectizeInput("bw_strain",
+                                                      "Select Strain:",
+                                                      df_strain,
+                                                      selected=df_strain,
+                                                      multiple=FALSE,
+                                                      options=list(plugins=list('drag_drop','remove_button'))
+                      ))
+                      # addUIDep(shiny::selectizeInput("mi_sex",
+                      #                                "Select Sex:",
+                      #                                df_sex,
+                      #                                selected=df_sex,
+                      #                                multiple=TRUE,
+                      #                                options=list(plugins=list('drag_drop','remove_button'))
+                      # ))
+                      )
+    })
+    
+    
+    ###### get filter data for plot ----
+    bw_agg_table_after_filter <- shiny::eventReactive(input$bw_plot_update,{
+      df <- BW_agg_table()
+      df <- df %>% dplyr::filter(ROUTE %in% input$bw_route,
+                                 STRAIN %in% input$bw_strain,
+                                 SPECIES %in% input$bw_species)
+      df
+      
+    })
+    
+    
+    ###### Render BW aggregate plot ---- 
+    
+    output$bw_agg_plot <- shiny::renderPlot({
+      req(input$bw_plot_update)
+      df <- bw_agg_table_after_filter()
+      g <- ggplot(data = df, aes(x=AGEDAYS, y=Mean_BWSTRESN, color=SEX))+
+        geom_point()
+      print(g)
+      
+    })
+    
 
     ##### eDish #############################
 
