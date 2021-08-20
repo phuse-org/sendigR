@@ -146,13 +146,13 @@ getSubjRoute <- function(dbToken,
     }
     else {
       if (! ROUTE %in% ctROUTE) {
-        if (!is.null(ALL_ROUTE_EX) & ! ALL_ROUTE_EX %in% ctROUTE)
+        if (!is.null(ALL_ROUTE_EX) && ! ALL_ROUTE_EX %in% ctROUTE)
           msgArr<-c(msgArr, 'EXROUTE does not contain a valid CT value')
         else if (!is.null(ALL_ROUTE_TS) & ! ALL_ROUTE_TS %in% ctROUTE)
           msgArr<-c(msgArr, 'TS parameter ROUTE does not contain a valid CT value')
       }
-      if (! is.null(ALL_ROUTE_EX) &
-          ! is.null(ALL_ROUTE_TS) &
+      if (! is.null(ALL_ROUTE_EX) &&
+          ! is.null(ALL_ROUTE_TS) &&
           ! TRUE %in% (ALL_ROUTE_EX %in% ALL_ROUTE_TS))
         msgArr<-c(msgArr, 'Mismatch in values of TS parameter ROUTE and EXROUTE')
     }
@@ -231,13 +231,14 @@ getSubjRoute <- function(dbToken,
   # Limit the set to the animals included in the input set of animal
   #  - do only keep the calculated columns from allAnimals
   allAnimals <-
-    data.table::merge.data.table(allAnimals[,c('STUDYID',
-                                               'USUBJID',
-                                               'ALL_ROUTE_EX',
-                                               'NUM_ROUTE_EX')],
-                                 animalList[,c('STUDYID', 'USUBJID')],
-                                 by = c('STUDYID', 'USUBJID'),
-                                 all.y = TRUE)
+
+      data.table::merge.data.table(allAnimals[,c('STUDYID',
+                                                 'USUBJID',
+                                                 'ALL_ROUTE_EX',
+                                                 'NUM_ROUTE_EX')],
+                                   animalList[,c('STUDYID', 'USUBJID')],
+                                   by = c('STUDYID', 'USUBJID'),
+                                   all.y = TRUE)
 
 
 
@@ -261,7 +262,7 @@ getSubjRoute <- function(dbToken,
   studyRoutes[,`:=`(ALL_ROUTE_TS = c(.SD)), by = STUDYID, .SDcols='ROUTE_TS']
 
   # Add calculated columns to the list of animals
-  #  - do only keep the calculated columns from studyRoute
+  #  - do only keep the calculated columns and remove potential duplicates from studyRoute
   allAnimals <-
     data.table::merge.data.table(allAnimals,
                                  unique(studyRoutes[,c('STUDYID',
@@ -273,13 +274,17 @@ getSubjRoute <- function(dbToken,
 
   #  Add variables
   #    - ROUTE with the first non-empty single value from EX or TS
-  allAnimals[,`:=` (ROUTE=ifelse(NUM_ROUTE_EX > 1,
-                                 as.character(NA),
+  allAnimals[,`:=` (ROUTE=ifelse(is.na(NUM_ROUTE_EX),
+                                 # No EXROUTE found
+                                 ifelse(NUM_ROUTE_TS == 1,
+                                        as.character(ALL_ROUTE_TS),
+                                        # No or multiple TSROUTEs found
+                                        as.character(NA)),
+                                 # One or more EXROUTEs found
                                  ifelse(NUM_ROUTE_EX == 1,
                                         as.character(ALL_ROUTE_EX),
-                                        ifelse(NUM_ROUTE_TS == 1,
-                                               as.character(ALL_ROUTE_TS),
-                                               as.character(NA)))))]
+                                        # Multiple ESROUTE(s) found
+                                        as.character(NA))))]
 
 
   # Check if a message column for uncertainties shall be included
@@ -352,7 +357,7 @@ getSubjRoute <- function(dbToken,
   # Merge the list of extracted animals with the input set of animals to keep
   # any additional columns from the input table
   foundAnimals <- data.table::merge.data.table(animalList,
-                                               foundAnimals,
+                                               unique(foundAnimals),
                                                by=c('STUDYID', 'USUBJID'))
 
   # Do final preparation of set of found animals and return

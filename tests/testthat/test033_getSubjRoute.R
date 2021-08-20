@@ -36,14 +36,14 @@ test_that('01 - No filtering',
   animalListIn0 <- data.table::copy(animalListIn1)
   data.table::setnames(animalListIn0, 'UNCERTAIN_MSG' ,'NOT_VALID_MSG')
 
-  # 1 - Report uncertainties
-  expect_equal(data.table::setkeyv(getSubjRoute(db,
-                                                animalList = animalListIn0,
-                                                noFilterReportUncertain = TRUE),
-                                   c('STUDYID','USUBJID')),
-               getExpected('expect01')[,NOT_VALID_MSG := as.character(NOT_VALID_MSG)])
-
-
+  # # 1 - Report uncertainties
+  # expect_equal(data.table::setkeyv(getSubjRoute(db,
+  #                                               animalList = animalListIn0,
+  #                                               noFilterReportUncertain = TRUE),
+  #                                  c('STUDYID','USUBJID')),
+  #              getExpected('expect01')[,NOT_VALID_MSG := as.character(NOT_VALID_MSG)])
+  #
+  #
   # 2 - Do not report uncertainties
   expect_equal(data.table::setkeyv(getSubjRoute(db,
                                                 animalList = animalListIn2,
@@ -61,12 +61,12 @@ test_that('01 - No filtering',
                                   c('STUDYID','USUBJID')),
                getExpected('expect01')[,NOT_VALID_MSG := NULL ])
   #   b - Report uncertainties
-  expect_equal(data.table::setkeyv(getSubjRoute(db,
-                                                animalList = animalListIn0,
-                                                noFilterReportUncertain = TRUE,
-                                                inclUncertain = FALSE),
-                                  c('STUDYID','USUBJID')),
-               getExpected('expect01')[,NOT_VALID_MSG := as.character(NOT_VALID_MSG)])
+  # expect_equal(data.table::setkeyv(getSubjRoute(db,
+  #                                               animalList = animalListIn0,
+  #                                               noFilterReportUncertain = TRUE,
+  #                                               inclUncertain = FALSE),
+  #                                 c('STUDYID','USUBJID')),
+  #              getExpected('expect01')[,NOT_VALID_MSG := as.character(NOT_VALID_MSG)])
 
 
   # 4 - Parameters matchAll and exclusively have no influence of returned list off animals
