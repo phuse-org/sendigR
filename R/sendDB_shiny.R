@@ -38,7 +38,7 @@ MiFindings_table <- function(animalList, mispec) {
   # given a set of USUBJIDs and and target organ
   # will return the frequency counts of counts
   # of the findings
-
+  
   # query MI and remove findings not in
   # our target animals. Convert
   # all findings to uppercase for
@@ -201,13 +201,13 @@ GetUniqueSpecies <- function() {
   return(sendigR::genericQuery(.sendigRenv$dbToken,
                        "select SPECIES
                           from (select upper(tsval) as SPECIES
-                                 from ts
-                                 where upper(tsparmcd) = 'SPECIES'
-                                 union
+                          from ts
+                         where upper(tsparmcd) = 'SPECIES'
+                        union
                                  select  upper(txval) as SPECIES
-                                 from tx
-                                 where upper(txparmcd) = 'SPECIES'
-                                 union
+                          from tx
+                         where upper(txparmcd) = 'SPECIES'
+                        union
                                  select upper(SPECIES) as SPECIES
                                  from dm)
                          where SPECIES is  not null
@@ -319,7 +319,7 @@ GetAnimalGroupsStudy <- function(studyid) {
 GetUniqueSex <- function() {
   uniqueSex <- sendigR::genericQuery(.sendigRenv$dbToken,
                                      'SELECT DISTINCT SEX FROM DM')
-
+  
   return(uniqueSex)
 }
 
@@ -338,6 +338,7 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
   aggData <- domainData %>%
     dplyr::group_by_at(grpByCols) %>%
     dplyr::summarize(N = dplyr::n())
+  aggData <- data.table::as.data.table(aggData)
 
   # if include uncertain is not
   # selected, we dont need to calc.
@@ -372,6 +373,7 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
   for(j in seq_along(df)){
     data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
   }
+  df <- data.table::as.data.table(df)
 
   return(df)
 
@@ -381,61 +383,62 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
 # control animal list and domain subject data merged to create doaminData
 #domain should be "lb" or "bw"
 aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
-
+  
   domain <- tolower(domain)
-
+  
   if (domain=='bw') {
-    grpByCols <- c("AGEDAYS_BW_AGE","SEX","BWORRESU")
+    grpByCols <- c("AGEDAYS","SPECIES","STRAIN","ROUTE","SEX","BWORRESU")
     result <- 'BWSTRESN'
     result_unit <- 'BWORRESU'
-
+    
   } else if (domain=='lb') {
-    grpByCols <- c("LBSPEC","LBTESTCD", "LBTEST","SEX","LBSTRESU")
+    grpByCols <- c( "LBSPEC","SPECIES","STRAIN","SEX","ROUTE","LBTESTCD", "LBTEST","LBSTRESU")
     result <- 'LBSTRESN'
     result_unit <- 'LBSTRESU'
-
+    
   }
   mean_result <- paste0('Mean_',result)
   sd_result <- paste0('SD_',result)
-
+  
   if (includeUncertain==F) {
-
+    
     agg_tb_certain <- domainData%>%
-      dplyr::group_by_at(grpByCols) %>%
+      dplyr::group_by_at(grpByCols) %>% 
       dplyr::summarize(!!mean_result := mean(get(result)),
                        !!sd_result := stats::sd(get(result)),
                        N = dplyr::n())
     agg_tb_certain <- dplyr::relocate(agg_tb_certain,{{result_unit}}, .after = (!!sd_result))
-
+    agg_tb_certain <- data.table::as.data.table(agg_tb_certain)
+    
     return(agg_tb_certain)
   } else if (includeUncertain==T) {
-
+    
     agg_tb_uncer <- domainData%>%
-      dplyr::group_by_at(grpByCols) %>%
+      dplyr::group_by_at(grpByCols) %>% 
       dplyr::summarize(!!mean_result := mean(get(result)),
                        !!sd_result := stats::sd(get(result)),
                        N = dplyr::n())
-
-    aggDataNonConf <- domainData%>%
-      dplyr::filter(!is.na(UNCERTAIN_MSG)) %>%
+    
+    aggDataNonConf <- domainData%>% 
+      dplyr::filter(!is.na(UNCERTAIN_MSG)) %>% 
       dplyr::group_by_at(grpByCols) %>%
       dplyr::summarize(Uncertain.Matches = dplyr::n())
-
-    aggDataConf <- domainData%>%
+    
+    aggDataConf <- domainData%>% 
       dplyr::filter(is.na(UNCERTAIN_MSG)) %>%
       dplyr::group_by_at(grpByCols) %>%
-      dplyr::summarize(Certain.Matches = dplyr::n())
-
+      dplyr::summarize(Certain.Matches = dplyr::n()) 
+    
     df <- merge(agg_tb_uncer, aggDataConf, by=grpByCols, all=TRUE)
     df <- merge(df, aggDataNonConf, by=grpByCols, all=TRUE)
     df <- dplyr::relocate(df,{{result_unit}}, .after = {{sd_result}})
-
+    
     for(j in seq_along(df)){
       data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
     }
-
+    df <- data.table::as.data.table(df)
     return(df)
-
+    
   }
 }
 
