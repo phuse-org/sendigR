@@ -9,4 +9,4 @@
 ^status.xlsx$
 ^Misc
 ^data-raw
-^tests/data/save
+^tests/data/misc

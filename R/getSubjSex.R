@@ -25,7 +25,7 @@
 #' column UNCERTAIN_MSG):
 #' \itemize{
 #'   \item The DM.SEX value is empty or invalid (not CT value - CDISC codelist
-#'   SEX)
+#'   SEX - case insensitive comparison)
 #' }
 #' The same checks are performed and reported in column NOT_VALID_MSG if
 #' \code{sexFilter} is empty and \code{noFilterReportUncertain=TRUE}.

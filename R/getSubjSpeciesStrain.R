@@ -29,6 +29,8 @@
 #'   \item TS - if a TS parameter 'SPECIES' ('STRAIN') exists, this is included
 #'   in the output.\cr
 #' }
+#' The comparisons of species/strain values is done case insensitive and trimmed
+#' for leading/trailing blanks.
 #'
 #' If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
 #' in the output set. These uncertain situations are identified and reported for
@@ -62,6 +64,8 @@
 #' @param strainFilter  Optional, character.\cr
 #'  The strain value(s) to use as criterion for filtering of the input data
 #'  table.\cr
+#'  It is only valid to specify value(s) if one or more values have been
+#'  specified for parameter \code{speciesFilter}\cr
 #'  It can be a single string, a vector or a list of multiple strings.
 #'  When multiple values are specified for \code{speciesFilter}, each strain
 #'  value must be prefixed by species and ':' , e.g.
@@ -88,7 +92,11 @@
 #'   \item STUDYID       (character)
 #'   \item Additional columns contained in the \code{animalList} table
 #'   \item SPECIES       (character)
+#' The value is always returned in uppercase and trimmed for leading/trailing
+#' blanks.
 #'   \item STRAIN        (character)
+#' The value is always returned in uppercase and trimmed for leading/trailing
+#' blanks.
 #'   \item UNCERTAIN_MSG (character)\cr
 #' Included when parameter \code{inclUncertain=TRUE}.\cr
 #' In case the species or strain cannot be confidently matched during the
@@ -149,11 +157,16 @@ getSubjSpeciesStrain <- function(dbToken,
 
   if (is.null(speciesFilter) | isTRUE(is.na(speciesFilter)) | isTRUE(speciesFilter=="")) {
     if (!(is.null(strainFilter) | isTRUE(is.na(strainFilter)) | isTRUE(strainFilter=="")))
-      stop('Parameter strainFileter must not be specified when no speciesFilter has been specified')
+      stop('Parameter strainFilter must not be specified when no speciesFilter has been specified')
     else
       execFilter <- FALSE
-  } else
+  } else {
     execFilter <- TRUE
+    # Trim all filter conditions and convert to uppercase
+    speciesFilter <- toupper(trimws(speciesFilter))
+    if (!(is.null(strainFilter) | isTRUE(is.na(strainFilter)) | isTRUE(strainFilter=="")))
+      strainFilter <- toupper(trimws(strainFilter))
+  }
   if (execFilter & !(inclUncertain %in% c(TRUE,FALSE))) {
     stop("Parameter inclUncertain must be either TRUE or FALSE")
   }
@@ -169,6 +182,7 @@ getSubjSpeciesStrain <- function(dbToken,
   # Join species and strains values at trial level (TS), set level (TX) and
   # animal level (DM) together for each animal
   #  - ensure all empty SPECIES_xx and STRAIN_xx values are NA
+  # Trim all species and strain values and convert to uppercase
   animalSpeciesStrainDB <-
     genericQuery(dbToken,
                  "select distinct
@@ -176,27 +190,27 @@ getSubjSpeciesStrain <- function(dbToken,
                          dm.usubjid   as USUBJID,
                          case ts1.tsval
                             when '' then null
-                            else upper(ts1.tsval)
+                            else upper(trim(ts1.tsval))
                          end          as SPECIES_TS,
                          case ts2.tsval
                             when '' then null
-                            else upper(ts2.tsval)
+                            else upper(trim(ts2.tsval))
                          end          as STRAIN_TS,
                          case tx2.txval
                             when '' then null
-                            else upper(tx2.txval)
+                            else upper(trim(tx2.txval))
                          end          as SPECIES_TX,
                          case tx3.txval
                             when '' then null
-                            else upper(tx3.txval)
+                            else upper(trim(tx3.txval))
                          end          as STRAIN_TX,
                          case dm.species
                             when '' then null
-                            else upper(dm.species)
+                            else upper(trim(dm.species))
                          end          as SPECIES_DM,
                          case dm.strain
                             when '' then null
-                            else upper(dm.strain)
+                            else upper(trim(dm.strain))
                          end          as STRAIN_DM
                     from dm
                     left join (select distinct studyid, setcd

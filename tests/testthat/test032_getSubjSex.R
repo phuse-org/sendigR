@@ -1,7 +1,7 @@
 ################################################################################
 ## Test cases for the function getSubjSex
 ##
-## Expected data is located in: 032_expected_getSubjSex.xls
+## Expected output data is located in: 032_expected_getSubjSex.xls
 ## Input list of animals is also located in this Excel sheet
 ##
 ################################################################################
@@ -11,6 +11,7 @@
 # Valid SEX values
 # Invalid SEX CT value
 # Missing SEX value
+# Without and with given filter criteria
 
 # rootPath <- '//FSDKHQ001/dep402$/000-4284/DATA MANAGEMENT/@Data Science/BioCelerate/sendigR/tests/data/'
 

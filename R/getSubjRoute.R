@@ -25,7 +25,8 @@
 #'   \item TS - if a distinct TS parameter 'ROUTE' value exists for the study,
 #'   this is included in the output.\cr
 #' }
-#' The comparison of route values is done case insensitive.
+#' The comparison of route values is done case insensitive and trimmed for
+#' leading/trailing blanks.
 #'
 #' If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
 #' in the output set. These uncertain situations are identified and reported (in
@@ -79,7 +80,9 @@
 #'   \itemize{
 #'   \item STUDYID       (character)
 #'   \item Additional columns contained in the \code{animalList} table
-#'   \item ROUTE         (character)
+#'   \item ROUTE         (character)\cr
+#' The value is always returned in uppercase and trimmed for leading/trailing
+#' blanks.
 #'   \item UNCERTAIN_MSG (character)\cr
 #' Included when parameter \code{inclUncertain=TRUE}.\cr
 #' In case the ROUTE cannot be confidently matched during the filtering of data,
@@ -145,7 +148,7 @@ getSubjRoute <- function(dbToken,
         msgArr<-c(msgArr, 'TS parameters ROUTE and EX rows with EXROUTE values are missing')
     }
     else {
-      if (! ROUTE %in% ctROUTE) {
+      if (! toupper(trimws(ROUTE)) %in% ctROUTE) {
         if (!is.null(ALL_ROUTE_EX) && ! ALL_ROUTE_EX %in% ctROUTE)
           msgArr<-c(msgArr, 'EXROUTE does not contain a valid CT value')
         else if (!is.null(ALL_ROUTE_TS) & ! ALL_ROUTE_TS %in% ctROUTE)
@@ -188,10 +191,11 @@ getSubjRoute <- function(dbToken,
   #check if POOLDEF exists and if EX contains POOLDEF
   if (dbExistsTable(dbToken, 'POOLDEF') && 'POOLID' %in% dbListFields(dbToken, 'EX'))
     # select part of pool level rows from EX
+    # Trim EXROUTE value and convert to uppercase
     sqlPartPool <- "union
                         select pooldef.STUDYID,
                                pooldef.USUBJID,
-                               EXROUTE
+                               upper(trim(EXROUTE)) as EXROUTE
                          from pooldef
                          join ex
                            on ex.studyid = pooldef.studyid
@@ -206,13 +210,14 @@ getSubjRoute <- function(dbToken,
   # Extract unique set or rows from EX for all animals studies
   # included in the input table of animals.
   # Do only include rows with a non-empty value of EXROUTE
+  # Trim EXROUTE value and convert to uppercase
   allAnimals <-
     genericQuery(dbToken, paste0(
                   "select distinct STUDYID,
                           USUBJID,
                           case exroute
                             when '' then null
-                            else exroute
+                            else upper(trim(exroute))
                           end as EXROUTE
                      from ex
                     where studyid in (:1)
@@ -243,10 +248,11 @@ getSubjRoute <- function(dbToken,
 
 
   # Extract TS parm ROUTE parameter for all studies in the input list of animals
+  # Trim ROUTE value and convert to uppercase
   studyRoutes <-
     genericQuery(dbToken,
                  "select distinct studyid,
-                         tsval as ROUTE_TS
+                         upper(trim(tsval)) as ROUTE_TS
                     from ts
                    where tsparmcd = 'ROUTE'
                      and tsval is not null
@@ -286,33 +292,19 @@ getSubjRoute <- function(dbToken,
                                         # Multiple ESROUTE(s) found
                                         as.character(NA))))]
 
-
-  # Check if a message column for uncertainties shall be included
-  msgCol =''
-  if (execFilter && inclUncertain)
-    msgCol = 'UNCERTAIN_MSG'
-  else if (!execFilter && noFilterReportUncertain)
-    msgCol = 'NOT_VALID_MSG'
-
-  if (msgCol != '') {
-    # Check ROUTE value for uncertainty for each extracted row.
-
-    # Get values of code list ROUTE from CDISC CT
-    ctROUTE<-getCTCodListValues(dbToken, "ROUTE")
-
-    # Identify uncertain animals - add variable UNCERTAIN_MSG
-    allAnimals[,`:=` (MSG = mapply(identifyUncertainROUTE,
-                                   ROUTE,
-                                   ALL_ROUTE_EX,
-                                   ALL_ROUTE_TS))]
-
-    # Rename MSG col to correct name
-    data.table::setnames(allAnimals, 'MSG' ,msgCol)
-  }
+  #  Get values of codelist ROUTE from CDISC CT
+  ctROUTE <-  getCTCodListValues(dbToken, "ROUTE")
+  # Identify uncertain animals - add variable MSG
+  allAnimals[,`:=` (MSG = mapply(identifyUncertainROUTE,
+                                 ROUTE,
+                                 ALL_ROUTE_EX,
+                                 ALL_ROUTE_TS))]
 
   if (execFilter) {
     # Extract animals matching the routeFilter
-    foundAnimals<-allAnimals[ROUTE %in% routeFilter,
+    foundAnimals <-
+      # Only include routes which are not uncertain
+        allAnimals[ROUTE %in% toupper(trimws(routeFilter)) & is.na(MSG),
                              c('STUDYID', 'USUBJID', 'ROUTE')]
 
     if (exclusively) {
@@ -324,7 +316,7 @@ getSubjRoute <- function(dbToken,
                        # Set of studies (included in the found set of animals with matching ROUTE values) with possible
                        # ROUTE values not included in the routeFilter:
                        unique(data.table::fsetdiff(data.table::merge.data.table(# Set of possible ROUTE values per study in the input set of animals:
-                                                                                unique(allAnimals[,c('STUDYID','ROUTE')]),
+                                                                                unique(allAnimals[is.na(MSG),c('STUDYID','ROUTE')]),
                                                                                 unique(foundAnimals[,c('STUDYID')]), by='STUDYID'),
                                                    unique(foundAnimals[,c('STUDYID', 'ROUTE')]))[,c('STUDYID')])),
               by='STUDYID')
@@ -339,17 +331,22 @@ getSubjRoute <- function(dbToken,
               by='STUDYID')
     }
 
-    if (inclUncertain)
+    if (inclUncertain) {
+      # Rename MSG col to correct name
+      data.table::setnames(allAnimals, 'MSG' ,'UNCERTAIN_MSG')
       # Add the uncertain animals
-      foundAnimals<-data.table::rbindlist(list(foundAnimals,
-                                   allAnimals[!is.na(UNCERTAIN_MSG), c('STUDYID', 'USUBJID', 'ROUTE', 'UNCERTAIN_MSG')]),
-                              use.names=TRUE, fill=TRUE)
+      foundAnimals <- data.table::rbindlist(list(foundAnimals,
+                                                 allAnimals[!is.na(UNCERTAIN_MSG),
+                                                            c('STUDYID', 'USUBJID', 'ROUTE', 'UNCERTAIN_MSG')]),
+                                            use.names=TRUE, fill=TRUE)
+    }
   }
   else {
     # Include all animals
     foundAnimals <-
       if (noFilterReportUncertain)
-        allAnimals[,c('STUDYID', 'USUBJID', 'ROUTE', 'NOT_VALID_MSG')]
+        # Rename MSG col to correct name
+        data.table::setnames(allAnimals, 'MSG' ,'NOT_VALID_MSG')[,c('STUDYID', 'USUBJID', 'ROUTE', 'NOT_VALID_MSG')]
       else
         allAnimals[, c('STUDYID', 'USUBJID', 'ROUTE')]
   }

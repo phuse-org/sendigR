@@ -29,7 +29,7 @@
 #' \itemize{
 #'   \item without any row for TSPARMCD='SDESIGN' or
 #'   \item TSVAL doesn't contain a value included in the  CDISC CT list
-#'        'DESIGN' for TSPARMCD='SDESIGN'
+#'        'DESIGN' for TSPARMCD='SDESIGN' (case insensitive comparison)
 #' }
 #' The same checks are performed and reported in column NOT_VALID_MSG if
 #' \code{studyDesignFilter} is empty and \code{noFilterReportUncertain=TRUE}.
@@ -149,7 +149,7 @@ getStudiesSDESIGN <- function(dbToken,
     ctDESIGN<-getCTCodListValues(dbToken, "DESIGN")
 
     # Check SDESIGN value for uncertainty for each extracted row.
-    # I.e is missing or not a vlaid CT value
+    # I.e is missing or not a valid CT value
     tsSDESIGN[, MSG :=  ifelse(! (toupper(SDESIGN) %in% ctDESIGN),
                                ifelse(is.na(SDESIGN),
                                      'TS parameter SDESIGN is missing',
