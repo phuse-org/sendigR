@@ -263,7 +263,6 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # that particular domain.
 
     shinydashboard::dashboardBody(
-
       htmltools::tags$head(shiny::tags$script(shiny::HTML(click_jscode))),
       shiny::tabsetPanel(type = 'tab',
                  shiny::tabPanel('ANIMALS', ##### Animal Tab ----
@@ -390,12 +389,30 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                      download_rds_UI('download_BW_agg_rds'),
                                      htmltools::br(),htmltools::br()),
                             shiny::tabPanel("Aggregate Plot",
+                                            shiny::fluidRow(column(width = 4,offset = 1,
                                             shiny::uiOutput("bw_table_filter"),
-                                            shiny::actionButton("bw_plot_update", "Generate Plot"),
-                                            shiny::plotOutput("bw_agg_plot")))),
-                 shiny::tabPanel("Download",
-                                 htmltools::br(),
-                                 shiny::downloadButton('download_all', "Download"))
+                                            shiny::actionButton("bw_plot_update", "Generate/Update Plot",
+                                                                style = "background-color:#FFFFFF;
+                                            color:#E31616;
+                                            border-color:#BEBEBE;
+                                            border-style:solid;
+                                            border-width:1px;
+                                            border-radius:5%;
+                                            font-weight:bold;
+                                            font-size:14px;"
+                                            )),
+                                            
+                                              column(width = 4,
+                                            shiny::sliderInput("age_interval", "Choose Interval",
+                                                               min = 1,max = 14, value = 3, step = 1),
+                                              shiny::selectInput("bw_plot_type", "Choose Plot Type",
+                                                                 choices = c("Line with Error Bar",
+                                                                             "original_data")))),
+                                            htmltools::br(),htmltools::br(),
+                                            shiny::plotOutput("bw_agg_plot", height = "600px")))),
+                            shiny::tabPanel("Download",
+                                            htmltools::br(),
+                            shiny::downloadButton('download_all', "Download"))
                  )))
 
 
@@ -411,7 +428,6 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
   # in controlFiltering.R.
 
   server <- function(input, output, session) {
-
     # This is the logic for changing
     # the STRAIN based ON changes SPECIES
     shiny::observeEvent(input$SPECIES, {
@@ -1218,6 +1234,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_route <- unique(df[['ROUTE']])
       df_species <- unique(df[['SPECIES']])
       df_strain <- unique(df[['STRAIN']])
+      df_sex <- unique(df[['SEX']])
       
       shiny::fluidRow(addUIDep(shiny::selectizeInput("bw_route",
                                                      "Select Route:",
@@ -1239,14 +1256,14 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                                       selected=df_strain,
                                                       multiple=FALSE,
                                                       options=list(plugins=list('drag_drop','remove_button'))
+                      )),
+                      addUIDep(shiny::selectizeInput("bw_sex",
+                                                     "Select Sex:",
+                                                     df_sex,
+                                                     selected=df_sex,
+                                                     multiple=TRUE,
+                                                     options=list(plugins=list('drag_drop','remove_button'))
                       ))
-                      # addUIDep(shiny::selectizeInput("mi_sex",
-                      #                                "Select Sex:",
-                      #                                df_sex,
-                      #                                selected=df_sex,
-                      #                                multiple=TRUE,
-                      #                                options=list(plugins=list('drag_drop','remove_button'))
-                      # ))
                       )
     })
     
@@ -1256,7 +1273,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df <- BW_agg_table()
       df <- df %>% dplyr::filter(ROUTE %in% input$bw_route,
                                  STRAIN %in% input$bw_strain,
-                                 SPECIES %in% input$bw_species)
+                                 SPECIES %in% input$bw_species,
+                                 SEX %in% input$bw_sex)
       df
       
     })
@@ -1267,8 +1285,69 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     output$bw_agg_plot <- shiny::renderPlot({
       req(input$bw_plot_update)
       df <- bw_agg_table_after_filter()
-      g <- ggplot(data = df, aes(x=AGEDAYS, y=Mean_BWSTRESN, color=SEX))+
-        geom_point()
+      df <- df[, .(AGEDAYS, SEX,Mean_BWSTRESN,SD_BWSTRESN,N)]
+      df_org <- df
+      #df <- na.omit(df) # DROP NA VALUES
+      df_m <- df[SEX=='M']
+      df_f <- df[SEX=='F']
+   
+      interval <- input$age_interval
+      # calculate male
+      age_interval <- make_interval(df_m[['AGEDAYS']], interval)
+      # print(age_interval)
+      mean_interval <- meanEveryNth(df_m[['Mean_BWSTRESN']], df_m[['SD_BWSTRESN']], df_m[['N']], interval)
+      # print(mean_interval)
+      index <- mean_interval[['Index']]
+      Age <- age_interval[index]
+      sex <- rep("M", length(Age))
+      # print(sex)
+      df_plot_m <- cbind(mean_interval, Age, sex)
+      # print("print df_plot")
+      # print(df_plot)
+      
+      
+      # count female
+      age_interval_f <- make_interval(df_f[['AGEDAYS']], interval)
+      # print(age_interval)
+      mean_interval_f <- meanEveryNth(df_f[['Mean_BWSTRESN']], df_f[['SD_BWSTRESN']], df_f[['N']], interval)
+      # print(mean_interval)
+      index_f <- mean_interval_f[['Index']]
+      Age_f <- age_interval_f[index_f]
+      sex_f <- rep("F", length(Age_f))
+      df_plot_f <- cbind(mean_interval_f, Age_f,sex_f)
+      names(df_plot_f) <- names(df_plot_m)
+      df_plot <- rbind(df_plot_m, df_plot_f)
+      
+      if (input$bw_plot_type=="Line with Error Bar") {
+        g <- ggplot(data = df_plot, aes(x=Age, y=Mean, color=sex))+
+          geom_line()+
+          geom_point()+
+          # geom_errorbar(aes(ymin=Mean-Weighted_SD, ymax=Mean+Weighted_SD), width =.2,
+          #               position = position_dodge(0.05))+
+          geom_ribbon(aes(ymin=Mean-Weighted_SD, ymax=Mean+Weighted_SD), alpha =.2)+
+          theme(
+            axis.title = element_text(size = 14, face = 'bold'),
+            axis.text = element_text(size = 14),
+            legend.title = element_text(size = 14),
+            legend.text = element_text(size = 14),
+            panel.grid.major.x   = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            panel.grid.major.y = element_blank()
+          )
+      } else {
+        
+        g <- ggplot(data = df_org, aes(x=AGEDAYS, y=Mean_BWSTRESN, color=SEX))+
+          geom_point()+
+          theme(
+            axis.title = element_text(size = 14, face = 'bold'),
+            axis.text = element_text(size = 14),
+            legend.title = element_text(size = 14),
+            legend.text = element_text(size = 14)
+          )
+        
+      }
+      
+      
       print(g)
       
     })
