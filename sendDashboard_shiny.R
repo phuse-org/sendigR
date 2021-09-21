@@ -285,7 +285,16 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                                                                "Select MISPEC:",
                                                                                availableOrgans,
                                                                                selected='KIDNEY'),
-                                                            shiny::uiOutput('mi_findings_filter')),
+                                                            shiny::uiOutput('mi_findings_filter'),
+                                                            shiny::actionButton('mi_finding_update', 'Generate/Update Table',
+                                                                                style = "background-color:#FFFFFF;
+                                            color:#E31616;
+                                                                                border-color:#BEBEBE;
+                                                                                border-style:solid;
+                                                                                border-width:1px;
+                                                                                border-radius:5%;
+                                                                                font-weight:bold;
+                                                                                font-size:14px;")),
                                        shiny::column(width = 6, offset = 1,
                                               DT::dataTableOutput("findingsTable"),
                                               htmltools::br(),htmltools::br(),
@@ -528,7 +537,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
      df <- MiFindings_table(animalList(), input$MISPEC)
      df
    })
-    
+
     # render MI findings filter 
     output$mi_findings_filter <- shiny::renderUI({
       df <- MiFindings_filter_table()
@@ -566,13 +575,39 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                          )))
       })
     
+    
+    #### update MI findings selection from choices selected
+    
+    # update species and strain when route selected
+    shiny::observeEvent(input$mi_route, {
+      df <- MiFindings_filter_table()
+      df <- df[ROUTE %in% input$mi_route, ]
+      df_species <- unique(df[['SPECIES']])
+      df_strain <- unique(df[['STRAIN']])
+      shiny::updateSelectizeInput(session = session, inputId = "mi_species", choices = df_species )
+      shiny::updateSelectizeInput(session = session, inputId = "mi_strain", choices = df_strain)
+    })
+    
+    # update strain when species selected
+    shiny::observeEvent(input$mi_species, {
+      df <- MiFindings_filter_table()
+      df <- df[ROUTE %in% input$mi_route & SPECIES %in% input$mi_species, ]
+      df_strain <- unique(df[['STRAIN']])
+      shiny::updateSelectizeInput(session = session, inputId = "mi_strain", choices = df_strain)
+    })
+    
+    ## MI finding table after filter
+    Mi_finding_table_after_filter <- shiny::eventReactive(input$mi_finding_update, {
+      df <- MiFindings_filter_table()
+      df <- df[ROUTE %in% input$mi_route & STRAIN %in% input$mi_strain & SPECIES %in% input$mi_species & SEX %in% input$mi_sex,]
+      df
+    })
+    
     ###### MI findings table after filter applied ----
     findings_table_after_filter <- shiny::reactive({
-      finalFindings <- MiFindings_filter_table()
-      finalFindings <- finalFindings %>% dplyr::filter(ROUTE %in% input$mi_route,
-                                                       STRAIN %in% input$mi_strain,
-                                                       SPECIES %in% input$mi_species,
-                                                       SEX %in% input$mi_sex)
+      shiny::req(input$mi_finding_update)
+      finalFindings <- Mi_finding_table_after_filter()
+   
       findingsCount <- finalFindings %>%
         dplyr::distinct(STUDYID, USUBJID, MISTRESC) %>%
         dplyr::count(MISTRESC) %>%
@@ -1240,21 +1275,21 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                                      "Select Route:",
                                                      choices=df_route,
                                                      selected=df_route,
-                                                     multiple=FALSE,
+                                                     multiple=TRUE,
                                                      options=list(plugins=list('drag_drop','remove_button')
                                                      ))),
                       addUIDep(shiny::selectizeInput("bw_species",
                                                      "Select Species:",
                                                      df_species,
                                                      selected=df_species,
-                                                     multiple=FALSE,
+                                                     multiple=TRUE,
                                                      options=list(plugins=list('drag_drop','remove_button'))
                       )),
                       addUIDep( shiny::selectizeInput("bw_strain",
                                                       "Select Strain:",
                                                       df_strain,
                                                       selected=df_strain,
-                                                      multiple=FALSE,
+                                                      multiple=TRUE,
                                                       options=list(plugins=list('drag_drop','remove_button'))
                       )),
                       addUIDep(shiny::selectizeInput("bw_sex",
@@ -1266,6 +1301,28 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                       ))
                       )
     })
+    
+    # update selection in BW aggregate plot ----
+    
+    shiny::observeEvent(input$bw_route, {
+      df <- BW_agg_table()
+      df <- df[ROUTE %in% input$bw_route, ]
+      df_species <- unique(df[['SPECIES']])
+      df_strain <- unique(df[['STRAIN']])
+      shiny::updateSelectizeInput(session = session, inputId = "bw_species", choices = df_species )
+      shiny::updateSelectizeInput(session = session, inputId = "bw_strain", choices = df_strain)
+    })
+    
+    shiny::observeEvent(input$bw_species, {
+      df <- BW_agg_table()
+      df <- df[ROUTE %in% input$bw_route & SPECIES %in% input$bw_species, ]
+      df_strain <- unique(df[['STRAIN']])
+      shiny::updateSelectizeInput(session = session, inputId = "bw_strain", choices = df_strain)
+    })
+    
+    
+    
+    
     
     
     ###### get filter data for plot ----
@@ -1283,11 +1340,12 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     ###### Render BW aggregate plot ---- 
     
     output$bw_agg_plot <- shiny::renderPlot({
-      req(input$bw_plot_update)
+      shiny::req(input$bw_plot_update)
       df <- bw_agg_table_after_filter()
       df <- df[, .(AGEDAYS, SEX,Mean_BWSTRESN,SD_BWSTRESN,N)]
+      df <- na.omit(df, cols=c('AGEDAYS','Mean_BWSTRESN')) # DROP NA VALUES
       df_org <- df
-      #df <- na.omit(df) # DROP NA VALUES
+      
       df_m <- df[SEX=='M']
       df_f <- df[SEX=='F']
    
