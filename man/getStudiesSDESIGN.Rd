@@ -91,7 +91,7 @@ column UNCERTAIN_MSG):
 \itemize{
 \item without any row for TSPARMCD='SDESIGN' or
 \item TSVAL doesn't contain a value included in the  CDISC CT list
-'DESIGN' for TSPARMCD='SDESIGN'
+'DESIGN' for TSPARMCD='SDESIGN' (case insensitive comparison)
 }
 The same checks are performed and reported in column NOT_VALID_MSG if
 \code{studyDesignFilter} is empty and \code{noFilterReportUncertain=TRUE}.

@@ -580,7 +580,7 @@ loadStudyData <- function(dbToken,
     extraCols <- setdiff(names(dtDomain), dbListFields(dbToken, domain))
     if (length(extraCols) != 0) {
       # delete additional columns from imported data
-      data.table::set(dtDomain, extraCols, NULL)
+      data.table::set(dtDomain, j = extraCols, value = NULL)
       warnTxt <- c(warnTxt,
                    sprintf('Additional columns in domain %s has been ignored: %s',
                            domain, paste(extraCols, collapse=',')))

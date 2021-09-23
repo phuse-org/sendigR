@@ -8,7 +8,13 @@
 
 # Test data covers these situations:
 #
-# Valid SPECIES/STRAIN values
+# No SPECIES/STRAIN input filter criteria
+# One SPECIES & no STRAIN input filter criteria
+# Multiple SPECIES & no STRAIN input filter criteria
+# One SPECIES/one STRAIN input filter criteria
+# One SPECIES & mutliple STRAIN input filter criteria
+# Mutiple SPECIES & one/mutliple STRAIN input filter criteria
+# Valid SPECIES/STRAIN values (in TS, TX and DM)
 # Invalid SPECIES/STRAIN CT value (in TS, TX and DM)
 # Missing SPECIES/STRAIN value (in TS, TX and DM)
 # Mismatch in SPECIES/STRAIN values between TS, TX and DM
@@ -74,20 +80,18 @@ test_that('01 - No filtering',
                getExpected('expect01')[,NOT_VALID_MSG := as.character(NOT_VALID_MSG)])
 
 
-  # 4 - Parameters matchAll and exclusively have no influence of returned list off animals
-  #   a - both FALSE
+  # 4 - Parameter exclusively has no influence of returned list off animals
+  #   a - FALSE
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
                                                 animalList = animalListIn2,
-                                                matchAll = FALSE,
                                                 exclusively = FALSE,
                                                 noFilterReportUncertain = FALSE),
                                    c('STUDYID','USUBJID')),
                getExpected('expect01')[,NOT_VALID_MSG := NULL ])
 
-  #   b - both TRUE
+  #   b - TRUE
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
                                                 animalList = animalListIn2,
-                                                matchAll = TRUE,
                                                 exclusively = TRUE,
                                                 noFilterReportUncertain = FALSE),
                                    c('STUDYID','USUBJID')),
@@ -95,13 +99,12 @@ test_that('01 - No filtering',
 
 })
 
-test_that('02 - Specified one filter value',
+test_that('02 - Specified one species filter value',
 {
   # 1 - Report uncertainties, Exclusively is FALSE
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
                                                 animalList = animalListIn1,
-                                                SpeciesStrainFilter = '',
-                                                StrainFilter = '',
+                                                speciesFilter = 'RAT',
                                                 exclusively = FALSE,
                                                 inclUncertain = TRUE),
                                    c('STUDYID','USUBJID')),
@@ -110,8 +113,7 @@ test_that('02 - Specified one filter value',
   # 2 - Do not report uncertainties
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
                                                 animalList = animalListIn2,
-                                                SpeciesStrainFilter = '',
-                                                StrainFilter = '',
+                                                speciesFilter = 'RAT',
                                                 exclusively = FALSE,
                                                 inclUncertain = FALSE),
                                    c('STUDYID','USUBJID')),
@@ -122,8 +124,7 @@ test_that('02 - Specified one filter value',
   #   a - Do not report uncertainties
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
                                                 animalList = animalListIn2,
-                                                SpeciesStrainFilter = '',
-                                                StrainFilter = '',
+                                                speciesFilter = 'RAT',
                                                 exclusively = FALSE,
                                                 inclUncertain = FALSE,
                                                 noFilterReportUncertain = TRUE),
@@ -133,53 +134,30 @@ test_that('02 - Specified one filter value',
   #   b - Report uncertainties
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
                                                 animalList = animalListIn1,
-                                                SpeciesStrainFilter = '',
-                                                StrainFilter = '',
+                                                speciesFilter = 'RAT',
                                                 exclusively = FALSE,
                                                 inclUncertain = TRUE,
                                                 noFilterReportUncertain = FALSE),
                                    c('STUDYID','USUBJID')),
                getExpected('expect02'))
 
-  # 4 - matchAll is TRUE, Exclusively is FALSE
+  # 4 - exclusively is TRUE
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
                                                 animalList = animalListIn2,
-                                                SpeciesStrainFilter = '',
-                                                StrainFilter = '',
-                                                exclusively = FALSE,
+                                                speciesFilter = 'RAT',
+                                                exclusively = TRUE,
                                                 inclUncertain = FALSE),
                                    c('STUDYID','USUBJID')),
                getExpected('expect02_4'))
-
-  # 5 - matchAll is FALSE, Exclusively is TRUE
-  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
-                                                animalList = animalListIn2,
-                                                SpeciesStrainFilter = '',
-                                                StrainFilter = '',
-                                                exclusively = TRUE,
-                                                inclUncertain = FALSE),
-                                   c('STUDYID','USUBJID')),
-               getExpected('expect02_5'))
-
-  # 6 - matchAll is TRUE, Exclusively is TRUE
-  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
-                                                animalList = animalListIn2,
-                                                SpeciesStrainFilter = 'ORAL',
-                                                matchAll = TRUE,
-                                                exclusively = TRUE,
-                                                inclUncertain = FALSE),
-                                   c('STUDYID','USUBJID')),
-               getExpected('expect02_6'))
 })
 
-test_that('03 - Specified multiple filter values',
+test_that('03 - Specified multiple species filter values',
 {
 
-  # 1 - Report uncertainties, matchAll is FALSE,  Exclusively is FALSE
+  # 1 - Report uncertainties, exclusively is FALSE
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
                                                 animalList = animalListIn1,
-                                                SpeciesStrainFilter = '',
-                                                StrainFilter = '',
+                                                speciesFilter = c('RAT','monkey'),
                                                 exclusively = FALSE,
                                                 inclUncertain = TRUE),
                                    c('STUDYID','USUBJID')),
@@ -188,34 +166,21 @@ test_that('03 - Specified multiple filter values',
   # 2 - Do not report uncertainties
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
                                                 animalList = animalListIn2,
+                                                speciesFilter = c('RAT','monkey'),
                                                 exclusively = FALSE,
                                                 inclUncertain = FALSE),
                                    c('STUDYID','USUBJID')),
                getExpected('expect03')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
 
-  # 3 - matchAll is TRUE, Exclusively is FALSE
-  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
-                                                animalList = animalListIn2,
-                                                exclusively = FALSE,
-                                                inclUncertain = FALSE),
-                                   c('STUDYID','USUBJID')),
-               getExpected('expect03_3'))
+  # 3 - exclusively is TRUE
+  # expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+  #                                               animalList = animalListIn2,
+  #                                               speciesFilter = c('RAT','monkey'),
+  #                                               exclusively = FALSE,
+  #                                               inclUncertain = FALSE),
+  #                                  c('STUDYID','USUBJID')),
+  #              getExpected('expect03_3'))
 
-  # 4 - matchAll is FALSE, Exclusively is TRUE
-  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
-                                                animalList = animalListIn2,
-                                                exclusively = TRUE,
-                                                inclUncertain = FALSE),
-                                   c('STUDYID','USUBJID')),
-               getExpected('expect03_4'))
-
-  # 5 - matchAll is TRUE, Exclusively is TRUE
-  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
-                                                animalList = animalListIn2,
-                                                exclusively = TRUE,
-                                                inclUncertain = FALSE),
-                                   c('STUDYID','USUBJID')),
-               getExpected('expect03_5'))
 })
 
 

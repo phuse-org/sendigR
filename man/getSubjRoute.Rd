@@ -58,7 +58,9 @@ The function returns a data.table with columns:
 \itemize{
 \item STUDYID       (character)
 \item Additional columns contained in the \code{animalList} table
-\item ROUTE         (character)
+\item ROUTE         (character)\cr
+The value is always returned in uppercase and trimmed for leading/trailing
+blanks.
 \item UNCERTAIN_MSG (character)\cr
 Included when parameter \code{inclUncertain=TRUE}.\cr
 In case the ROUTE cannot be confidently matched during the filtering of data,
@@ -93,7 +95,8 @@ is included in the output.\cr
 \item TS - if a distinct TS parameter 'ROUTE' value exists for the study,
 this is included in the output.\cr
 }
-The comparison of route values is done case insensitive.
+The comparison of route values is done case insensitive and trimmed for
+leading/trailing blanks.
 
 If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
 in the output set. These uncertain situations are identified and reported (in

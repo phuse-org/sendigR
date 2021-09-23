@@ -31,6 +31,8 @@ It can be a single string, a vector or a list of multiple strings.}
 \item{strainFilter}{Optional, character.\cr
 The strain value(s) to use as criterion for filtering of the input data
 table.\cr
+It is only valid to specify value(s) if one or more values have been
+specified for parameter \code{speciesFilter}\cr
 It can be a single string, a vector or a list of multiple strings.
 When multiple values are specified for \code{speciesFilter}, each strain
 value must be prefixed by species and ':' , e.g.
@@ -61,7 +63,11 @@ The function returns a data.table with columns:
 \item STUDYID       (character)
 \item Additional columns contained in the \code{animalList} table
 \item SPECIES       (character)
+The value is always returned in uppercase and trimmed for leading/trailing
+blanks.
 \item STRAIN        (character)
+The value is always returned in uppercase and trimmed for leading/trailing
+blanks.
 \item UNCERTAIN_MSG (character)\cr
 Included when parameter \code{inclUncertain=TRUE}.\cr
 In case the species or strain cannot be confidently matched during the
@@ -100,6 +106,8 @@ output.\cr
 \item TS - if a TS parameter 'SPECIES' ('STRAIN') exists, this is included
 in the output.\cr
 }
+The comparisons of species/strain values is done case insensitive and trimmed
+for leading/trailing blanks.
 
 If input parameter \code{inclUncertain=TRUE}, uncertain animals are included
 in the output set. These uncertain situations are identified and reported for
