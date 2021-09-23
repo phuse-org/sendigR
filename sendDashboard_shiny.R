@@ -59,7 +59,7 @@ execSendDashboard <- function(dbToken) {
   availableSex <- as.list(stats::setNames(availableSex,availableSex))
   # get phase
   availablePhases <- c('Screening', 'Treatment', 'Recovery')
-  
+
   #### Domains-specific filtering selections ####
   # For the MI domain, allow filtering
   # by organs available in the SEND DB.
@@ -83,7 +83,7 @@ execSendDashboard <- function(dbToken) {
     AST='AST',
     ALP='ALP'
   )
-  
+
   # add function drag and drop menu ----
   addUIDep <- function(x) {
     jqueryUIDep <- htmltools::htmlDependency("jqueryui", "1.10.4",
@@ -227,7 +227,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                             border-width:1px;
                                             border-radius:5%;
                                             font-weight:bold;
-                                            font-size:18px;"), 
+                                            font-size:18px;"),
                                             htmltools::br())
 
         # TODO: implement function
@@ -398,7 +398,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                      download_rds_UI('download_BW_agg_rds'),
                                      htmltools::br(),htmltools::br()),
                             shiny::tabPanel("Aggregate Plot",
-                                            shiny::fluidRow(column(width = 4,offset = 1,
+                                            shiny::fluidRow(shiny::column(width = 4,offset = 1,
                                             shiny::uiOutput("bw_table_filter"),
                                             shiny::actionButton("bw_plot_update", "Generate/Update Plot",
                                                                 style = "background-color:#FFFFFF;
@@ -410,8 +410,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                             font-weight:bold;
                                             font-size:14px;"
                                             )),
-                                            
-                                              column(width = 4,
+
+                                              shiny::column(width = 4,
                                             shiny::sliderInput("age_interval", "Choose Interval",
                                                                min = 1,max = 14, value = 3, step = 1),
                                               shiny::selectInput("bw_plot_type", "Choose Plot Type",
@@ -507,7 +507,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
           ))
       animal_df
       })
-    
+
     # call module to download csv data
     shiny::callModule(download_csv, id = "download_filter_animal",
                       data = animalList,
@@ -517,7 +517,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                       data = animalList,
                       filename='filtered_Control_Animal')
 
-    
+
     ########################### MI TAB #######################################
 
     # MI is basic.  Right
@@ -531,14 +531,14 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # defined in sendDB.R
 
     ###### MI findings table ----
-    
+
     ###### get MI_findings whole table ----
    MiFindings_filter_table <- shiny::reactive({
      df <- MiFindings_table(animalList(), input$MISPEC)
      df
    })
 
-    # render MI findings filter 
+    # render MI findings filter
     output$mi_findings_filter <- shiny::renderUI({
       df <- MiFindings_filter_table()
       df_route <- unique(df[['ROUTE']])
@@ -574,10 +574,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                          options=list(plugins=list('drag_drop','remove_button'))
                                          )))
       })
-    
-    
+
+
     #### update MI findings selection from choices selected
-    
+
     # update species and strain when route selected
     shiny::observeEvent(input$mi_route, {
       df <- MiFindings_filter_table()
@@ -587,7 +587,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       shiny::updateSelectizeInput(session = session, inputId = "mi_species", choices = df_species )
       shiny::updateSelectizeInput(session = session, inputId = "mi_strain", choices = df_strain)
     })
-    
+
     # update strain when species selected
     shiny::observeEvent(input$mi_species, {
       df <- MiFindings_filter_table()
@@ -595,19 +595,19 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_strain <- unique(df[['STRAIN']])
       shiny::updateSelectizeInput(session = session, inputId = "mi_strain", choices = df_strain)
     })
-    
+
     ## MI finding table after filter
     Mi_finding_table_after_filter <- shiny::eventReactive(input$mi_finding_update, {
       df <- MiFindings_filter_table()
       df <- df[ROUTE %in% input$mi_route & STRAIN %in% input$mi_strain & SPECIES %in% input$mi_species & SEX %in% input$mi_sex,]
       df
     })
-    
+
     ###### MI findings table after filter applied ----
     findings_table_after_filter <- shiny::reactive({
       shiny::req(input$mi_finding_update)
       finalFindings <- Mi_finding_table_after_filter()
-   
+
       findingsCount <- finalFindings %>%
         dplyr::distinct(STUDYID, USUBJID, MISTRESC) %>%
         dplyr::count(MISTRESC) %>%
@@ -627,7 +627,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     ###### Render  MI findings table ----
     output$findingsTable <- DT::renderDataTable(server = T,{
       findings <- findings_table_after_filter()
-      # DT::formatPercentage() function applied later, function multiply incidence by 100, 
+      # DT::formatPercentage() function applied later, function multiply incidence by 100,
       # so Incidence divide by 100 here
       findings$Incidence <- findings$Incidence/100
       findings_name <- paste0("MI Findings_",input$MISPEC)
@@ -674,7 +674,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                      animalList =  animal_list)
       mi_sub
     })
-    
+
     # function to get selected columns in MI Individual table
     MI_column <- shiny::reactive({
       if (nrow(MI_subject())>0) {
@@ -696,7 +696,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       col_selected <- intersect(mi_col_names_selected,MI_column())
       col_selected
       })
-    
+
     ###### MI individual record table UI with hide/show side column ----
 
     output$mi_indiv_table <- shiny::renderUI({
@@ -744,7 +744,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});","}")))
       tab
       })
-    
+
     ####### Download MI individual table csv and rds ----
     shiny::callModule(download_csv, id = "download_MI_individual",
                       data=table_to_show, filename="MI_Individual_Table")
@@ -775,20 +775,20 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # no record? I know sometimes if result is normal
       # they will not get recorded.  Maybe this could be
       # a flag to toggle.
-      
+
       # filter duplicate
-      
-      # domainData <- domainData[!duplicated(domainData, 
+
+      # domainData <- domainData[!duplicated(domainData,
       #                                      by=c("STUDYID","USUBJID", "MISTRESC", "MISPEC")),]
-      
+
       # apply aggDomain function from sendDB_shiny.R file, this count Incidence
       shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
                                             includeUncertain=input$INCL_UNCERTAIN))
-      
+
       # find number of unique subject grouped by 'MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE'
-      tissueCounts <- domainData[, .(Animals.In.MISPEC=length(unique(USUBJID))),
+      tissueCounts <- domainData[, list(Animals.In.MISPEC=length(unique(USUBJID))),
                                  by=c('MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE')]
-      
+
       # merge incidence count and unique subject number from tableData and tissueCount table
       tableData <- merge(tableData, tissueCounts,
                          by=c('MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE'))
@@ -801,13 +801,13 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tableData[, Animals.In.MISPEC:=NULL]
       return(tableData)
       })
-    
+
    ###### MI aggregate table ----
     output$mi_agg_tab <- DT::renderDataTable(server = T,{
       tableData <- MI_agg_table()
-      tableData <- tableData %>% 
+      tableData <- tableData %>%
         dplyr::mutate_if(is.character, as.factor)
-      # DT::formatPercentage() function applied later, function multiply Incidence by 100, 
+      # DT::formatPercentage() function applied later, function multiply Incidence by 100,
       # so Incidence divide by 100 here
       tableData$Incidence <- tableData$Incidence/100
       # Associate table header with labels
@@ -861,9 +861,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       col_selected <- intersect(lb_col_names_selected,LB_column())
       col_selected
       })
-    
+
     ###### LB individual record table UI with hide/show side column ----
-    
+
     output$lb_indiv_table <- shiny::renderUI({
       if (input$lb_hide_check_column==0) {
         shiny::fluidRow(
@@ -891,7 +891,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         selected = input$lb_filter_column
       )
       })
-    
+
     ###### output datatable for LB individual table ----
     output$lb_subj <- DT::renderDataTable(server = T,{
       tab <- lb_table_to_show()
@@ -980,7 +980,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # responses.
 
     ###### LB aggregate table ----
-    
+
     LB_agg_table <- shiny::reactive({
       animal_list <- animalList()
       lb_sub <- LB_subject()
@@ -993,7 +993,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     ###### render LB aggregate table -----
     output$lb_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- LB_agg_table()
-      tableData <- tableData %>% 
+      tableData <- tableData %>%
         dplyr::mutate_if(is.character, as.factor)
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
@@ -1021,9 +1021,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                       data=LB_agg_table, filename="LB_Aggregate_Table")
 
     #### CL TAB ########################
-    
+
     ###### get CL individual records table ----
-    
+
     # CL_subject <- shiny::reactive({
     #   animal_list <- animalList()
     #   cl_sub <- sendigR::getSubjData(dbToken = .sendigRenv$dbToken,
@@ -1031,32 +1031,32 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #                                  animalList =  animal_list)
     #   cl_sub
     # })
-    # 
+    #
     # CL_column <- shiny::reactive({
     #   if (nrow(CL_subject())>0) {
     #     get_col_name <- colnames(CL_subject())
-    # 
+    #
     #   }
     #   get_col_name
     # })
-    # 
+    #
     # cl_table_to_show <- shiny::reactive({
     #   tabl <- CL_subject()
     #   tabl <- subset(tabl, select=input$cl_filter_column)
     #   tabl
     # })
-    # 
-    # 
+    #
+    #
     # cl_selected_column_to_show <- shiny::reactive({
     #   col_selected <- intersect(cl_col_names_selected,CL_column())
     #   col_selected
-    # 
+    #
     # })
-    
+
     ###### CL individual record table UI with hide/show side column ----
 
     # output$cl_indiv_table <- shiny::renderUI({
-    # 
+    #
     #   if (input$cl_hide_check_column==0) {
     #     shiny::fluidRow(
     #       htmltools::br(),
@@ -1075,7 +1075,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # })
 
     #### update selected column in cl individual table
-    
+
     # shiny::observeEvent(input$cl_hide_check_column,{
     #   shiny::updateCheckboxGroupInput(session = session, inputId = 'cl_filter_column',
     #                            selected = input$cl_filter_column)
@@ -1083,11 +1083,11 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
 
     ######  output datatable for CL individual table ----
-    
+
     # output$cl_subj <- DT::renderDataTable(server = T,{
     #   tab <- cl_table_to_show()
     #   tab <- tab %>% dplyr::mutate_if(is.character,as.factor)
-    # 
+    #
     #   tab <- DT::datatable(tab,
     #                        filter = list(position = 'top'),
     #                        options = list(
@@ -1109,13 +1109,13 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #   tab
     #   })
 
-    
+
     #### CL aggregate table
 
     ##### BW Tab ###############################
 
-    #plot 
-    
+    #plot
+
     # output$bodyWeightTime <- shiny::renderPlot({
     #   animalList <- GetAnimalList(input$SDESIGN, input$SPECIES)
     #   bw <- BodyWeight(animalList)
@@ -1152,9 +1152,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     bw_selected_column_to_show <- shiny::reactive({
       col_selected <- intersect(bw_col_names_selected,BW_column())
       col_selected})
-    
+
     ###### BW individual record table UI with hide/show side column ----
-    
+
     output$bw_indiv_table <- shiny::renderUI({
       if (input$bw_hide_check_column==0) {
         shiny::fluidRow(
@@ -1212,7 +1212,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                       data=bw_table_to_show, filename="BW_Individual_Table")
 
     ###### BW aggregate table ----
-    
+
     BW_agg_table <- shiny::reactive({
       animal_list <- animalList()
       bw_sub <- BW_subject()
@@ -1230,7 +1230,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       shiny::isolate(tableData <- aggDomain_bw_lb(domainData = domainData,domain = 'bw',
                                                   includeUncertain =input$INCL_UNCERTAIN))
       })
-    
+
     ###### BW aggregate table render ----
     output$bw_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- BW_agg_table()
@@ -1254,23 +1254,23 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tab <- DT::formatRound(table = tab,columns = c(6,7),digits = 2)
       tab
       })
-    
+
     ####### Download BW_Aggregate_Table csv and rds ----
     shiny::callModule(download_csv, id = "download_BW_agg",
                       data=BW_agg_table, filename="BW_Aggregate_Table")
     shiny::callModule(download_rds, id="download_BW_agg_rds",
                       data=BW_agg_table, filename="BW_Aggregate_Table")
-    
-    
+
+
     ###### BW Aggregate Plot -----
-    
+
     output$bw_table_filter <- shiny::renderUI({
       df <- BW_agg_table()
       df_route <- unique(df[['ROUTE']])
       df_species <- unique(df[['SPECIES']])
       df_strain <- unique(df[['STRAIN']])
       df_sex <- unique(df[['SEX']])
-      
+
       shiny::fluidRow(addUIDep(shiny::selectizeInput("bw_route",
                                                      "Select Route:",
                                                      choices=df_route,
@@ -1301,9 +1301,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                       ))
                       )
     })
-    
+
     # update selection in BW aggregate plot ----
-    
+
     shiny::observeEvent(input$bw_route, {
       df <- BW_agg_table()
       df <- df[ROUTE %in% input$bw_route, ]
@@ -1312,19 +1312,19 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       shiny::updateSelectizeInput(session = session, inputId = "bw_species", choices = df_species )
       shiny::updateSelectizeInput(session = session, inputId = "bw_strain", choices = df_strain)
     })
-    
+
     shiny::observeEvent(input$bw_species, {
       df <- BW_agg_table()
       df <- df[ROUTE %in% input$bw_route & SPECIES %in% input$bw_species, ]
       df_strain <- unique(df[['STRAIN']])
       shiny::updateSelectizeInput(session = session, inputId = "bw_strain", choices = df_strain)
     })
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     ###### get filter data for plot ----
     bw_agg_table_after_filter <- shiny::eventReactive(input$bw_plot_update,{
       df <- BW_agg_table()
@@ -1333,22 +1333,22 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                  SPECIES %in% input$bw_species,
                                  SEX %in% input$bw_sex)
       df
-      
+
     })
-    
-    
-    ###### Render BW aggregate plot ---- 
-    
+
+
+    ###### Render BW aggregate plot ----
+
     output$bw_agg_plot <- shiny::renderPlot({
       shiny::req(input$bw_plot_update)
       df <- bw_agg_table_after_filter()
-      df <- df[, .(AGEDAYS, SEX,Mean_BWSTRESN,SD_BWSTRESN,N)]
+      df <- df[, list(AGEDAYS, SEX,Mean_BWSTRESN,SD_BWSTRESN,N)]
       df <- na.omit(df, cols=c('AGEDAYS','Mean_BWSTRESN')) # DROP NA VALUES
       df_org <- df
-      
+
       df_m <- df[SEX=='M']
       df_f <- df[SEX=='F']
-   
+
       interval <- input$age_interval
       # calculate male
       age_interval <- make_interval(df_m[['AGEDAYS']], interval)
@@ -1362,8 +1362,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_plot_m <- cbind(mean_interval, Age, sex)
       # print("print df_plot")
       # print(df_plot)
-      
-      
+
+
       # count female
       age_interval_f <- make_interval(df_f[['AGEDAYS']], interval)
       # print(age_interval)
@@ -1375,41 +1375,41 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_plot_f <- cbind(mean_interval_f, Age_f,sex_f)
       names(df_plot_f) <- names(df_plot_m)
       df_plot <- rbind(df_plot_m, df_plot_f)
-      
+
       if (input$bw_plot_type=="Line with Error Bar") {
-        g <- ggplot(data = df_plot, aes(x=Age, y=Mean, color=sex))+
-          geom_line()+
-          geom_point()+
+        g <- ggplot2::ggplot(data = df_plot, ggplot2::aes(x=Age, y=Mean, color=sex))+
+          ggplot2::geom_line()+
+          ggplot2::geom_point()+
           # geom_errorbar(aes(ymin=Mean-Weighted_SD, ymax=Mean+Weighted_SD), width =.2,
           #               position = position_dodge(0.05))+
-          geom_ribbon(aes(ymin=Mean-Weighted_SD, ymax=Mean+Weighted_SD), alpha =.2)+
-          theme(
-            axis.title = element_text(size = 14, face = 'bold'),
-            axis.text = element_text(size = 14),
-            legend.title = element_text(size = 14),
-            legend.text = element_text(size = 14),
-            panel.grid.major.x   = element_blank(),
-            panel.grid.minor.x = element_blank(),
-            panel.grid.major.y = element_blank()
+          ggplot2::geom_ribbon(ggplot2::aes(ymin=Mean-Weighted_SD, ymax=Mean+Weighted_SD), alpha =.2)+
+          ggplot2::theme(
+            axis.title = ggplot2::element_text(size = 14, face = 'bold'),
+            axis.text = ggplot2::element_text(size = 14),
+            legend.title = ggplot2::element_text(size = 14),
+            legend.text = ggplot2::element_text(size = 14),
+            panel.grid.major.x   = ggplot2::element_blank(),
+            panel.grid.minor.x = ggplot2::element_blank(),
+            panel.grid.major.y = ggplot2::element_blank()
           )
       } else {
-        
-        g <- ggplot(data = df_org, aes(x=AGEDAYS, y=Mean_BWSTRESN, color=SEX))+
-          geom_point()+
-          theme(
-            axis.title = element_text(size = 14, face = 'bold'),
-            axis.text = element_text(size = 14),
-            legend.title = element_text(size = 14),
-            legend.text = element_text(size = 14)
+
+        g <- ggplot2::ggplot(data = df_org, ggplot2::aes(x=AGEDAYS, y=Mean_BWSTRESN, color=SEX))+
+          ggplot2::geom_point()+
+          ggplot2::theme(
+            axis.title = ggplot2::element_text(size = 14, face = 'bold'),
+            axis.text = ggplot2::element_text(size = 14),
+            legend.title = ggplot2::element_text(size = 14),
+            legend.text = ggplot2::element_text(size = 14)
           )
-        
+
       }
-      
-      
+
+
       print(g)
-      
+
     })
-    
+
 
     ##### eDish #############################
 
@@ -1419,9 +1419,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #   species <- toupper(studyInfo[studyInfo$TSPARMCD == 'SPECIES',]$TSVAL)
     #   GetAnimalList(design, species)
     # })
-    
+
     #### render plot
-    
+
     # output$eDish <- shiny::renderPlot({
     #   speciesControls1 <- studyAnimalList()
     #   xTest <- LiverFindings(speciesControls1, input$x_axis_LBTESTCD)
@@ -1436,7 +1436,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #   studyy <- LiverFindings(thisStudyAnimals, input$y_axis_LBTESTCD)
     #   thisStudyAnimals <- merge(thisStudyAnimals, studyx, by='USUBJID')
     #   thisStudyAnimals <- unique(merge(thisStudyAnimals, studyy, by='USUBJID'))
-    #   
+    #
     #   ggplot2::ggplot(data) +
     #     ggplot2::geom_point(ggplot2::aes(x=LBSTRESC_TRANS.x,
     #                                      y=LBSTRESC_TRANS.y),
@@ -1448,8 +1448,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #                                              color=SET),
     #                         size=4)})
 
-  ###  filter 
-    
+  ###  filter
+
     # filter_criteria <- shiny::reactive({
     #   filter_selected <- list(
     #     From=as.character(input$STSTDTC[1]),
@@ -1496,12 +1496,12 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
   ##### Run the application ----
   shiny::shinyApp(ui = ui, server = server)
-  
+
 }
 
 ################################################################################
-#### Avoid  'no visible binding for global variable' notes from check of package: -----
-MISPEC <- Animals.In.MISPEC <- days <- BWSTRESN <- NULL
-LBSTRESC_TRANS.x <- LBSTRESC_TRANS.y <- SET <- NULL
-distribution <- ..density.. <- NULL
+#### Avoid  'no visible binding for global variable' notes from check of package:
+MISPEC <- Animals.In.MISPEC <- days <- BWSTRESN <- Mean_BWSTRESN <- Incidence <- NULL
+BWTESTCD <- SD_BWSTRESN <- LBSTRESC_TRANS.x <- LBSTRESC_TRANS.y <- SET <- Mean <- NULL
+Weighted_SD <- distribution <- ..density.. <- Incidence <- NULL
 ############################## END ##################################################
