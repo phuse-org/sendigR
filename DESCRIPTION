@@ -32,7 +32,8 @@ Imports:
     DT,
     scales,
     dplyr,
-    ggplot2
+    ggplot2,
+    Hmisc
 Suggests: 
     ROracle,
     SASxport,

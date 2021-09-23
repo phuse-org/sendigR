@@ -442,6 +442,105 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
   }
 }
 
+# calculate mean for interval 
+# x is vector, column from dataset
+# n is interval, should be a non negative whole number
+# showsamples TRUE will show the mean of index of x
+meanEveryNth <- function(mean_column, sd_column, incidence_count,interval=3, showsamples=TRUE) {
+  
+  if (length(mean_column) <1 | is.null(length(mean_column))) {
+    mean_return <- NA
+    index_return <- NA
+    weighted_sd_return <- NA
+    
+  } else {
+    
+    if(interval==1) {index_return <- seq(1:length(mean_column)); mean_return <- mean_column ; weighted_sd_return <- sd_column}
+    
+    if (interval>1)
+    {    
+      newLen <- length(mean_column) - length(mean_column)%%interval
+      mean_column <- mean_column[1:newLen]
+      sd_column <- sd_column[1:newLen]
+      index <- seq(1, newLen, 1)
+      incidence_count <- incidence_count[1:newLen]
+      matrix_mean_column <- matrix(matrix(mean_column), nrow = interval)
+      matrix_sd_coumn <- matrix(matrix(sd_column), nrow = interval)
+      matrix_index <- matrix(matrix(index), nrow = interval)
+      matrix_incidence <- matrix(matrix(incidence_count), nrow = interval)
+      get_original_value <- matrix_mean_column * matrix_incidence
+      mean_return <- colSums(get_original_value)/colSums(matrix_incidence)
+      col_dim <- dim(matrix_sd_coumn)[2]
+      weighted_sd_return <- sapply(1:col_dim, function(i) sqrt(Hmisc::wtd.var(matrix_mean_column[,i], matrix_incidence[,i])))
+      #mean_return <- apply(matrix_mean_column, 2, mean)
+      # sd_return <- apply(matrix_mean_column, 2, sd)
+      index_return <- apply(matrix_index, 2, mean)
+    } }
+  if(showsamples==FALSE) 
+  { 
+    zz<-mean_return
+  }
+  else if(showsamples==TRUE)
+  {
+    zz <- cbind(index_return, mean_return, weighted_sd_return)
+    colnames(zz) <- c("Index","Mean", "Weighted_SD")
+  }
+  zz <- data.table::as.data.table(zz)
+  return(zz)
+}
+
+
+
+
+# meanEveryNth <- function(x, n=3, showsamples=TRUE) {
+#   
+#   if (length(x) <1 | is.null(length(x))) {
+#     z <- NA
+#     y <- NA
+#     z_sd <- NA
+#     
+#   } else {
+#   
+#   if(n==1) y <- seq(1:length(x)); z <- x ; z_sd <- NA
+#   
+#   if (n>1)
+#   {    
+#     xlen <- length(x)
+#     newLen <- length(x) - length(x)%%n
+#     x <- x[1:newLen]
+#     index_x <- seq(1, newLen, 1)
+#     matrix_x <- matrix(matrix(x), nrow = n)
+#     matrix_index <- matrix(matrix(index_x), nrow = n)
+#     z <- apply(matrix_x, 2, mean)
+#     z_sd <- apply(matrix_x, 2, sd)
+#     y <- apply(matrix_index, 2, mean)
+#   } }
+#   if(showsamples==FALSE) 
+#   { 
+#     zz<-z
+#   }
+#   else if(showsamples==TRUE)
+#   {
+#     zz<-cbind(y,z,z_sd)
+#     colnames(zz)<-c("Sample","Mean", "SD")
+#   }
+#   zz <- data.table::as.data.table(zz)
+#   return(zz)
+# }
+
+## 
+# x is the vector or column of dataset
+# bin is the interval number
+make_interval <- function(x,bin) {
+  if (bin ==1) {
+    return(x)
+  } else
+  new_x <- (as.integer(x/bin)*bin) - (0.5*bin)
+  return(new_x)
+}
+
+
+
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
 MISTRESC <- LBSTRESC <- NULL
