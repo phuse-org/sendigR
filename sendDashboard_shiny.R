@@ -595,6 +595,26 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_strain <- unique(df[['STRAIN']])
       shiny::updateSelectizeInput(session = session, inputId = "mi_strain", choices = df_strain)
     })
+    
+    shiny::observeEvent(input$mi_strain, {
+      df <- MiFindings_filter_table()
+      df <- df[ROUTE %in% input$mi_route & SPECIES %in% input$mi_species & STRAIN %in% input$mi_strain, ]
+      df_sex <- unique(df[['SEX']])
+      shiny::updateSelectizeInput(session = session, inputId = "mi_sex", choices = df_sex)
+    })
+    
+    # shiny::observeEvent(input$mi_sex, {
+    #   df <- MiFindings_filter_table()
+    #   df_all_route <- unique(df[['ROUTE']])
+    #   df <- df[STRAIN %in% input$mi_strain & SEX %in% input$mi_sex, ]
+    #   df_route <- unique(df[['ROUTE']])
+    #   df_species <- unique(df[['SPECIES']])
+    #   shiny::updateSelectizeInput(session = session, inputId = "mi_route", choices =df_all_route, selected = df_route )
+    #   shiny::updateSelectizeInput(session = session, inputId = "mi_species", choices = input$species, selected = input$species)
+    #   shiny::updateSelectizeInput(session = session, inputId = "mi_strain", choices = input$strain, selected = input$strain)
+    # 
+    # })
+    
 
     ## MI finding table after filter
     Mi_finding_table_after_filter <- shiny::eventReactive(input$mi_finding_update, {
@@ -1309,15 +1329,27 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df <- df[ROUTE %in% input$bw_route, ]
       df_species <- unique(df[['SPECIES']])
       df_strain <- unique(df[['STRAIN']])
+      df_sex <- unique(df[['SEX']])
       shiny::updateSelectizeInput(session = session, inputId = "bw_species", choices = df_species )
       shiny::updateSelectizeInput(session = session, inputId = "bw_strain", choices = df_strain)
+      shiny::updateSelectizeInput(session = session, inputId = 'bw_sex', choices = df_sex)
     })
 
     shiny::observeEvent(input$bw_species, {
       df <- BW_agg_table()
       df <- df[ROUTE %in% input$bw_route & SPECIES %in% input$bw_species, ]
       df_strain <- unique(df[['STRAIN']])
+      df_sex <- unique(df[['SEX']])
       shiny::updateSelectizeInput(session = session, inputId = "bw_strain", choices = df_strain)
+      shiny::updateSelectizeInput(session = session, inputId = 'bw_sex', choices = df_sex)
+      
+    })
+    
+    shiny::observeEvent(input$bw_strain, {
+      df <- BW_agg_table()
+      df <- df[ROUTE %in% input$bw_route & SPECIES %in% input$bw_species & STRAIN %in% input$bw_strain, ]
+      df_sex <- unique(df[['SEX']])
+      shiny::updateSelectizeInput(session = session, inputId = 'bw_sex', choices = df_sex)
     })
 
 
