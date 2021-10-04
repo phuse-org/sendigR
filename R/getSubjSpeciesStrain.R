@@ -69,7 +69,8 @@
 #'  It can be a single string, a vector or a list of multiple strings.
 #'  When multiple values are specified for \code{speciesFilter}, each strain
 #'  value must be prefixed by species and ':' , e.g.
-#'  \code{c('RAT: WISTAR','DOG: BEAGLE')}.
+#'  \code{c('RAT:WISTAR','DOG: BEAGLE')}.\cr
+#'  There may be included any number of blanks after ':'
 #' @param inclUncertain  Mandatory, boolean.\cr
 #'  Indicates whether animals for which the species or strain cannot be
 #'  confidently identified shall be included or not in the output data table.
@@ -165,7 +166,12 @@ getSubjSpeciesStrain <- function(dbToken,
     # Trim all filter conditions and convert to uppercase
     speciesFilter <- toupper(trimws(speciesFilter))
     if (!(is.null(strainFilter) | isTRUE(is.na(strainFilter)) | isTRUE(strainFilter=="")))
+    {
       strainFilter <- toupper(trimws(strainFilter))
+      inclStrainFilter <- TRUE
+    }
+    else
+      inclStrainFilter <- FALSE
   }
   if (execFilter & !(inclUncertain %in% c(TRUE,FALSE))) {
     stop("Parameter inclUncertain must be either TRUE or FALSE")
@@ -396,6 +402,117 @@ getSubjSpeciesStrain <- function(dbToken,
                                                             exclusively)
                                     }),
                               use.names=TRUE, fill=TRUE))
+
+    ###########################
+
+    if (exclusively) {
+
+      if (inclUncertain) {
+        # Set of studies/species where species are confidently identified
+        allStudySpecies <-
+          unique(animalSpeciesStrainAll[is.na(SPECIES_UNCERTAIN_MSG),
+                                        list(STUDYID, SPECIES)])
+        # Set of studies where all species values are uncertain
+        uncertainSpeciesStudy <-
+          data.table::fsetdiff(unique(animalSpeciesStrainAll[!is.na(SPECIES_UNCERTAIN_MSG),
+                                                             list(STUDYID)]),
+                               unique(allStudySpecies[,list(STUDYID)]))
+        # Set of studies/species where species are confidently matched
+        # with specified filter
+        foundStudySpecies <-
+          unique(foundAnimalSpeciesStrain[,list(STUDYID, SPECIES)])
+      }
+      else {
+        # Set of studies/species - all species are confidently identified
+        allStudySpecies <-
+          unique(animalSpeciesStrainAll[,list(STUDYID, SPECIES)])
+        # Set of studies/species - all species are confidently matched
+        # with specified filter
+        foundStudySpecies <-
+          unique(foundAnimalSpeciesStrain[,list(STUDYID, SPECIES)])
+      }
+
+      # Get list of studies to keep at SPECIES level
+      # - i.e. studies with no other SPECIES included
+      keepStudies <-
+        data.table::fsetdiff(unique(foundStudySpecies[,list(STUDYID)]),
+                             # Find studies with animals having other SPECIES
+                             # than the requested
+                             unique(data.table::fsetdiff(allStudySpecies,
+                                                         foundStudySpecies)[,
+                                                                            list(STUDYID)]))
+      if (inclUncertain)
+        # Add studies where all species values are uncertain to list of studies
+        # to keep (if any)
+        keepStudies <-
+          unique(data.table::rbindlist(list(keepStudies, uncertainSpeciesStudy)))
+
+      if (inclStrainFilter) {
+        if (inclUncertain) {
+          # Set of studies/strains where strain is confidently identified
+          #  - limited to the set of studies identified at species level
+          allStudyStrain <-
+            unique(data.table::merge.data.table(keepStudies,
+                                                animalSpeciesStrainAll[is.na(STRAIN_UNCERTAIN_MSG),
+                                                                            list(STUDYID, STRAIN)],
+                                                by = 'STUDYID'))
+          # Set of studies where all strain values are uncertain
+          #  - limited to the set of studies identified at species level
+          uncertainStrainStudy <-
+            data.table::fsetdiff(unique(data.table::merge.data.table(keepStudies,
+                                                                     animalSpeciesStrainAll[!is.na(STRAIN_UNCERTAIN_MSG),
+                                                                                            list(STUDYID)],
+                                                                     by = 'STUDYID')),
+                                 unique(allStudyStrain[,list(STUDYID)]))
+          # Set of studies/strain where strain is confidently matched
+          # with specified filter
+          #  - limited to the set of studies identified at species level
+          foundStudyStrain <-
+            unique(data.table::merge.data.table(keepStudies,
+                                                foundAnimalSpeciesStrain[,list(STUDYID, STRAIN)],
+                                                by = 'STUDYID'))
+        }
+        else {
+          # Set of studies/strain - all strain values are confidently identified
+          #  - limited to the set of studies identified at species level
+          allStudyStrain <-
+            unique(data.table::merge.data.table(keepStudies,
+                                                animalSpeciesStrainAll[,list(STUDYID, STRAIN)],
+                                                by = 'STUDYID'))
+          # Set of studies/strain - all strain values are confidently matched
+          # with specified filter
+          #  - limited to the set of studies identified at species level
+          foundStudyStrain <-
+            unique(data.table::merge.data.table(keepStudies,
+                                                foundAnimalSpeciesStrain[,list(STUDYID, STRAIN)],
+                                                by = 'STUDYID'))
+        }
+
+        # Get list of studies to keep at STRAIN level
+        # - i.e. studies with no other STRAIN included
+        keepStudies <-
+          data.table::fsetdiff(unique(foundStudyStrain[,list(STUDYID)]),
+                               # Find studies with animals having other STRAIN than the requested
+                               unique(data.table::fsetdiff(allStudyStrain,
+                                                           foundStudyStrain)[,list(STUDYID)]))
+        if (inclUncertain)
+          # Add studies where all strain values are uncertain to list of studies
+          # to keep (if any)
+          keepStudies <-
+            unique(data.table::rbindlist(list(keepStudies, uncertainStrainStudy)))
+
+
+      }
+
+      # Keep animals for studies included in the limited set of studies
+      # exclusively containing filtered SPECIES/STRAIN
+      foundAnimalSpeciesStrain <-
+        data.table::merge.data.table(foundAnimalSpeciesStrain,
+                                     keepStudies,
+                                     by = 'STUDYID')
+    }
+
+    ######################################################################
   }
   else
     foundAnimalSpeciesStrain <- animalSpeciesStrainAll
@@ -556,24 +673,6 @@ doFiltering <- function(animalSpeciesStrainAll,
     foundAnimals <-
       animalSpeciesStrainAll[SPECIES %in% speciesFilter]
 
-  if (exclusively) {
-    # Find and exclude animals for studies with animals having other SPECIES than the requested
-    foundAnimals<-
-      data.table::merge.data.table( foundAnimals,
-                                    # Set of studies to keep:
-                                    data.table::fsetdiff(unique( foundAnimals[,c('STUDYID')]),
-                                                         # Set of studies (included in the found set of animals with matching SPECIES values) with possible
-                                                         # SPECIES values not included in the speciesFilter:
-                                                         unique(data.table::fsetdiff(merge(# Set of possible SPECIES values per study in the input set of animals:
-                                                           unique(animalSpeciesStrainAll[,c('STUDYID', 'SPECIES')]),
-                                                           unique( foundAnimals[,c('STUDYID')]),
-                                                           by='STUDYID'),
-                                                           unique( foundAnimals[,c('STUDYID', 'SPECIES')]))[,c('STUDYID')])
-                                    ),
-                                    by='STUDYID')
-
-  }
-
   if (InclStrainFilter) {
     ## Do filtering at STRAIN level
 
@@ -587,21 +686,6 @@ doFiltering <- function(animalSpeciesStrainAll,
       foundAnimals <-
         animalSpeciesStrainAll[STRAIN %in% strainFilter]
 
-    if (exclusively) {
-      # Find studies with animals having other STRAIN than the requested
-      foundAnimals <-
-        data.table::merge.data.table(foundAnimals,
-                                     # Set of studies to keep:
-                                     data.table::fsetdiff(unique(foundAnimals[,c('STUDYID')]),
-                                                          # Set of studies (included in the found set of animals with matching STRAIN values) with possible
-                                                          # STRAIN values not included in the strainFilter:
-                                                          unique(data.table::fsetdiff(merge(# Set of possible STRAIN values per study in the input set of animals:
-                                                            unique(animalSpeciesStrainAll[,c('STUDYID', 'STRAIN')]),
-                                                            unique(foundAnimals[,c('STUDYID')]), by='STUDYID'),
-                                                            unique(foundAnimals[,c('STUDYID', 'STRAIN')]))[,c('STUDYID')])),
-                                     by='STUDYID')
-
-    }
   }
 
   if (inclUncertain)
@@ -623,8 +707,8 @@ execOneSpeciesFilter <- function(animalSpeciesStrainAll,
   # - remove prefixed species value
   strainList <-
     stringr::str_replace(strainFilter[stringr::str_detect(strainFilter,
-                                      paste0(species,': '))],
-                         paste0(species,': '),'')
+                                      paste0(species,': *'))],
+                         paste0(species,': *'),'')
   if (length(strainList) == 0) strainList <- NULL
 
   # Execute species/strain filtering for current species/strain(s)

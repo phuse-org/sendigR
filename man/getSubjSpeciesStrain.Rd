@@ -36,7 +36,8 @@ specified for parameter \code{speciesFilter}\cr
 It can be a single string, a vector or a list of multiple strings.
 When multiple values are specified for \code{speciesFilter}, each strain
 value must be prefixed by species and ':' , e.g.
-\code{c('RAT: WISTAR','DOG: BEAGLE')}.}
+\code{c('RAT:WISTAR','DOG: BEAGLE')}.\cr
+There may be included any number of blanks after ':'}
 
 \item{inclUncertain}{Mandatory, boolean.\cr
 Indicates whether animals for which the species or strain cannot be

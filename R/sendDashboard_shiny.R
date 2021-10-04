@@ -1448,24 +1448,51 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #                                              color=SET),
     #                         size=4)})
 
-  ###  filter
+  ###  get filter criteria from sidebar
 
-    # filter_criteria <- shiny::reactive({
-    #   filter_selected <- list(
-    #     From=as.character(input$STSTDTC[1]),
-    #     To=as.character(input$STSTDTC[2]),
-    #     Design=input$SDESIGN,
-    #     Route=input$ROUTE,
-    #     Species=input$SPECIES,
-    #     Strain=input$STRAIN,
-    #     Sex=input$SEX,
-    #     Uncertain=input$INCL_UNCERTAIN
-    #   )
-    #   filter_selected
-    # })
+    filter_criteria <- shiny::reactive({
+      #get routes
+      if (length(input$ROUTE) != 0) {
+        route <- input$ROUTE
+      }
+      else {
+        route <- GetUniqueRoutes()
+      }
+      # get species
+      if (length(input$SPECIES) != 0) {
+        species <- input$SPECIES
+      }
+      else {
+        species <- GetUniqueSpecies()
+      }
+      # get strain
+      if (length(input$SPECIES) == 0) {
+        Uspecies <- GetUniqueSpecies()
+        strain <- GetUniqueStrains(Uspecies)
+      }
+      else if ( length(input$SPECIES)!=0 & length(input$STRAIN) !=0){
+        strain <- input$STRAIN
+      } else {
+        strain <- GetUniqueStrains(input$SPECIES)
+      }
+      
+      # make list
+      filter_selected <- list(
+        From=as.character(input$STSTDTC[1]),
+        To=as.character(input$STSTDTC[2]),
+        Design=input$SDESIGN,
+        Route=route,
+        Species=species,
+        Strain=strain,
+        Sex=input$SEX,
+        Uncertain=input$INCL_UNCERTAIN
+      )
+      print(filter_selected)
+      filter_selected
+    })
 
 
-    # download all data as RData file
+    ##### Download all data as RData file ----
     output$download_all <- shiny::downloadHandler(
       filename <- function(){
         paste0("All_Table_", Sys.Date(),".RData")

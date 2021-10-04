@@ -141,14 +141,23 @@ test_that('02 - Specified one species filter value',
                                    c('STUDYID','USUBJID')),
                getExpected('expect02'))
 
-  # 4 - exclusively is TRUE
+  # 4 - exclusively is TRUE, report uncertainties
   expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
-                                                animalList = animalListIn2,
+                                                animalList = animalListIn1,
                                                 speciesFilter = 'RAT',
                                                 exclusively = TRUE,
-                                                inclUncertain = FALSE),
+                                                inclUncertain = TRUE),
                                    c('STUDYID','USUBJID')),
                getExpected('expect02_4'))
+
+  # 5 - Do not  report uncertainties
+  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                        animalList = animalListIn2,
+                                                        speciesFilter = 'RAT',
+                                                        exclusively = TRUE,
+                                                        inclUncertain = FALSE),
+                                   c('STUDYID','USUBJID')),
+               getExpected('expect02_4')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
 })
 
 test_that('03 - Specified multiple species filter values',
@@ -172,16 +181,196 @@ test_that('03 - Specified multiple species filter values',
                                    c('STUDYID','USUBJID')),
                getExpected('expect03')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
 
-  # 3 - exclusively is TRUE
-  # expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
-  #                                               animalList = animalListIn2,
-  #                                               speciesFilter = c('RAT','monkey'),
-  #                                               exclusively = FALSE,
-  #                                               inclUncertain = FALSE),
-  #                                  c('STUDYID','USUBJID')),
-  #              getExpected('expect03_3'))
+  # 3 - exclusively is TRUE, report uncertainties
+  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                animalList = animalListIn1,
+                                                speciesFilter = c('RAT','monkey'),
+                                                exclusively = TRUE,
+                                                inclUncertain = TRUE),
+                                   c('STUDYID','USUBJID')),
+               getExpected('expect03_3'))
+
+  # 4 - Do not report uncertainties
+  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                        animalList = animalListIn2,
+                                                        speciesFilter = c('RAT','monkey'),
+                                                        exclusively = TRUE,
+                                                        inclUncertain = FALSE),
+                                   c('STUDYID','USUBJID')),
+               getExpected('expect03_3')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
 
 })
 
+test_that('04 - Specified one species & one strain filter value',
+{
+  # 1 - Report uncertainties, Exclusively is FALSE
+  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                        animalList = animalListIn1,
+                                                        speciesFilter = 'RAT',
+                                                        strainFilter = 'wistar',
+                                                        exclusively = FALSE,
+                                                        inclUncertain = TRUE),
+                                   c('STUDYID','USUBJID')),
+               getExpected('expect04'))
+
+  # 2 - Do not report uncertainties
+  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                        animalList = animalListIn2,
+                                                        speciesFilter = 'RAT',
+                                                        strainFilter = 'WISTAR',
+                                                        exclusively = FALSE,
+                                                        inclUncertain = FALSE),
+                                   c('STUDYID','USUBJID')),
+               getExpected('expect04')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
+
+  # 3 - exclusively is TRUE, report uncertainties
+  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                        animalList = animalListIn1,
+                                                        speciesFilter = 'RAT',
+                                                        strainFilter = 'WISTAR',
+                                                        exclusively = TRUE,
+                                                        inclUncertain = TRUE),
+                                   c('STUDYID','USUBJID')),
+               getExpected('expect04_3'))
+
+  # 4 - Do report uncertainties
+  expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                        animalList = animalListIn2,
+                                                        speciesFilter = 'RAT',
+                                                        strainFilter = 'WISTAR',
+                                                        exclusively = TRUE,
+                                                        inclUncertain = FALSE),
+                                   c('STUDYID','USUBJID')),
+               getExpected('expect04_3')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
+})
+
+test_that('05 - Specified one species & mutiple strain filter values',
+          {
+            # 1 - Report uncertainties, Exclusively is FALSE
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn1,
+                                                                  speciesFilter = 'RAT',
+                                                                  strainFilter = c('WISTAR','SPRAGUE-DAWLEY'),
+                                                                  exclusively = FALSE,
+                                                                  inclUncertain = TRUE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect05'))
+
+            # 2 - Do not report uncertainties
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn2,
+                                                                  speciesFilter = 'RAT',
+                                                                  strainFilter = c('WISTAR','SPRAGUE-DAWLEY'),
+                                                                  exclusively = FALSE,
+                                                                  inclUncertain = FALSE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect05')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
+
+            # 3 - exclusively is TRUE, report uncertainties
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn1,
+                                                                  speciesFilter = 'RAT',
+                                                                  strainFilter = c('WISTAR','SPRAGUE-DAWLEY'),
+                                                                  exclusively = TRUE,
+                                                                  inclUncertain = TRUE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect05_3'))
+
+            # 4 - Do not report uncertainties
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn2,
+                                                                  speciesFilter = 'RAT',
+                                                                  strainFilter = c('WISTAR','SPRAGUE-DAWLEY'),
+                                                                  exclusively = TRUE,
+                                                                  inclUncertain = FALSE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect05_3')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
+          })
+
+test_that('06 - Specified multiple species & one strain filter values',
+          {
+            # 1 - Report uncertainties, Exclusively is FALSE
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn1,
+                                                                  speciesFilter = c('RAT','DOG','MONKEY'),
+                                                                  strainFilter = c('RAT:WISTAR','DOG: BEAGLE', 'MONKEY:  CYNOMOLGUS'),
+                                                                  exclusively = FALSE,
+                                                                  inclUncertain = TRUE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect06'))
+
+            # 2 - Do not report uncertainties
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn2,
+                                                                  speciesFilter = c('RAT','DOG','MONKEY'),
+                                                                  strainFilter = c('RAT:WISTAR','DOG: BEAGLE', 'MONKEY:  CYNOMOLGUS'),
+                                                                  exclusively = FALSE,
+                                                                  inclUncertain = FALSE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect06')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
+
+            # 3 - exclusively is TRUE, report uncertainties
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn1,
+                                                                  speciesFilter = c('RAT','DOG','MONKEY'),
+                                                                  strainFilter = c('RAT:WISTAR','DOG: BEAGLE', 'MONKEY:  CYNOMOLGUS'),
+                                                                  exclusively = TRUE,
+                                                                  inclUncertain = TRUE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect06_3'))
+
+            # 4 - Do not report uncertainties
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn2,
+                                                                  speciesFilter = c('RAT','DOG','MONKEY'),
+                                                                  strainFilter = c('RAT:WISTAR','DOG: BEAGLE', 'MONKEY:  CYNOMOLGUS'),
+                                                                  exclusively = TRUE,
+                                                                  inclUncertain = FALSE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect06_3')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
+          })
+
+test_that('07 - Specified multiple species & mutiple strain filter values',
+          {
+            # 1 - Report uncertainties, Exclusively is FALSE
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn1,
+                                                                  speciesFilter = c('RAT','DOG','MONKEY'),
+                                                                  strainFilter = c('RAT:WISTAR','RAT:SPRAGUE-DAWLEY','DOG:BEAGLE', 'MONKEY:CYNOMOLGUS'),
+                                                                  exclusively = FALSE,
+                                                                  inclUncertain = TRUE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect07'))
+
+            # 2 - Do not report uncertainties
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn2,
+                                                                  speciesFilter = c('RAT','DOG','MONKEY'),
+                                                                  strainFilter = c('RAT:WISTAR','RAT:SPRAGUE-DAWLEY','DOG:BEAGLE', 'MONKEY:CYNOMOLGUS'),
+                                                                  exclusively = FALSE,
+                                                                  inclUncertain = FALSE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect07')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
+
+            # 3 - exclusively is TRUE, report uncertainties
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn1,
+                                                                  speciesFilter = c('RAT','DOG','MONKEY'),
+                                                                  strainFilter = c('RAT:WISTAR','RAT:SPRAGUE-DAWLEY','DOG:BEAGLE', 'MONKEY:CYNOMOLGUS'),
+                                                                  exclusively = TRUE,
+                                                                  inclUncertain = TRUE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect07_3'))
+
+            # 4 - Do not report uncertainties
+            expect_equal(data.table::setkeyv(getSubjSpeciesStrain(db,
+                                                                  animalList = animalListIn2,
+                                                                  speciesFilter = c('RAT','DOG','MONKEY'),
+                                                                  strainFilter = c('RAT:WISTAR','RAT:SPRAGUE-DAWLEY','DOG:BEAGLE', 'MONKEY:CYNOMOLGUS'),
+                                                                  exclusively = TRUE,
+                                                                  inclUncertain = FALSE),
+                                             c('STUDYID','USUBJID')),
+                         getExpected('expect07_3')[!grepl('SpeciesStrain:',UNCERTAIN_MSG)][,UNCERTAIN_MSG := NULL ])
+          })
 
 disconnectDB(db)
