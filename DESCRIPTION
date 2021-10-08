@@ -1,5 +1,5 @@
 Package: sendigR
-Title: Extract control data from a CDISC SEND study data repository
+Title: Extract Control Data from a CDISC SEND Study Data Repository
 Version: 0.0.0.9013
 Authors@R: 
     person(given = "First",
@@ -7,7 +7,9 @@ Authors@R:
            role = c("aut", "cre"),
            email = "first.last@example.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: The package contains a set of functions to extract and filter data for control animals from a database containing CDISC SEND data for a set of non-clinical studies. These data base types are supoorted: sqllite, Oracle.
+Description: A set of functions to extract and filter data for control animals 
+    from a database containing CDISC SEND data for a set of non-clinical 
+    studies. These data base types are supported: SQLite, Oracle.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -26,11 +28,8 @@ Imports:
     stringi,
     shiny,
     shinydashboard,
-    tidyverse,
-    MASS,
     htmltools,
     DT,
-    scales,
     dplyr,
     ggplot2,
     Hmisc
@@ -46,3 +45,4 @@ VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
+_R_CHECK_FORCE_SUGGESTS_: false
