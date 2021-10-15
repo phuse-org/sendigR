@@ -95,7 +95,7 @@ returned per pool and finding.
 
 The populated value of a phase is one of:
 \itemize{
-\item 'Screening'\
+\item 'Screening'\cr
 If TA.EPOCH fulfills one:
 \itemize{
 \item contains 'pre' followed by one of
@@ -131,7 +131,7 @@ uncertain situations are identified and reported (in column UNCERTAIN_MSG):
 \itemize{
 \item One of the date/time values SESTDTC, SEENDTC or domainDTC is empty
 or contains an invalid ISO 8601 value
-\item The value of domainDTC is included in more one SESTDTC/SEENDTC
+\item The value of domainDTC is included in more then one SESTDTC/SEENDTC
 interval
 \item The EPOCH value does not match any of the patterns identifying the
 set of possible study phases.

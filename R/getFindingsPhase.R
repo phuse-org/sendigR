@@ -33,7 +33,7 @@
 #'
 #' The populated value of a phase is one of:
 #' \itemize{
-#'   \item 'Screening'\
+#'   \item 'Screening'\cr
 #'      If TA.EPOCH fulfills one:
 #'      \itemize{
 #'        \item contains 'pre' followed by one of
@@ -69,7 +69,7 @@
 #' \itemize{
 #'   \item One of the date/time values SESTDTC, SEENDTC or domainDTC is empty
 #'   or contains an invalid ISO 8601 value
-#'   \item The value of domainDTC is included in more one SESTDTC/SEENDTC
+#'   \item The value of domainDTC is included in more then one SESTDTC/SEENDTC
 #'   interval
 #'   \item The EPOCH value does not match any of the patterns identifying the
 #'   set of possible study phases.
@@ -292,16 +292,18 @@ getFindingsPhase <-function(dbToken,
                                           ETCD,
                                           EPOCH=tolower(EPOCH))],
                                  by = c('STUDYID', 'ARMCD'),
+                                 all.x = TRUE,
                                  allow.cartesian=TRUE)[,!"ARMCD"]
 
   # Join findings keys with Subject Elements to get all possible element(s) per subject
   findElementAll <-
     data.table::merge.data.table(subjFindings, SE,
                                  by = c('STUDYID', 'USUBJID'),
+                                 all.x = TRUE,
                                  allow.cartesian=TRUE)
 
-  # Extract rows where the finding --DTC is within the data interval in one or two
-  # elements start/end dates
+  # Evaluate each of all finding rows to find the assaiciated element.
+  # Check if the finding --DTC is within the data interval in one or twoelements start/end dates
   # There may be more than one element associated with a finding if the --DTC is within the interval of the end date in
   # one element and start date in another element(i.e. a time part is missing in one or more of the --DTC, SESTDTC, SEENDTC).
   # All ISO date/time variables are converted to numerical datetime before the comparison
@@ -310,18 +312,56 @@ getFindingsPhase <-function(dbToken,
   # If a SEENDTC values misses the timepart - it's calculated as 23:59:59
   # Include additional rows where one or more involved ISO date values are empty or invalid
   # - add an message for these uncertain rows
-  findElement <-
+  findElementEvaluated <-
     findElementAll[is.na(parsedate::parse_iso_8601(DTC))     |
                    is.na(parsedate::parse_iso_8601(SESTDTC)) |
                    is.na(parsedate::parse_iso_8601(SEENDTC)) |
                    data.table::between(parsedate::parse_iso_8601(DTC),
                                        parsedate::parse_iso_8601(SESTDTC),
-                                       parsedate::parse_iso_8601(ifelse(grepl("T",SEENDTC),SEENDTC,paste(SEENDTC,"T23:59:59",sep=""))))][,
-                   INVAL_ISO_DT_MSG := ifelse(is.na(parsedate::parse_iso_8601(DTC))     |
-                                              is.na(parsedate::parse_iso_8601(SESTDTC)) |
-                                              is.na(parsedate::parse_iso_8601(SEENDTC)),
-                                              paste0('Empty or invalid ISO8601 date/time value in: ', domainDTC, ', SESTDTC or SEENDTC'),
-                                              as.character(NA))]
+                                       parsedate::parse_iso_8601(ifelse(grepl("T",SEENDTC),
+                                                                        SEENDTC,
+                                                                        paste(SEENDTC,"T23:59:59",sep="")))) |
+                   (! is.na(parsedate::parse_iso_8601(DTC))     &
+                    ! is.na(parsedate::parse_iso_8601(SESTDTC)) &
+                    ! is.na(parsedate::parse_iso_8601(SEENDTC)) &
+                    ! data.table::between(parsedate::parse_iso_8601(DTC),
+                                          parsedate::parse_iso_8601(SESTDTC),
+                                          parsedate::parse_iso_8601(ifelse(grepl("T",SEENDTC),
+                                                                           SEENDTC,
+                                                                           paste(SEENDTC,"T23:59:59",sep="")))))][,
+                   MSG := ifelse(is.na(parsedate::parse_iso_8601(DTC))     |
+                                   is.na(parsedate::parse_iso_8601(SESTDTC)) |
+                                   is.na(parsedate::parse_iso_8601(SEENDTC)),
+                                 paste0('Empty or invalid ISO8601 date/time value in: ', domainDTC, ', SESTDTC or SEENDTC'),
+                                 ifelse((! is.na(parsedate::parse_iso_8601(DTC))     &
+                                           ! is.na(parsedate::parse_iso_8601(SESTDTC)) &
+                                           ! is.na(parsedate::parse_iso_8601(SEENDTC)) &
+                                           ! data.table::between(parsedate::parse_iso_8601(DTC),
+                                                                 parsedate::parse_iso_8601(SESTDTC),
+                                                                 parsedate::parse_iso_8601(ifelse(grepl("T",SEENDTC),
+                                                                                                  SEENDTC,
+                                                                                                  paste(SEENDTC,"T23:59:59",sep=""))))),
+                                        paste0(domainDTC, ' does fit into any SESTDTC/SEENDTC interval'),
+                                        as.character(NA)))]
+
+  # Extract all findings where one or more elements are identified
+  findElement = findElementEvaluated[is.na(MSG)][,MSG := NULL]
+
+  # Extract all findings where no element could be identified
+  findElementErr <- unique(unique(
+    data.table::merge.data.table(
+      data.table::fsetdiff(unique(findElementEvaluated[! is.na(MSG),
+                                                       list(STUDYID,USUBJID,SEQ)]),
+                           findElement[,list(STUDYID,USUBJID,SEQ)]),
+      findElementEvaluated[! is.na(MSG),
+                           list(STUDYID,USUBJID,SEQ,MSG)],
+      by = c('STUDYID', 'USUBJID', 'SEQ')))[, # Combine potential different error message per finding
+                                              # into one message per finding separated by ';'
+                                            MSG := paste(unlist(list(.SD)),
+                                                          collapse = ';'),
+                                            by = c('STUDYID', 'USUBJID', 'SEQ'),
+                                            .SDcols='MSG'])
+
 
   # Add number of distinct elements per finding to identify if more then one element fits the finding date
   # - Remove the DTC column (--DTC is included later on)
@@ -330,49 +370,54 @@ getFindingsPhase <-function(dbToken,
   # Merge epochs per animal with findings keys/elements to get the epoch(s) per finding
   # Keep each element whether an epoch is found or not (left join)
   # - Derive the study phase based on the epoch
-  findPhaseAll <-
+  findPhaseFound <-
     data.table::merge.data.table(findElement, dmEpoch,
                                  by = c('STUDYID', 'USUBJID', 'ETCD'),
                                  all.x = TRUE)[, PHASE := mapply(getPhase,EPOCH)]
-  # If any PHASE values are 'Uncertain', include an explanation
-  findPhaseAll[PHASE == 'Uncertain', MISS_PHASE_MSG := 'Could not decide PHASE based on EPOCH value']
 
-  # For findings with multiple elements  which is not due to missing or invalid ISO date(s)
+  # Extract findings with a valid phase, ie.
+  # - one identified element and phase is identified
+  findPhaseOK <-
+    findPhaseFound[NUM_ELEMENT == 1 & PHASE != 'Uncertain',c('STUDYID', 'USUBJID', 'SEQ', 'PHASE')]
+
+  # Extract findings with 'Uncertain' PHASE, include an explanation
+  findPhaseErr1 <- unique(
+    findPhaseFound[PHASE == 'Uncertain',
+                 c('STUDYID', 'USUBJID', 'SEQ', 'PHASE')][,
+                      MSG := 'Could not decide PHASE based on EPOCH value'])
+
+  # For findings with multiple elements
   # - collect all phases per finding in a message string
-  findPhaseAll[NUM_ELEMENT > 1 & is.na(INVAL_ISO_DT_MSG),
-            `:=` (MULTI_ELEM_MSG = paste0('Phase could not be decided due to date overlap - possibly: ',
-                                          paste(PHASE, collapse=', '),
-                                          ' (EPOCH: ', paste(EPOCH, collapse=', '),')',
-                                          ' (ETCD: ', paste(ETCD, collapse=', '),')',
-                                          ' (SESTDTC/SEENDTC: ',
-                                          paste(paste(SESTDTC,SEENDTC,sep='/'),
-                                                collapse=', '),')'),
-                  ETCD = 'UNCERTAIN',
-                  SESTDTC = 'UNCERTAIN',
-                  SEENDTC = 'UNCERTAIN',
-                  EPOCH = 'UNCERTAIN',
-                  PHASE = 'Uncertain'),
-            by = c('STUDYID','USUBJID','SEQ')][, `:=` (NUM_ELEMENT = NULL)]
+  findPhaseErr2 <- unique(
+    findPhaseFound[NUM_ELEMENT > 1][,
+                `:=` (MSG = paste0('Phase could not be decided due to date overlap - possibly: ',
+                                   paste(PHASE, collapse=', '),
+                                   ' (EPOCH: ', paste(EPOCH, collapse=', '),')',
+                                   ' (ETCD: ', paste(ETCD, collapse=', '),')',
+                                   ' (SESTDTC/SEENDTC: ',
+                                   paste(paste(SESTDTC,SEENDTC,sep='/'),
+                                         collapse=', '),')'),
+                      PHASE = 'Uncertain'),
+                by = c('STUDYID','USUBJID','SEQ')][, `:=` (ETCD = NULL,
+                                                           SESTDTC = NULL,
+                                                           SEENDTC = NULL,
+                                                           EPOCH = NULL,
+                                                           NUM_ELEMENT = NULL)])
 
-
-
-  # Remove duplicates generated by multiple found elements
-  # - collects all uncertainty messages in one column separated by ';'
-  findPhaseAll <- unique(findPhaseAll)[,
-    MSG := ifelse(!is.na(INVAL_ISO_DT_MSG) | !is.na(MISS_PHASE_MSG) | !is.na(MULTI_ELEM_MSG),
-                  # Ensure only one ';' in between messages
-                  gsub("^;|$;", "", gsub(";+", ";",
-                    paste(ifelse(is.na(INVAL_ISO_DT_MSG),
-                                 "", INVAL_ISO_DT_MSG),
-                          ifelse(is.na(MISS_PHASE_MSG),
-                                 "", MISS_PHASE_MSG),
-                          ifelse(is.na(MULTI_ELEM_MSG),
-                                 "", MULTI_ELEM_MSG),
-                          sep = ";"))),
-            # Remove individual message columns
-            as.character(NA))][,`:=` (INVAL_ISO_DT_MSG = NULL,
-                                      MISS_PHASE_MSG = NULL,
-                                      MULTI_ELEM_MSG = NULL)]
+  # Combine all findings - with or without errors
+  findPhaseAll <-
+    data.table::rbindlist(list(
+      findPhaseOK[,MSG := as.character(NA)],
+      unique(
+        data.table::rbindlist(list(findPhaseErr1,
+                                   findPhaseErr2))[,MSG := paste(unlist(list(.SD)),
+                                                                 collapse = ';')
+                                                   ,by = c('STUDYID',
+                                                           'USUBJID',
+                                                           'SEQ',
+                                                           'PHASE'),
+                                                   ,.SDcols='MSG']),
+      findElementErr[,PHASE := 'Uncertain']), use.names = TRUE, fill=TRUE)
 
   if (!pooledFindings)
     findPhase <- findPhaseAll[, c('STUDYID','USUBJID','SEQ','PHASE','MSG')]
@@ -500,6 +545,6 @@ getFindingsPhase <-function(dbToken,
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
 MSG_ALL <- ARMCD <- DTC <- EPOCH <- ETCD <- NULL
-INVAL_ISO_DT_MSG <- MISS_PHASE_MSG <- MULTI_ELEM_MSG <- NULL
+MISS_ELEM_MSG <- MISS_PHASE_MSG <- MULTI_ELEM_MSG <- NULL
 N <- NUM_ELEMENT <- N_EPOCH <- N_ETCD <- N_PHASE <- N_SEENDTC <- NULL
 N_SESTDTC <- PHASE <- SEENDTC <- SEQ <- SESTDTC <- NULL
