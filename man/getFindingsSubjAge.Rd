@@ -169,11 +169,10 @@ finding time cannot be confidently identified are included in the output set.
 These uncertain situations are identified and reported (in column
 UNCERTAIN_MSG):
 \itemize{
-\item No age at reference time (\code{animalList.AGEDAYS}) has been
-calculated for subject
-\item Reference start time (\code{animalList.RFSTDTC}) is missing or
-contains invalid ISO8601 date value for
-subject.
+\item No age at reference time  has been calculated for subject
+(\code{animalList.AGEDAYS})
+\item Reference start time  is missing or contains invalid ISO8601 date
+value for subject (\code{animalList.RFSTDTC}).
 \item Missing \code{[domain]DY} value and missing or invalid ISO8601 date
 \code{[domain]DTC} value for finding
 \item For pooled findings:

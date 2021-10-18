@@ -22,8 +22,6 @@
 # exclusively parameter values true and false respectively
 # Inclusion/exclusion of uncertain values
 
-# rootPath <- '//FSDKHQ001/dep402$/000-4284/DATA MANAGEMENT/@Data Science/BioCelerate/sendigR/tests/data/'
-
 #### Prepare for test execution
 rootPath <-  '../data/'
 

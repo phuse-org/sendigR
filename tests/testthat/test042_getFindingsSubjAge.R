@@ -16,8 +16,6 @@
 # All valid variants of age units given as filter condition
 # Both subject and pool level findings included
 
-# rootPath <- '//FSDKHQ001/dep402$/000-4284/DATA MANAGEMENT/@Data Science/BioCelerate/sendigR/tests/data/'
-
 #### Prepare for test execution
 rootPath <-  '../data/'
 
