@@ -53,7 +53,7 @@ studyListAge <- data.table::data.table(STUDYID = c('Nimort-01'),
 
 test_that('01 - Filtering of animals',
 {
-  # 1 - Do not include rows
+  # 1 - Do not include uncertain rows
   expect_equal(data.table::setkeyv(getControlSubj(db,
                                                   studyList = studyListFilter,
                                                   inclUncertain = FALSE),

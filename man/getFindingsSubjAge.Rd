@@ -35,7 +35,15 @@ and \code{LBDTC}}
 
 \item{animalList}{Mandatory, data.table.\cr
 A data with the set of animals included in the \code{findings} table
-(may contain more animals than included in \code{findings})}
+(may contain more animals than included in \code{findings}).\cr
+The data set must contain at least these columns returned by the function \link{getControlSubj}
+\itemize{
+\item \code{STUDYID}
+\item \code{USUBJID}
+\item \code{RFSTDTC}
+\item \code{DM_AGEDAYS}
+\item \code{NO_AGE_MSG}
+}}
 
 \item{fromAge}{Optional, character \cr
 The start of age interval to extract.\cr

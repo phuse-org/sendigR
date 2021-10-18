@@ -78,11 +78,10 @@
 #' These uncertain situations are identified and reported (in column
 #' UNCERTAIN_MSG):
 #'  \itemize{
-#'    \item No age at reference time (\code{animalList.AGEDAYS}) has been
-#'    calculated for subject
-#'    \item Reference start time (\code{animalList.RFSTDTC}) is missing or
-#'    contains invalid ISO8601 date value for
-#'    subject.
+#'    \item No age at reference time  has been calculated for subject
+#'    (\code{animalList.AGEDAYS})
+#'    \item Reference start time  is missing or contains invalid ISO8601 date
+#'    value for subject (\code{animalList.RFSTDTC}).
 #'    \item Missing \code{[domain]DY} value and missing or invalid ISO8601 date
 #'    \code{[domain]DTC} value for finding
 #'    \item For pooled findings:
@@ -114,7 +113,15 @@
 #'  and \code{LBDTC}
 #' @param animalList Mandatory, data.table.\cr
 #'  A data with the set of animals included in the \code{findings} table
-#'  (may contain more animals than included in \code{findings})
+#'  (may contain more animals than included in \code{findings}).\cr
+#'  The data set must contain at least these columns returned by the function [getControlSubj]
+#'  \itemize{
+#'     \item \code{STUDYID}
+#'     \item \code{USUBJID}
+#'     \item \code{RFSTDTC}
+#'     \item \code{DM_AGEDAYS}
+#'     \item \code{NO_AGE_MSG}
+#'  }
 #' @param fromAge Optional, character \cr
 #'   The start of age interval to extract.\cr
 #'   Must be in a string in this format:\cr
@@ -218,25 +225,16 @@ getFindingsSubjAge<-function(dbToken,
   if (execFilter) {
     ## Evaluate if the given filter ages are valid
 
-    # Regular expression patterns for a valid from/to age input values
-    agePattern<-'^\\d+'
-    ageUnitPattern <- '(d|day|days|w|week|weeks|m|month|months|y|year|years)'
-    validPattern <- paste(paste(paste(agePattern, '\\s*', sep=''),
-                                ageUnitPattern, sep=''),
-                          '{1}\\s*$', sep='')
+    # Regular expression pattern for a valid from/to age input values
+    validPattern <- "^\\s*(\\d+)\\s*(d|day|days|w|week|weeks|m|month|months|y|year|years){1}\\s*$"
 
     # Evaluate age input string and calculate age in days
     calcAgeDays <- function(ageStr) {
       if (!(is.null(ageStr) | isTRUE(is.na(ageStr)) | isTRUE(ageStr==''))) {
         if (grepl(validPattern, ageStr, ignore.case = TRUE )) {
           # Valid age string specified - convert to days and return value
-          ageVal <- as.numeric(stringr::str_extract(ageStr,agePattern))
-          ageUnit <-
-            stringi::stri_extract_all_regex(ageStr,ageUnitPattern,
-                                            opts_regex = list(case_insensitive = TRUE)) %>%
-            as.character() %>%
-            substr(1,1) %>%
-            tolower()
+          ageVal <- as.numeric(stringr::str_match(tolower(ageStr), validPattern)[,2])
+          ageUnit <- substr(stringr::str_match(tolower(ageStr), validPattern)[,3],1,1)
           if (ageUnit == 'd') {ageVal}
           else if (ageUnit == 'w') {ageVal * 7}
           else if (ageUnit == 'm') {round(ageVal * 365/12)}
@@ -255,7 +253,7 @@ getFindingsSubjAge<-function(dbToken,
     fromAgeDays <- calcAgeDays(fromAge)
     toAgeDays <- calcAgeDays(toAge)
     if (is.null(fromAgeDays) | is.null(fromAgeDays)) {
-      stop('ERROR: Wrong format of specified start and/or an end age')
+      stop('ERROR: Wrong format of specified start and/or end age')
     }
   }
 
@@ -278,10 +276,10 @@ getFindingsSubjAge<-function(dbToken,
                                   ifelse(!is.na(dy),
                                          #  --DY is populated and used for calculation:
                                          DM_AGEDAYS + ifelse(dy>0, dy-1, dy),
-                                         ifelse(!is.na(parsedate::parse_iso_8601(DTC)),
+                                         ifelse(!is.na(parsedate::parse_iso_8601(dtc)),
                                                 #  --DTC is populated and used for calculation instead:
                                                 ifelse(!is.na(parsedate::parse_iso_8601(RFSTDTC)),
-                                                       DM_AGEDAYS + as.numeric(parsedate::parse_iso_8601(dtc) - parsedate::parse_iso_8601(RFSTDTC)),
+                                                       DM_AGEDAYS + as.Date(parsedate::parse_iso_8601(dtc)) - as.Date(parsedate::parse_iso_8601(RFSTDTC)),
                                                        # No RFSTDTC has been populated
                                                        as.numeric(NA)),
                                                 # Neither --DY nor --DTC is populated
@@ -293,7 +291,7 @@ getFindingsSubjAge<-function(dbToken,
                                      # Tried to calculate findings age
                                      # - check if it was possible
                                      ifelse(is.na(dy),
-                                            ifelse(is.na(parsedate::parse_iso_8601(DTC)),
+                                            ifelse(is.na(parsedate::parse_iso_8601(dtc)),
                                                    'FindingsSubjAge: --DY is empty and --DTC is empty or contains invalid ISO8601 date',
                                                    ifelse(is.na(parsedate::parse_iso_8601(RFSTDTC)),
                                                           'FindingsSubjAge: RFSTDTC is empty or contains invalid ISO8601 date',
@@ -322,7 +320,8 @@ getFindingsSubjAge<-function(dbToken,
                              RFSTDTC,
                              DM_AGEDAYS,
                              NO_AGE_MSG)],
-            by=c("STUDYID", "USUBJID"))
+            by=c("STUDYID", "USUBJID"),
+            all.x = TRUE)
     # Calculate the age of each subject at finding time
     calcFindAge(findingsSUBJ)
     # Merge with complete set of finding columns
@@ -352,13 +351,12 @@ getFindingsSubjAge<-function(dbToken,
           merge(animalList[,list(STUDYID,
                                  USUBJID,
                                  RFSTDTC,
-                                 AGEDAYS)],
+                                 DM_AGEDAYS)],
                 by = c('STUDYID', 'USUBJID')))[,
                          # Calculate min and max subj age per pool
                          `:=` (MIN_AGE = min(.SD), MAX_AGE = max(.SD)),
                          by = c('STUDYID', 'POOLID'),
-                         .SDcols='AGEDAYS'][,`:=` (USUBJID = NULL,
-                                                   AGEDAYS = NULL)] %>%
+                         .SDcols='DM_AGEDAYS'][,`:=` (USUBJID = NULL, DM_AGEDAYS=NULL)] %>%
           # Reduce to pool/RFSTDTC level rows
           #  - for pools with different subject level RFSTDTC values, set value to NA
           unique())[,# Get  number of distinct RFSTDTC per pool
@@ -366,7 +364,7 @@ getFindingsSubjAge<-function(dbToken,
                    by=c('STUDYID', 'POOLID')] %>%
           # Reduce to pool level rows
           unique()
-          # Decide the pool level 'animal' age
+          # Decide the pool level 'animal' age af RFSTDTC
           #  - is more than 2 days between min and max subject level,
           #    then pool level age cannot be decided
           #  - set message if AGEDAYS cannot be decided
