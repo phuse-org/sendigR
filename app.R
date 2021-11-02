@@ -11,9 +11,9 @@ library(parsedate)
 library(ini)
 
 # Source functions
-source('https://raw.githubusercontent.com/phuse-org/BioCelerate/0e86020ca59161da2049475d30f6df7a302b2a1e/R/sendDB_shiny.R')
+source('https://raw.githubusercontent.com/phuse-org/BioCelerate/cd81af7b71b65ea4d136d796a4da81369d34b2ca/R/sendDB_shiny.R')
 source('https://raw.githubusercontent.com/phuse-org/BioCelerate/429044c36a0697017c77247c9ed3f2184801c660/R/controlFiltering_shiny.R')
-source('https://raw.githubusercontent.com/phuse-org/BioCelerate/a80dc4c5d9b1729d8bd94ff1b7bfb94e41d3163a/R/sendDashboard_shiny.R')
+source('https://raw.githubusercontent.com/phuse-org/BioCelerate/c2dfb2287a1927bb1d39e0d5c5130f6ed58bc382/R/sendDashboard_shiny.R')
 source('https://raw.githubusercontent.com/phuse-org/BioCelerate/5913b2251e97cfe7eb6075e935df7a1bbae0e523/R/downloadModule_shiny.R')
 
 # Import parameter file from same folder as program is located
