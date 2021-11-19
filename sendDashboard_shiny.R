@@ -535,6 +535,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     ###### get MI_findings whole table ----
    MiFindings_filter_table <- shiny::reactive({
      df <- MiFindings_table(animalList(), input$MISPEC)
+     df <- df[MISTRESC %chin% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
      df
    })
 
@@ -692,6 +693,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       mi_sub <- sendigR::getSubjData(dbToken = .sendigRenv$dbToken,
                                      domain = 'mi',
                                      animalList =  animal_list)
+      mi_sub <- mi_sub[MISTRESC %chin% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
       mi_sub
     })
 
@@ -788,8 +790,11 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       domainData$MISPEC <- toupper(domainData$MISPEC)
       domainData$MISTRESC <- toupper(domainData$MISTRESC)
       # remove missing/null values
-      remove_index <- which(domainData$MISTRESC=='')
-      domainData <- domainData[-remove_index,]
+      # remove_index <- which(domainData$MISTRESC=='')
+      # domainData <- domainData[-remove_index,]
+      domainData <- domainData[MISTRESC!=""]
+      domainData <- domainData[MISTRESC %chin% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
+      #domainData <- domainData[!is.na(MISTRESC) & MISTRESC!="" & MISTRESC!= " " & MISTRESC!= "NA", ]
       # TODO: Do we account for animals that do not have
       # MI (or maybe other domains?) for which there is
       # no record? I know sometimes if result is normal
@@ -1006,6 +1011,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       lb_sub <- LB_subject()
       domainData <- merge(animal_list, lb_sub,
                           by = c('STUDYID', 'USUBJID'), all=T)
+      domainData <- domainData[LBSTRESN!="", ]
       shiny::isolate(tableData <- aggDomain_bw_lb(domainData = domainData,
                                                   domain = 'lb', input$INCL_UNCERTAIN))
       tableData
