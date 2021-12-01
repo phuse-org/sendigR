@@ -348,13 +348,20 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                      download_rds_UI('download_LB_individual_rds'),
                                      htmltools::br(),htmltools::br()),
 
-                            shiny::tabPanel("Aggregate Table",
+                            shiny::tabPanel("Numeric Aggregate Table",
                                      DT::dataTableOutput('lb_agg_tab_render'),
                                      htmltools::br(),htmltools::br(),
                                      download_csv_UI('download_LB_agg'),
                                      htmltools::br(),htmltools::br(),
                                      download_rds_UI('download_LB_agg_rds'),
-                                     htmltools::br(),htmltools::br())
+                                     htmltools::br(),htmltools::br()),
+                            shiny::tabPanel("Categorical Aggregate Table",
+                                            DT::dataTableOutput('lb_cat_agg_tab_render'),
+                                            htmltools::br(),htmltools::br(),
+                                            download_csv_UI('download_LB_cat_agg'),
+                                            htmltools::br(),htmltools::br(),
+                                            download_rds_UI('download_LB_cat_agg_rds'),
+                                            htmltools::br(),htmltools::br())
 
                           )
                           ),
@@ -1046,6 +1053,108 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     shiny::callModule(download_rds, id="download_LB_agg_rds",
                       data=LB_agg_table, filename="LB_Aggregate_Table")
 
+    
+    ####### LB categorical agg table #####
+    
+    LB_cat_agg_table <- shiny::reactive({
+      animal_list <- animalList()
+      lb_sub <- LB_subject()
+      
+      domainData <- merge(animal_list, lb_sub,
+                          by = c('STUDYID', 'USUBJID'), allow.cartesian=TRUE)
+      domainData <- domainData[is.na(LBSTRESN), ]
+      # TODO: The columns to display/aggregate
+      # should be chosen by the user, however
+      # I think the sendigR package always
+      # return certain columns, e.g., EPOCH
+      grpByCols <- c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST', 'LBSTRESC')
+      # domainData <- merge(animal_list,
+      #                     lb_sub,
+      #                     on = c('STUDYID', 'USUBJID'),
+      #                     allow.cartesian = TRUE)
+      # make uppercase
+      #domainData$MISPEC <- toupper(domainData$MISPEC)
+      #domainData$MISTRESC <- toupper(domainData$MISTRESC)
+      # remove missing/null values
+      # remove_index <- which(domainData$MISTRESC=='')
+      # domainData <- domainData[-remove_index,]
+      domainData <- domainData[LBSTRESC!=""]
+      domainData <- domainData[LBSTRESC %chin% c("Negative","neg","negative", "Neg","0: NEGATIVE", "NEG", "NEG."), MISTRESC := "NEGATIVE" ]
+      #domainData <- domainData[!is.na(MISTRESC) & MISTRESC!="" & MISTRESC!= " " & MISTRESC!= "NA", ]
+      # TODO: Do we account for animals that do not have
+      # MI (or maybe other domains?) for which there is
+      # no record? I know sometimes if result is normal
+      # they will not get recorded.  Maybe this could be
+      # a flag to toggle.
+      
+      # filter duplicate
+      
+      # domainData <- domainData[!duplicated(domainData,
+      #                                      by=c("STUDYID","USUBJID", "MISTRESC", "MISPEC")),]
+      
+      # apply aggDomain function from sendDB_shiny.R file, this count Incidence
+      shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
+                                            includeUncertain=input$INCL_UNCERTAIN))
+      
+      # find number of unique subject grouped by 'MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE'
+      tissueCounts <- domainData[, list(Animals.In.LBSPEC=length(unique(USUBJID))),
+                                 by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST')]
+      
+      # merge incidence count and unique subject number from tableData and tissueCount table
+      tableData <- merge(tableData, tissueCounts,
+                         by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST'))
+      # add Incidence variable, Divide number of incidence (N) by number of unique subject (Animal.In.MISPEC)
+      # then multiply by 100
+      tableData[, Incidence:=round(((N/Animals.In.LBSPEC)*100),2)]
+      # if just want to change the name of the Animals.In.MISPEC column
+      #data.table::setnames(tableData, "Animals.In.MISPEC", "Unique.Subject.Number")
+      #remove Animal.In.MISPEC column from tableData
+      tableData[, Animals.In.LBSPEC:=NULL]
+      return(tableData)
+    })
+    
+    
+    ###### Render LB cat agg table ####
+   
+    output$lb_cat_agg_tab_render <- DT::renderDataTable(server = T,{
+      tableData <- LB_cat_agg_table()
+      tableData <- tableData %>%
+        dplyr::mutate_if(is.character, as.factor)
+      # DT::formatPercentage() function applied later, function multiply Incidence by 100,
+      # so Incidence divide by 100 here
+      tableData$Incidence <- tableData$Incidence/100
+      # Associate table header with labels
+      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
+      tab <- DT::datatable(tableData,
+                           filter = list(position = 'top'),
+                           options = list(
+                             dom = "lfrtip",
+                             scrollY = TRUE,
+                             scrollX=TRUE,
+                             pageLength = 25,
+                             headerCallback= DT::JS(headerCallback),
+                             columnDefs = list(list(className = "dt-center", targets = "_all")),
+                             initComplete = DT::JS(
+                               "function(settings, json) {",
+                               "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                               "}")))
+      tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
+      tab
+    })
+    
+    ####### Download LB cat aggregate table csv and rds ----
+    shiny::callModule(download_csv, id = "download_LB_cat_agg",
+                      data=LB_cat_agg_table, filename="LB_cat_Aggregate_Table")
+    shiny::callModule(download_rds, id="download_LB_cat_agg_rds",
+                      data=LB_cat_agg_table, filename="LB_cat_Aggregate_Table")
+    
+    
+    
+    
+    
+    
+    
+    
     #### CL TAB ########################
 
     ###### get CL individual records table ----
