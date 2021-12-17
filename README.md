@@ -115,7 +115,7 @@ It should be possible to import data into an existing SQLite SEND database using
 It is possible to delete studies in any SQLite SEND database `dbDeleteStudies` - whether or not the tables are created by `dbCreateSchema`. 
 
 To make it possible to import data for a set of studies with `dbImportStudies`, the input data should be saved in folder structure like this: 
-```
+
 /path/to/SEND/datasets  
 +-- study01  
    |   +-- ts.xpt  
