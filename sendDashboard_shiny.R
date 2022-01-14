@@ -974,7 +974,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         
       }
       
-      range_filter <- animal_list[AGEDAYS %between% list(age_range[1], age_range[2])]
+      range_filter <- animal_list[data.table::between(AGEDAYS, age_range[1], age_range[2])]
       #range_filter <- range_filter[, `:=`(AGEDAYS=NULL, NOT_VALID_MSG=NULL)]
       range_filter
     })
@@ -1442,7 +1442,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         
       }
       
-      range_filter <- animal_list[AGEDAYS %between% list(age_range[1], age_range[2])]
+      range_filter <- animal_list[data.table::between(AGEDAYS, age_range[1], age_range[2])]
       #range_filter <- range_filter[, `:=`(AGEDAYS=NULL, NOT_VALID_MSG=NULL)]
       range_filter
     })
