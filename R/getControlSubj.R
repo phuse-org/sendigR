@@ -85,6 +85,10 @@
 #'   \item DM_AGEDAYS    (integer)\cr
 #'         The calculated age in days of the animal at the reference start day
 #'         - i.e. the age registered in DM.
+#'   \item DSDECOD    (character)\cr
+#'         The standardized disposition term for the animal
+#'   \item DS_DISPDAYS    (integer)\cr
+#'         The calculated age in days of the animal at the disposition
 #'   \item NO_AGE_MSG    (character)\cr
 #'         Empty or contains the reason if a DM_AGEDAYS couldn't be calculated
 #'   \item UNCERTAIN_MSG (character)\cr
@@ -221,6 +225,8 @@ getControlSubj<-function(dbToken,
                                    ,dm.agetxt
                                    ,dm.age
                                    ,dm.ageu
+                                   ,ds.dsdecod
+                                   ,ds.dsstdy
                              from (select distinct STUDYID
                                    from ts
                                    where studyid in (:1)) ts
@@ -232,9 +238,11 @@ getControlSubj<-function(dbToken,
                               and ((tx.setcd is not null
                                     and dm.setcd = tx.setcd)
                                   or
-                                   (tx.setcd is null))",
+                                   (tx.setcd is null))
+                              left join ds
+                               on ts.studyid = ds.studyid
+                               and dm.usubjid = ds.usubjid",
                             studyList[,c('STUDYID')])
-
 
   # Extract the unique set of trial sets
   txCtrlSet <- unique(txDmCtrlSet[!is.na(TCNTRL),c('TCNTRL')])
@@ -243,7 +251,9 @@ getControlSubj<-function(dbToken,
   txDmCtrlSet[,DM_AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)]
   # If an age has been calculated - convert returned value from function to
   # numeric age in days value - else save returned error message
+  # also calculuate the age of the animal in days at the disposition
   txDmCtrlSet[,`:=` (DM_AGEDAYS=suppressWarnings(as.numeric(DM_AGEDAYStxt)),
+                     DS_DISPDAYS = suppressWarnings(as.numeric(DM_AGEDAYStxt) + as.numeric(DSSTDY) -1 ),
                      NO_AGE_MSG=ifelse(!grepl("^[0-9]+$",DM_AGEDAYStxt),
                                        DM_AGEDAYStxt,
                                        as.character(NA)))]
@@ -304,9 +314,12 @@ getControlSubj<-function(dbToken,
 
   # Do final preparation of set of found animals and return
   return(prepareFinalResults(dmCtrlSet, names(studyList), c('TCNTRL',
-                                                            'USUBJID',
-                                                            'RFSTDTC',
-                                                            'DM_AGEDAYS')))
+                                                     'USUBJID',
+                                                     'RFSTDTC',
+                                                     'DM_AGEDAYS',
+                                                     'DSDECOD',
+                                                     'DS_DISPDAYS')))
+
 }
 
 ################################################################################
