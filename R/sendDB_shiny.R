@@ -370,9 +370,9 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
   # replace these as 0s
   df <- merge(aggData, aggDataConf, by=grpByCols, all=TRUE)
   df <- merge(df, aggDataNonConf, by=grpByCols, all=TRUE)
-  for(j in seq_along(df)){
-    data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
-  }
+  # for(j in seq_along(df)){
+  #   data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
+  # }
   df <- data.table::as.data.table(df)
 
   return(df)
@@ -433,9 +433,9 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
     df <- merge(df, aggDataNonConf, by=grpByCols, all=TRUE)
     df <- dplyr::relocate(df,{{result_unit}}, .after = {{sd_result}})
     
-    for(j in seq_along(df)){
-      data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
-    }
+    # for(j in seq_along(df)){
+    #   data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
+    # }
     df <- data.table::as.data.table(df)
     return(df)
     
