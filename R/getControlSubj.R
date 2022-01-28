@@ -87,7 +87,7 @@
 #'         - i.e. the age registered in DM.
 #'   \item DSDECOD    (character)\cr
 #'         The standardized disposition term for the animal
-#'   \item DS_DISPDAYS    (integer)\cr
+#'   \item DS_AGEDAYS    (integer)\cr
 #'         The calculated age in days of the animal at the disposition
 #'   \item NO_AGE_MSG    (character)\cr
 #'         Empty or contains the reason if a DM_AGEDAYS couldn't be calculated
@@ -253,7 +253,7 @@ getControlSubj<-function(dbToken,
   # numeric age in days value - else save returned error message
   # also calculuate the age of the animal in days at the disposition
   txDmCtrlSet[,`:=` (DM_AGEDAYS=suppressWarnings(as.numeric(DM_AGEDAYStxt)),
-                     DS_DISPDAYS = suppressWarnings(as.numeric(DM_AGEDAYStxt) + as.numeric(DSSTDY) -1 ),
+                     DS_AGEDAYS = suppressWarnings(as.numeric(DM_AGEDAYStxt) + as.numeric(DSSTDY) -1 ),
                      NO_AGE_MSG=ifelse(!grepl("^[0-9]+$",DM_AGEDAYStxt),
                                        DM_AGEDAYStxt,
                                        as.character(NA)))]
@@ -318,7 +318,7 @@ getControlSubj<-function(dbToken,
                                                      'RFSTDTC',
                                                      'DM_AGEDAYS',
                                                      'DSDECOD',
-                                                     'DS_DISPDAYS')))
+                                                     'DS_AGEDAYS')))
 
 }
 
