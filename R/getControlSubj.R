@@ -226,7 +226,7 @@ getControlSubj<-function(dbToken,
                                    ,dm.age
                                    ,dm.ageu
                                    ,ds.dsdecod
-                                   ,ds.dsstdy
+                                   ,ds.dsstdtc
                              from (select distinct STUDYID
                                    from ts
                                    where studyid in (:1)) ts
@@ -249,11 +249,13 @@ getControlSubj<-function(dbToken,
 
   # Calculate age at RFSTDTC
   txDmCtrlSet[,DM_AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)]
+  # Calculate age at disposition
+  txDmCtrlSet[,DS_AGEDAYStxt := mapply(calcDMAgeDays, DSSTDTC,BRTHDTC,AGETXT,AGE,AGEU)]
   # If an age has been calculated - convert returned value from function to
   # numeric age in days value - else save returned error message
   # also calculuate the age of the animal in days at the disposition
   txDmCtrlSet[,`:=` (DM_AGEDAYS=suppressWarnings(as.numeric(DM_AGEDAYStxt)),
-                     DS_AGEDAYS = suppressWarnings(as.numeric(DM_AGEDAYStxt) + as.numeric(DSSTDY) -1 ),
+                     DS_AGEDAYS=suppressWarnings(as.numeric(DS_AGEDAYStxt)),
                      NO_AGE_MSG=ifelse(!grepl("^[0-9]+$",DM_AGEDAYStxt),
                                        DM_AGEDAYStxt,
                                        as.character(NA)))]
