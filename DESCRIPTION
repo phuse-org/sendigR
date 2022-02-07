@@ -1,20 +1,22 @@
 Package: sendigR
-Title: Extract Control Data from a CDISC SEND Study Data Repository
+Title: Extract Control Data from a CDISC SEND Study Data Repository for Cross Studies Analysis
 Version: 0.0.1
-Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: A set of functions to extract and filter data for control animals 
+Authors@R:
+ c(
+    person("Bo", "Larsen", email = "bolr@novonordisk.com", role = "aut"),
+    person("Yousuf", "Ali", email = "md.ali@fda.hhs.gov", role = "aut"),
+    person("Kevin", "Snyder", email = "kevin.snyder@fda.hhs.gov", role = "aut"),
+    person("William", "Houser", email = "william.houser@bms.com", role = "aut"),
+    person("Brianna", "Paisley", email = "paisley_brianna_meadow@lilly.com", role = "aut"),
+    person("Wenxian", "Wang", email = "wenxian.wang@bms.com", role = "cre"))
+Description: A set of functions to extract and filter study data for control animals 
     from a database containing CDISC SEND data for a set of non-clinical 
-    studies. These data base types are supported: SQLite, Oracle.
+    studies. These data types are supported: Body Weights, Laboratory test results 
+    and Microscopic findings. These database types are supported: SQLite and Oracle.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Imports: 
     RSQLite,
     data.table,
