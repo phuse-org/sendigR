@@ -276,6 +276,25 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                    htmltools::br(),htmltools::br(),htmltools::br()
                                    )),
                  shiny::tabPanel("MI", ##### MI ----
+                                 
+                                 shiny::fluidRow(
+                                   
+                                   age_unit_input("mi_age_unit"),
+                                   
+                                   shiny::uiOutput("mi_age")),
+                                 
+                                 shiny::fluidRow(
+                                   shiny::column(width = 2,
+                                                 shiny::actionButton("submit_mi_age", "Update",
+                                                                     style="background-color:#FFFFFF;
+                                            color:#E31616;
+                                                                                border-color:#BEBEBE;
+                                                                                border-style:solid;
+                                                                                border-width:1px;
+                                                                                border-radius:5%;
+                                                                                font-weight:bold;
+                                                                                font-size:14px;"))),
+                                 htmltools::br(style="line-height: 10px"),
                           shiny::tabsetPanel(
                             shiny::tabPanel("MI Findings",
                                             shiny::fluidRow(
@@ -575,12 +594,77 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # sortable table. Relies on
     # the function called MiFindings()
     # defined in sendDB.R
+    
+    
+    #### MI age range ----
+    
+    animal_list_age_range_mi <- shiny::reactive({
+      animal_list <- animalList()
+      age_range <- range(animal_list[["DS_AGEDAYS"]], na.rm = TRUE)
+      age_range
+      
+    })
+    
+    # age filter control
+    output$mi_age <- shiny::renderUI({
+      
+      age_range <- animal_list_age_range_mi()
+      max_range <- age_range[2]
+      min_range <- age_range[1]
+      
+      
+      if(input$mi_age_unit=="Days") {
+        min_range <- min_range
+        max_range <- max_range
+        
+      } else if (input$mi_age_unit=="Weeks") {
+        min_range <- floor(min_range/7)
+        max_range <- ceiling(max_range/7)
+      } else if (input$mi_age_unit=="Months") {
+        min_range <- floor(min_range/(365/12))
+        max_range <- ceiling(max_range/(365/12))
+        
+      }
+      
+      
+      
+      shiny::column(width = 4,
+                    shiny::sliderInput("mi_age_range", label = "Select Age Range",
+                                       min = min_range, max=max_range, value = c(min_range, max_range)))
+      
+    })
+    
+    
+    # 
+    # 
+    
+    
+    
+    
+    MI_subject_list <- shiny::eventReactive(input$submit_mi_age,{
+      animal_list <- animalList()
+      age_range <- input$mi_age_range
+      if(input$mi_age_unit=="Days") {
+        age_range <- age_range
+      } else if (input$mi_age_unit=="Weeks") {
+        age_range <- age_range*7
+      } else if (input$mi_age_unit=="Months") {
+        age_range <- ceiling(age_range*(365/12))
+        
+      }
+      
+      range_filter <- animal_list[data.table::between(DS_AGEDAYS, age_range[1], age_range[2])]
+      #range_filter <- range_filter[, `:=`(AGEDAYS=NULL, NOT_VALID_MSG=NULL)]
+      range_filter
+    })
+    
+    
 
     ###### MI findings table ----
 
     ###### get MI_findings whole table ----
    MiFindings_filter_table <- shiny::reactive({
-     df <- MiFindings_table(animalList(), input$MISPEC)
+     df <- MiFindings_table(MI_subject_list(), input$MISPEC)
      df <- df[MISTRESC %in% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
      df
    })
@@ -735,7 +819,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
     ###### get MI individual records table ----
     MI_subject <- shiny::reactive({
-      animal_list <- animalList()
+      animal_list <- MI_subject_list()
       mi_sub <- sendigR::getSubjData(dbToken = .sendigRenv$dbToken,
                                      domain = 'mi',
                                      animalList =  animal_list)
@@ -821,7 +905,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
     ###### generate MI Aggregate table -------
     MI_agg_table <- shiny::reactive({
-      animal_list <- animalList()
+      animal_list <- MI_subject_list()
       mi_sub <- MI_subject()
       # TODO: The columns to display/aggregate
       # should be chosen by the user, however
