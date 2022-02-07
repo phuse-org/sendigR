@@ -581,7 +581,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     ###### get MI_findings whole table ----
    MiFindings_filter_table <- shiny::reactive({
      df <- MiFindings_table(animalList(), input$MISPEC)
-     df <- df[MISTRESC %chin% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
+     df <- df[MISTRESC %in% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
      df
    })
 
@@ -739,7 +739,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       mi_sub <- sendigR::getSubjData(dbToken = .sendigRenv$dbToken,
                                      domain = 'mi',
                                      animalList =  animal_list)
-      mi_sub <- mi_sub[MISTRESC %chin% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
+      mi_sub <- mi_sub[MISTRESC %in% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
       mi_sub
     })
 
@@ -839,7 +839,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # remove_index <- which(domainData$MISTRESC=='')
       # domainData <- domainData[-remove_index,]
       domainData <- domainData[MISTRESC!=""]
-      domainData <- domainData[MISTRESC %chin% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
+      domainData <- domainData[MISTRESC %in% c("UNREMARKABLE","Unremarkable","Normal","NORMAL"), MISTRESC := "NORMAL/UNREMARKABLE" ]
       #domainData <- domainData[!is.na(MISTRESC) & MISTRESC!="" & MISTRESC!= " " & MISTRESC!= "NA", ]
       # TODO: Do we account for animals that do not have
       # MI (or maybe other domains?) for which there is
@@ -919,7 +919,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     })
     
     # get finding age range
-    animal_list_age_range_lb <- reactive({
+    animal_list_age_range_lb <- shiny::reactive({
       animal_list <- get_lb_subj()
       age_range <- range(animal_list[["AGEDAYS"]], na.rm = TRUE)
       age_range
@@ -1192,7 +1192,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # remove_index <- which(domainData$MISTRESC=='')
       # domainData <- domainData[-remove_index,]
       domainData <- domainData[LBSTRESC!=""]
-      domainData <- domainData[LBSTRESC %chin% c("Negative","neg","negative", "Neg","0: NEGATIVE", "NEG", "NEG."), MISTRESC := "NEGATIVE" ]
+      domainData <- domainData[LBSTRESC %in% c("Negative","neg","negative", "Neg","0: NEGATIVE", "NEG", "NEG."), MISTRESC := "NEGATIVE" ]
       #domainData <- domainData[!is.na(MISTRESC) & MISTRESC!="" & MISTRESC!= " " & MISTRESC!= "NA", ]
       # TODO: Do we account for animals that do not have
       # MI (or maybe other domains?) for which there is
@@ -1387,7 +1387,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
 
     # get finding age range
-    animal_list_age_range_bw <- reactive({
+    animal_list_age_range_bw <- shiny::reactive({
       animal_list <- get_bw_subj()
       age_range <- range(animal_list[["AGEDAYS"]], na.rm = TRUE)
       age_range
