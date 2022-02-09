@@ -268,7 +268,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                  shiny::tabPanel('ANIMALS', ##### Animal Tab ----
                           shiny::fluidRow(title = "Filtered control animals",
                                    htmltools::br(),
-                                   DT::dataTableOutput("animals"),
+                                   shinycssloaders::withSpinner(
+
+                                   DT::dataTableOutput("animals")),
                                    htmltools::br(),
                                    download_csv_UI('download_filter_animal'),
                                    htmltools::br(),htmltools::br(),
@@ -276,13 +278,13 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                    htmltools::br(),htmltools::br(),htmltools::br()
                                    )),
                  shiny::tabPanel("MI", ##### MI ----
-                                 
+
                                  shiny::fluidRow(
-                                   
+
                                    age_unit_input("mi_age_unit"),
-                                   
+
                                    shiny::uiOutput("mi_age")),
-                                 
+
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
                                                  shiny::actionButton("submit_mi_age", "Update",
@@ -340,13 +342,13 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                             )),
 
                  shiny::tabPanel("LB", #####LB ----
-                                 
+
                                  shiny::fluidRow(
-                                   
+
                                    age_unit_input("lb_age_unit"),
-                                  
+
                                    shiny::uiOutput("lb_age")),
-                                 
+
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
                                    shiny::actionButton("submit_lb_age", "Update",
@@ -424,11 +426,11 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                  #            )),
                  shiny::tabPanel("BW", ##### BW ----
                                  shiny::fluidRow(
-                                   
+
                                    age_unit_input("bw_age_unit"),
-                                   
+
                                    shiny::uiOutput("bw_age")),
-                                 
+
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
                                                  shiny::actionButton("submit_bw_age", "Update",
@@ -441,8 +443,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                                                                 font-weight:bold;
                                                                                 font-size:14px;"))),
                                  htmltools::br(style="line-height: 10px"),
-                                 
-                                 
+
+
                           shiny::tabsetPanel(
                             shiny::tabPanel("Individual Records",
                                             shiny::checkboxInput("bw_hide_check_column",
@@ -594,53 +596,53 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # sortable table. Relies on
     # the function called MiFindings()
     # defined in sendDB.R
-    
-    
+
+
     #### MI age range ----
-    
+
     animal_list_age_range_mi <- shiny::reactive({
       animal_list <- animalList()
       age_range <- range(animal_list[["DS_AGEDAYS"]], na.rm = TRUE)
       age_range
-      
+
     })
-    
+
     # age filter control
     output$mi_age <- shiny::renderUI({
-      
+
       age_range <- animal_list_age_range_mi()
       max_range <- age_range[2]
       min_range <- age_range[1]
-      
-      
+
+
       if(input$mi_age_unit=="Days") {
         min_range <- min_range
         max_range <- max_range
-        
+
       } else if (input$mi_age_unit=="Weeks") {
         min_range <- floor(min_range/7)
         max_range <- ceiling(max_range/7)
       } else if (input$mi_age_unit=="Months") {
         min_range <- floor(min_range/(365/12))
         max_range <- ceiling(max_range/(365/12))
-        
+
       }
-      
-      
-      
+
+
+
       shiny::column(width = 4,
                     shiny::sliderInput("mi_age_range", label = "Select Age Range",
                                        min = min_range, max=max_range, value = c(min_range, max_range)))
-      
+
     })
-    
-    
-    # 
-    # 
-    
-    
-    
-    
+
+
+    #
+    #
+
+
+
+
     MI_subject_list <- shiny::eventReactive(input$submit_mi_age,{
       animal_list <- animalList()
       age_range <- input$mi_age_range
@@ -650,15 +652,15 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         age_range <- age_range*7
       } else if (input$mi_age_unit=="Months") {
         age_range <- ceiling(age_range*(365/12))
-        
+
       }
-      
+
       range_filter <- animal_list[data.table::between(DS_AGEDAYS, age_range[1], age_range[2])]
       #range_filter <- range_filter[, `:=`(AGEDAYS=NULL, NOT_VALID_MSG=NULL)]
       range_filter
     })
-    
-    
+
+
 
     ###### MI findings table ----
 
@@ -726,14 +728,14 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_strain <- unique(df[['STRAIN']])
       shiny::updateSelectizeInput(session = session, inputId = "mi_strain", choices = df_strain)
     })
-    
+
     shiny::observeEvent(input$mi_strain, {
       df <- MiFindings_filter_table()
       df <- df[ROUTE %in% input$mi_route & SPECIES %in% input$mi_species & STRAIN %in% input$mi_strain, ]
       df_sex <- unique(df[['SEX']])
       shiny::updateSelectizeInput(session = session, inputId = "mi_sex", choices = df_sex)
     })
-    
+
     # shiny::observeEvent(input$mi_sex, {
     #   df <- MiFindings_filter_table()
     #   df_all_route <- unique(df[['ROUTE']])
@@ -743,9 +745,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     #   shiny::updateSelectizeInput(session = session, inputId = "mi_route", choices =df_all_route, selected = df_route )
     #   shiny::updateSelectizeInput(session = session, inputId = "mi_species", choices = input$species, selected = input$species)
     #   shiny::updateSelectizeInput(session = session, inputId = "mi_strain", choices = input$strain, selected = input$strain)
-    # 
+    #
     # })
-    
+
 
     ## MI finding table after filter
     Mi_finding_table_after_filter <- shiny::eventReactive(input$mi_finding_update, {
@@ -1001,51 +1003,51 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                             findings = lb_sub, animalList = animal_list)
       lb_sub
     })
-    
+
     # get finding age range
     animal_list_age_range_lb <- shiny::reactive({
       animal_list <- get_lb_subj()
       age_range <- range(animal_list[["AGEDAYS"]], na.rm = TRUE)
       age_range
-      
+
     })
-    
+
     # age filter control
     output$lb_age <- shiny::renderUI({
-      
+
       age_range <- animal_list_age_range_lb()
       max_range <- age_range[2]
       min_range <- age_range[1]
-      
-      
+
+
       if(input$lb_age_unit=="Days") {
         min_range <- min_range
         max_range <- max_range
-        
+
       } else if (input$lb_age_unit=="Weeks") {
         min_range <- floor(min_range/7)
         max_range <- ceiling(max_range/7)
       } else if (input$lb_age_unit=="Months") {
         min_range <- floor(min_range/(365/12))
         max_range <- ceiling(max_range/(365/12))
-        
+
       }
-      
-      
-      
+
+
+
       shiny::column(width = 4,
                     shiny::sliderInput("lb_age_range", label = "Select Age Range",
                                        min = min_range, max=max_range, value = c(min_range, max_range)))
-      
+
     })
-    
-    
-    # 
-    # 
-    
-    
-    
-    
+
+
+    #
+    #
+
+
+
+
     LB_subject <- shiny::eventReactive(input$submit_lb_age,{
       animal_list <- get_lb_subj()
       age_range <- input$lb_age_range
@@ -1055,15 +1057,15 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         age_range <- age_range*7
       } else if (input$lb_age_unit=="Months") {
         age_range <- ceiling(age_range*(365/12))
-        
+
       }
-      
+
       range_filter <- animal_list[data.table::between(AGEDAYS, age_range[1], age_range[2])]
       #range_filter <- range_filter[, `:=`(AGEDAYS=NULL, NOT_VALID_MSG=NULL)]
       range_filter
     })
-    
-    
+
+
     # function to get selected columns in LB Individual table
     LB_column <- shiny::reactive({
       if (nrow(LB_subject())>0) {
@@ -1112,7 +1114,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         selected = input$lb_filter_column
       )
       })
-    
+
     shiny::observeEvent(input$submit_lb_age, {
       shiny::updateCheckboxGroupInput(
         session = session,
@@ -1250,13 +1252,13 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     shiny::callModule(download_rds, id="download_LB_agg_rds",
                       data=LB_agg_table, filename="LB_Aggregate_Table")
 
-    
+
     ####### LB categorical agg table #####
-    
+
     LB_cat_agg_table <- shiny::reactive({
       animal_list <- animalList()
       lb_sub <- LB_subject()
-      
+
       domainData <- merge(animal_list, lb_sub,
                           by = c('STUDYID', 'USUBJID'), allow.cartesian=TRUE)
       domainData <- domainData[is.na(LBSTRESN), ]
@@ -1283,20 +1285,20 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # no record? I know sometimes if result is normal
       # they will not get recorded.  Maybe this could be
       # a flag to toggle.
-      
+
       # filter duplicate
-      
+
       # domainData <- domainData[!duplicated(domainData,
       #                                      by=c("STUDYID","USUBJID", "MISTRESC", "MISPEC")),]
-      
+
       # apply aggDomain function from sendDB_shiny.R file, this count Incidence
       shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
                                             includeUncertain=input$INCL_UNCERTAIN))
-      
+
       # find number of unique subject grouped by 'MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE'
       tissueCounts <- domainData[, list(Animals.In.LBSPEC=length(unique(USUBJID))),
                                  by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST')]
-      
+
       # merge incidence count and unique subject number from tableData and tissueCount table
       tableData <- merge(tableData, tissueCounts,
                          by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST'))
@@ -1309,10 +1311,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tableData[, Animals.In.LBSPEC:=NULL]
       return(tableData)
     })
-    
-    
+
+
     ###### Render LB cat agg table ####
-   
+
     output$lb_cat_agg_tab_render <- DT::renderDataTable(server = T,{
       tableData <- LB_cat_agg_table()
       tableData <- tableData %>%
@@ -1338,20 +1340,20 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
       tab
     })
-    
+
     ####### Download LB cat aggregate table csv and rds ----
     shiny::callModule(download_csv, id = "download_LB_cat_agg",
                       data=LB_cat_agg_table, filename="LB_cat_Aggregate_Table")
     shiny::callModule(download_rds, id="download_LB_cat_agg_rds",
                       data=LB_cat_agg_table, filename="LB_cat_Aggregate_Table")
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     #### CL TAB ########################
 
     ###### get CL individual records table ----
@@ -1475,45 +1477,45 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       animal_list <- get_bw_subj()
       age_range <- range(animal_list[["AGEDAYS"]], na.rm = TRUE)
       age_range
-      
+
     })
-    
+
     # age filter control
     output$bw_age <- shiny::renderUI({
-      
+
       age_range <- animal_list_age_range_bw()
       max_range <- age_range[2]
       min_range <- age_range[1]
-      
-      
+
+
       if(input$bw_age_unit=="Days") {
         min_range <- min_range
         max_range <- max_range
-        
+
       } else if (input$bw_age_unit=="Weeks") {
         min_range <- floor(min_range/7)
         max_range <- ceiling(max_range/7)
       } else if (input$bw_age_unit=="Months") {
         min_range <- floor(min_range/(365/12))
         max_range <- ceiling(max_range/(365/12))
-        
+
       }
-      
-      
-      
+
+
+
       shiny::column(width = 4,
                     shiny::sliderInput("bw_age_range", label = "Select Age Range",
                                        min = min_range, max=max_range, value = c(min_range, max_range)))
-      
+
     })
-    
-    
-    # 
-    # 
-    
-    
-    
-    
+
+
+    #
+    #
+
+
+
+
     BW_subject <- shiny::eventReactive(input$submit_bw_age,{
       animal_list <- get_bw_subj()
       age_range <- input$bw_age_range
@@ -1523,14 +1525,14 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         age_range <- age_range*7
       } else if (input$bw_age_unit=="Months") {
         age_range <- ceiling(age_range*(365/12))
-        
+
       }
-      
+
       range_filter <- animal_list[data.table::between(AGEDAYS, age_range[1], age_range[2])]
       #range_filter <- range_filter[, `:=`(AGEDAYS=NULL, NOT_VALID_MSG=NULL)]
       range_filter
     })
-    
+
     # function to get selected columns in BW Individual table
     BW_column <- shiny::reactive({
       if (nrow(BW_subject())>0) {
@@ -1578,7 +1580,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
         selected = input$bw_filter_column
       )
     })
-    
+
     shiny::observeEvent(input$submit_bw_age, {
       shiny::updateCheckboxGroupInput(
         session = session,
@@ -1726,9 +1728,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_sex <- unique(df[['SEX']])
       shiny::updateSelectizeInput(session = session, inputId = "bw_strain", choices = df_strain)
       shiny::updateSelectizeInput(session = session, inputId = 'bw_sex', choices = df_sex)
-      
+
     })
-    
+
     shiny::observeEvent(input$bw_strain, {
       df <- BW_agg_table()
       df <- df[ROUTE %in% input$bw_route & SPECIES %in% input$bw_species & STRAIN %in% input$bw_strain, ]
@@ -1891,7 +1893,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       } else {
         strain <- GetUniqueStrains(input$SPECIES)
       }
-      
+
       # make list
       filter_selected <- list(
         From=as.character(input$STSTDTC[1]),
