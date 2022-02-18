@@ -1,0 +1,10 @@
+section_cols: 
+    - Sex
+    - Strain/Substrain
+    - Species
+    - SEND Severity
+    - Route of Administration Response
+    - Standardized Disposition Term
+    - Specimen
+    - Anatomical Location
+    - Non-Neoplastic Finding Type
