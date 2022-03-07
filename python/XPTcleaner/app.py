@@ -1,7 +1,9 @@
 import click
 import json
 import yaml
+import pandas
 import pyreadstat
+import shutil
 
 from cdisc_mapping import logger
 from cdisc_mapping import file_mapping
@@ -9,7 +11,7 @@ from cdisc_mapping import vocab_management
 from cdisc_mapping import utils
 
 # Supress pandas warnings ....
-# becareful with this
+# be careful with this
 import warnings
 warnings.filterwarnings("error")
 
@@ -21,14 +23,22 @@ with open("config.yaml") as f:
     CONFIG = yaml.load(f, Loader=yaml.FullLoader)
 
 
-@click.group()
+# @click.group()
 def main():
+    # print("running gen_vacab")
+    # gen_vocab("../../data-raw/SEND Terminology_2021_12_17.txt", "generated_vocabs/current.json")
+
+    # print("running standardize_file")
+    # jsonfile = "generated_vocabs/current.json"
+    # rawXptFolder = "C:/BioCelerate/TDSStudies/35449/"
+    # cleanXptFolder = "C:/BioCelerate/TDSStudiesClean/35449/"
+    # standardize_file(rawXptFolder, cleanXptFolder, jsonfile)
     pass
 
 
-@main.command()
-@click.argument("in_file")
-@click.argument("out_path")
+# @main.command()
+# @click.argument("in_file")
+#@click.argument("out_path")
 def gen_vocab(in_file, out_path):
     """
     Writes json files for vocab mappings.  Keys are synonyms and
@@ -43,9 +53,9 @@ def gen_vocab(in_file, out_path):
         out_file.write(json.dumps(vocab, indent=4, sort_keys=True))
 
 
-@main.command()
-@click.argument("vocab_path_a")
-@click.argument("vocab_path_b")
+#@main.command()
+#@click.argument("vocab_path_a")
+#@click.argument("vocab_path_b")
 def compare_vocabs(vocab_path_a, vocab_path_b):
     """
     Reports if vocabs are same, and different terms in each
@@ -67,10 +77,10 @@ def compare_vocabs(vocab_path_a, vocab_path_b):
         )
 
 
-@main.command()
-@click.argument("input_xpt_dir")
-@click.argument("output_xpt_dir")
-@click.argument("json_file")
+#@main.command()
+#@click.argument("input_xpt_dir")
+#@click.argument("output_xpt_dir")
+#@click.argument("json_file")
 def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
     """
     Standardizes provided .xpt file
@@ -80,33 +90,60 @@ def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
     is_valid, optional_files_found, xpt_extra = file_mapping.check_valid_files(input_xpt_dir)
     if is_valid:
         # TODO: Determine if actual file name is being called
-        dfMI = file_mapping.MI_dataframe(input_xpt_dir, json_file)
-        #dfMI.to_csv(open(output_xpt_dir + "/mi.txt", "w"), sep="\t", header=True, index=False)
-        pyreadstat.write_xport(dfMI, output_xpt_dir + "/" + "mi.xpt")
+        dfDM, meta = file_mapping.DM_dataframe(input_xpt_dir, json_file)
+        # dfDM.to_csv(open(output_xpt_dir + "/sex.txt", 'w'), sep="\t", header=True, index=False)
+        pyreadstat.write_xport(dfDM, output_xpt_dir + "/" + "dm.xpt",
+                               file_format_version=5,
+                               table_name="DM",
+                               file_label="Demographics",
+                               column_labels=meta.column_labels
+                               )
+
 
         if "ex.xpt" in optional_files_found:
-            dfEX = file_mapping.EX_dataframe(input_xpt_dir, json_file)
+            dfEX, meta = file_mapping.EX_dataframe(input_xpt_dir, json_file)
             #dfEX.to_csv(open(output_xpt_dir + "/route.txt", 'w'), sep="\t", header=True, index=False)
-            pyreadstat.write_xport(dfEX, output_xpt_dir + "/" + "ex.xpt")
+            pyreadstat.write_xport(dfEX, output_xpt_dir + "/" + "ex.xpt",
+                                   file_format_version=5,
+                                   table_name="EX",
+                                   file_label="Exposure",
+                                   column_labels= meta.column_labels
+                                   )
 
         if "ts.xpt" in optional_files_found:
-            dfTS = file_mapping.TS_dataframe(input_xpt_dir, json_file)
+            dfTS, meta = file_mapping.TS_dataframe(input_xpt_dir, json_file)
             #dfTS.to_csv(open(output_xpt_dir + "/species_strain.txt", 'w'), sep="\t", header=True, index=False)
-            pyreadstat.write_xport(dfTS, output_xpt_dir + "/" + "ts.xpt")
+            pyreadstat.write_xport(dfTS, output_xpt_dir + "/" + "ts.xpt",
+                                   file_format_version=5,
+                                   table_name="TS",
+                                   file_label="Trial Summary",
+                                   column_labels= meta.column_labels
+                                   )
 
         if "ds.xpt" in optional_files_found:
-            dfDS = file_mapping.DS_dataframe(input_xpt_dir, json_file)
+            dfDS, meta = file_mapping.DS_dataframe(input_xpt_dir, json_file)
             #dfDS.to_csv(open(output_xpt_dir + "/disposition.txt", 'w'), sep="\t", header=True, index=False)
-            pyreadstat.write_xport(dfDS, output_xpt_dir + "/" + "ds.xpt")
+            pyreadstat.write_xport(dfDS, output_xpt_dir + "/" + "ds.xpt",
+                                   file_format_version=5,
+                                   table_name="DS",
+                                   file_label="Disposition",
+                                   column_labels= meta.column_labels
+                                   )
 
-        if "dm.xpt" in optional_files_found:
-            dfDM = file_mapping.DM_dataframe(input_xpt_dir, json_file)
-            #dfDM.to_csv(open(output_xpt_dir + "/sex.txt", 'w'), sep="\t", header=True, index=False)
-            pyreadstat.write_xport(dfDM, output_xpt_dir + "/" + "dm.xpt")
-
+        if "mi.xpt" in optional_files_found:
+            dfMI, meta = file_mapping.MI_dataframe(input_xpt_dir, json_file)
+            # dfMI.to_csv(open(output_xpt_dir + "/mi.txt", "w"), sep="\t", header=True, index=False)
+            pyreadstat.write_xport(dfMI, output_xpt_dir + "/" + "mi.xpt",
+                                   file_format_version=5,
+                                   table_name="MI",
+                                   file_label="Microscopic Findings",
+                                   column_labels=meta.column_labels
+                                   )
         for xpt in xpt_extra:
-            df = utils.read_XPT(input_xpt_dir, "/" + xpt)
-            pyreadstat.write_xport(df, output_xpt_dir + "/" + xpt)
+            # just do file copy, no need to re-write
+            #df = utils.read_XPT(input_xpt_dir, "/" + xpt)
+            #pyreadstat.write_xport(df, output_xpt_dir + "/" + xpt)
+            shutil.copy(input_xpt_dir + "/" + xpt, output_xpt_dir + "/" + xpt)
 
 
     else:
