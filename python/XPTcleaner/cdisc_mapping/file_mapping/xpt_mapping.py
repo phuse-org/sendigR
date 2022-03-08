@@ -1,5 +1,5 @@
 import pandas
-import glob
+import os
 import json
 
 from cdisc_mapping import utils
@@ -11,10 +11,10 @@ LOG = logger.get_logger(__name__)
 
 def check_valid_files(input_dir):
     """
-    Returns true if mi.xpt is available, otherwise false
+    Returns true if dm.xpt is available, otherwise false
     """
-    input_xpt = glob.glob(input_dir + '/*.xpt')
-    input_xpt_cleaned = [x.lower().split("\\")[-1] for x in input_xpt]
+    input_xpt = os.listdir(input_dir)
+    input_xpt_cleaned = [i for i in input_xpt if i.endswith('.xpt')]
     required_xpts = ["dm.xpt"]
     optional_xpts = ["mi.xpt", "ds.xpt", "ex.xpt", "ts.xpt"]
 
@@ -54,7 +54,7 @@ def do_mapping(column, term, json_file):
         return contents[column][stan_term]
     elif stan_term == '':
         # Possibly warn this is blank?
-        return "NA"
+        return ""
     else:
          LOG.warning(
            "Term: " + term + " and standardized term: " + stan_term + " in col: " + column + " did not map"
