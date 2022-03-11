@@ -87,10 +87,12 @@ def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
     """
 
     # Read in the file
-    is_valid, optional_files_found, xpt_extra = file_mapping.check_valid_files(input_xpt_dir)
+    is_valid, dm_dict, optional_files_dict, xpt_extra = file_mapping.check_valid_files(input_xpt_dir)
+    #print(optional_files_found)
+
     if is_valid:
         # TODO: Determine if actual file name is being called
-        dfDM, meta = file_mapping.DM_dataframe(input_xpt_dir, json_file)
+        dfDM, meta = file_mapping.DM_dataframe(input_xpt_dir, dm_dict, json_file)
         # dfDM.to_csv(open(output_xpt_dir + "/sex.txt", 'w'), sep="\t", header=True, index=False)
         pyreadstat.write_xport(dfDM, output_xpt_dir + "/" + "dm.xpt",
                                file_format_version=5,
@@ -100,8 +102,8 @@ def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
                                )
 
 
-        if "ex.xpt" in optional_files_found:
-            dfEX, meta = file_mapping.EX_dataframe(input_xpt_dir, json_file)
+        if "ex.xpt" in optional_files_dict.keys():
+            dfEX, meta = file_mapping.EX_dataframe(input_xpt_dir, optional_files_dict, json_file)
             #dfEX.to_csv(open(output_xpt_dir + "/route.txt", 'w'), sep="\t", header=True, index=False)
             pyreadstat.write_xport(dfEX, output_xpt_dir + "/" + "ex.xpt",
                                    file_format_version=5,
@@ -110,8 +112,8 @@ def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
                                    column_labels= meta.column_labels
                                    )
 
-        if "ts.xpt" in optional_files_found:
-            dfTS, meta = file_mapping.TS_dataframe(input_xpt_dir, json_file)
+        if "ts.xpt" in optional_files_dict.keys():
+            dfTS, meta = file_mapping.TS_dataframe(input_xpt_dir, optional_files_dict, json_file)
             #dfTS.to_csv(open(output_xpt_dir + "/species_strain.txt", 'w'), sep="\t", header=True, index=False)
             pyreadstat.write_xport(dfTS, output_xpt_dir + "/" + "ts.xpt",
                                    file_format_version=5,
@@ -120,8 +122,8 @@ def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
                                    column_labels= meta.column_labels
                                    )
 
-        if "ds.xpt" in optional_files_found:
-            dfDS, meta = file_mapping.DS_dataframe(input_xpt_dir, json_file)
+        if "ds.xpt" in optional_files_dict.keys():
+            dfDS, meta = file_mapping.DS_dataframe(input_xpt_dir, optional_files_dict, json_file)
             #dfDS.to_csv(open(output_xpt_dir + "/disposition.txt", 'w'), sep="\t", header=True, index=False)
             pyreadstat.write_xport(dfDS, output_xpt_dir + "/" + "ds.xpt",
                                    file_format_version=5,
@@ -130,8 +132,8 @@ def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
                                    column_labels= meta.column_labels
                                    )
 
-        if "mi.xpt" in optional_files_found:
-            dfMI, meta = file_mapping.MI_dataframe(input_xpt_dir, json_file)
+        if "mi.xpt" in optional_files_dict.keys():
+            dfMI, meta = file_mapping.MI_dataframe(input_xpt_dir, optional_files_dict, json_file)
             # dfMI.to_csv(open(output_xpt_dir + "/mi.txt", "w"), sep="\t", header=True, index=False)
             pyreadstat.write_xport(dfMI, output_xpt_dir + "/" + "mi.xpt",
                                    file_format_version=5,

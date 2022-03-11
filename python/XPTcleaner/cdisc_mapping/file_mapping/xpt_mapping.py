@@ -9,30 +9,32 @@ pandas.options.mode.chained_assignment = None
 
 LOG = logger.get_logger(__name__)
 
+
 def check_valid_files(input_dir):
     """
     Returns true if dm.xpt is available, otherwise false
     """
     input_xpt = os.listdir(input_dir)
-    input_xpt_cleaned = [i for i in input_xpt if i.endswith('.xpt')]
+    input_xpt = [i for i in input_xpt if i.endswith('.xpt')]
+    input_xpt_cleaned = [x.lower() for x in input_xpt]
+    files_dict = dict(zip(input_xpt_cleaned, input_xpt))
+    #search in files_dict.keys() for cleaned file name
     required_xpts = ["dm.xpt"]
     optional_xpts = ["mi.xpt", "ds.xpt", "ex.xpt", "ts.xpt"]
-
-    # Get the XPT files that will not be mapped
     combo_xpts = [required_xpts, optional_xpts]
-    xpt_extra = [v for v in input_xpt_cleaned if v not in set().union(*combo_xpts)]
+  
+    # Get the XPT files that will not be mapped
+    xpt_noMap = [v for v in list(files_dict.keys()) if v not in set().union(*combo_xpts)]
 
-    # Check if dm.xpt exists
-    dm_found = len(set(required_xpts) & set(input_xpt_cleaned))
-    # Get names of optional xpt domains
-    optional_files_found = set(optional_xpts) & set(input_xpt_cleaned)
+    #[files_dict.pop(x, None) for x in xpt_noMap]
+    xpt_noMap_dict = dict((d, files_dict.pop(d, None)) for d in xpt_noMap)
+    required_dict = dict((d, files_dict.pop(d, None)) for d in required_xpts)
 
-    # If number of required files equals the number of required files
-    # found on the filesystem, continue on
-    if dm_found == len(required_xpts):
-        return True, optional_files_found, xpt_extra
-    else:
-        return False, optional_files_found, xpt_extra
+    # Logic depending if dm.xpt found or not
+    if None not in required_dict.values(): #dm found
+        return True, required_dict, files_dict, xpt_noMap_dict
+    else: #MI not found
+        return False, required_dict, files_dict, xpt_noMap_dict
 
 def do_mapping(column, term, json_file):
     """
@@ -54,7 +56,7 @@ def do_mapping(column, term, json_file):
         return contents[column][stan_term]
     elif stan_term == '':
         # Possibly warn this is blank?
-        return ""
+        return "NA"
     else:
          LOG.warning(
            "Term: " + term + " and standardized term: " + stan_term + " in col: " + column + " did not map"
@@ -63,13 +65,13 @@ def do_mapping(column, term, json_file):
         # leave the raw value as it is, it is up to the user to check the log file and correct all the mapping
          return term
 
-def MI_dataframe(xpt_dir, json_file):
+def MI_dataframe(xpt_dir, xpt_dict, json_file):
 
-    mi_xpt, meta  = utils.read_XPT(xpt_dir, "/mi.xpt")
+    mi_xpt, meta  = utils.read_XPT(xpt_dir, xpt_dict['mi.xpt'])
 
     # General Histopathologic Exam, Qual
     dfMI= mi_xpt[mi_xpt["MITESTCD"] == "GHISTXQL"]
-    if (len(dfMI) == 0):
+    if len(dfMI) == 0:
         #This may be a 3.0 dataset with MITESTCD = "MIEXAM"
         dfMI = mi_xpt[mi_xpt["MITESTCD"] == "MIEXAM"]
     if len(dfMI) != len(mi_xpt):
@@ -92,21 +94,24 @@ def MI_dataframe(xpt_dir, json_file):
     return dfMI_map, meta
 
 
-def EX_dataframe(xpt_dir, json_file):
+def EX_dataframe(xpt_dir, xpt_dict, json_file):
 
     # EX.xpt takes priority for route over TS.xpt
     # TODO: need flexible name strategy
-    ex_xpt, meta = utils.read_XPT(xpt_dir, "/ex.xpt")
+    ex_xpt, meta = utils.read_XPT(xpt_dir, xpt_dict['ex.xpt'])
     # print(ex_xpt)
     # Do mapping on available columns
     columns_to_map = {"EXROUTE": "Route of Administration Response"}
-    dfEX_map = utils.column_mapping(columns_to_map, ex_xpt, json_file)
+    dfEX_map = utils.column_mapping(
+		columns_to_map, 
+		ex_xpt, 
+		json_file)
     return dfEX_map, meta
 
 
-def TS_dataframe(xpt_dir, json_file): 
+def TS_dataframe(xpt_dir, xpt_dict, json_file):
     # TODO: Rewrite to add rows, not columns
-    TS_xpt, meta = utils.read_XPT(xpt_dir, "/ts.xpt")
+    TS_xpt, meta = utils.read_XPT(xpt_dir, xpt_dict['ts.xpt'])
 
     # Replace original TS data with non-mapping rows and raw mapping rows
     dfTS_orig = TS_xpt[-TS_xpt["TSPARMCD"].isin(["ROUTE", "SPECIES", "STRAIN"])] #non mapping rows
@@ -133,9 +138,9 @@ def TS_dataframe(xpt_dir, json_file):
     return dfTS_map, meta
 
 
-def DS_dataframe(xpt_dir, json_file):
+def DS_dataframe(xpt_dir, xpt_dict, json_file):
 
-    ds_xpt, meta = utils.read_XPT(xpt_dir, "/ds.xpt")
+    ds_xpt, meta = utils.read_XPT(xpt_dir, xpt_dict['ds.xpt'])
 
     # Do mapping on available columns
     columns_to_map = {"DSDECOD": "Standardized Disposition Term"}
@@ -146,9 +151,9 @@ def DS_dataframe(xpt_dir, json_file):
     return dfDS_map, meta
 
 
-def DM_dataframe(xpt_dir, json_file):
+def DM_dataframe(xpt_dir, xpt_dict, json_file):
 
-    dm_xpt, meta = utils.read_XPT(xpt_dir, "/dm.xpt")
+    dm_xpt, meta = utils.read_XPT(xpt_dir, xpt_dict['dm.xpt'])
 
     columns_to_map = {"SEX": "Sex"}
     dfDM_map = utils.column_mapping(

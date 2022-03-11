@@ -14,7 +14,8 @@ def gen_vocab(in_file, section_list):
     """
 
     result_dict = {}
-    vocab_df = pandas.read_csv(open(in_file, 'r'), sep="\t")
+    with open(in_file, 'r') as my_in_file:
+        vocab_df = pandas.read_csv(my_in_file, sep="\t")
     for section in section_list:
         vocab_dict = {}
 
