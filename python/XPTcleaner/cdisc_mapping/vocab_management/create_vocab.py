@@ -14,21 +14,19 @@ def gen_vocab(in_file, section_list):
     """
 
     result_dict = {}
-    with open(in_file, 'r') as my_in_file:
-        vocab_df = pandas.read_csv(my_in_file, sep="\t")
-    for section in section_list:
-        vocab_dict = {}
 
-        # Filter dataframe to necessary section
+    for f in in_file:
+        with open(f, 'r') as my_in_file:
+            vocab_df = pandas.read_csv(my_in_file, sep="\t")
+        for section in section_list:
+            vocab_dict = {}
+            # Filter dataframe to necessary section
+            sect_df = vocab_df[vocab_df["Codelist Name"].isin([section])].drop_duplicates()
 
-        # TODO: Check for Codelist Name and Synonym column
-        # labels: good first issue
-        sect_df = vocab_df[vocab_df["Codelist Name"].isin([section])].drop_duplicates()
-
-        # Go through the rows and add the data into the blank
-        # vocab dict, replace missing values with empty string
-        sect_df.apply(lambda row: make_dict(row.fillna(""), vocab_dict), axis=1)
-        result_dict[section] = vocab_dict
+            # Go through the rows and add the data into the blank
+            # vocab dict, replace missing values with empty string
+            sect_df.apply(lambda row: make_dict(row.fillna(""), vocab_dict), axis=1)
+            result_dict[section] = vocab_dict
 
     #vocab_df.close()
 
