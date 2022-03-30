@@ -15,7 +15,7 @@ from cdisc_mapping import utils
 import warnings
 warnings.filterwarnings("error")
 
-LOG = logger.setup_applevel_logger(file_name="app_debug.log")
+LOG = logger.setup_applevel_logger(file_name="app_log.csv")
 
 # TODO: Make sure this file exists, error if doesn't
 # labels: good first issue
