@@ -33,7 +33,7 @@ def check_valid_files(input_dir):
     # Logic depending if dm.xpt found or not
     if None not in required_dict.values(): #dm found
         return True, required_dict, files_dict, xpt_noMap_dict
-    else: #MI not found
+    else: #dm not found
         return False, required_dict, files_dict, xpt_noMap_dict
 
 def do_mapping(column, term, json_file):
