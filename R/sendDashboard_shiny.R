@@ -333,7 +333,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                     htmltools::br()),
 
                             shiny::tabPanel("Aggregate Table",
-                                     DT::dataTableOutput('mi_agg_tab'),
+                                     DT::DTOutput('mi_agg_tab'),
                                      htmltools::br(),htmltools::br(),
                                      download_csv_UI('download_MI_agg'),
                                      htmltools::br(),htmltools::br(),
@@ -960,7 +960,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       })
 
    ###### MI aggregate table ----
-    output$mi_agg_tab <- DT::renderDataTable(server = T,{
+    output$mi_agg_tab <- DT::renderDT(server = T,{
       tableData <- MI_agg_table()
       tableData <- tableData %>%
         dplyr::mutate_if(is.character, as.factor)
@@ -970,6 +970,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
+      rownames = FALSE, 
+      class = "cell-border stripe",
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtip",
@@ -981,9 +983,20 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                               "}")))
+                               "}"),
+                               rowsGroup = list(0,1,2,3,4)))
+                               
       tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
-      tab
+    path <- "www/DT_extension" # folder containing dataTables.rowsGroup.js
+    dep <- htmltools::htmlDependency(
+      "RowsGroup", "2.0.0", 
+      path, script = "dataTables.rowsGroup.js")
+    tab$dependencies <- c(tab$dependencies, list(dep))
+    tab
+
+###plotData_tab
+
+
       })
 
     ####### Download MI aggregate table csv and rds ----
