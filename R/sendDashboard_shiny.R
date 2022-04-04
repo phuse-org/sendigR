@@ -1243,6 +1243,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
+	  rownames = FALSE,
+	  class = "cell-border stripe",
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtip",
@@ -1254,8 +1256,15 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                               "}")))
+                               "}"),
+							   rowsGroup = list(0,1,2,3,4)))
       tab <- DT::formatRound(table = tab,columns = c(8,9),digits = 2)
+	  path <- "www/DT_extension" # folder containing dataTables.rowsGroup.js
+    dep <- htmltools::htmlDependency(
+      "RowsGroup", "2.0.0", 
+      path, script = "dataTables.rowsGroup.js")
+    tab$dependencies <- c(tab$dependencies, list(dep))
+
       tab
       })
 
@@ -1655,9 +1664,17 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tableData <- BW_agg_table()
       tableData <- tableData %>%
         dplyr::mutate_if(is.character, as.factor)
+	  tableData <- dplyr::relocate(tableData, AGEDAYS, .after = SEX)
+	  if (input$SEX == "All") {
+		  rowgroup <- list(0,1,2)
+	  } else {
+		  rowgroup  <- list(0,1,2,3)
+	  }
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
+	  rownames = FALSE,
+	  class = "cell-border stripe",
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtip",
@@ -1669,8 +1686,14 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                               "}")))
+                               "}"),
+							   rowsGroup = rowgroup))
       tab <- DT::formatRound(table = tab,columns = c(6,7),digits = 2)
+	  path <- "www/DT_extension" # folder containing dataTables.rowsGroup.js
+      dep <- htmltools::htmlDependency(
+      "RowsGroup", "2.0.0", 
+      path, script = "dataTables.rowsGroup.js")
+      tab$dependencies <- c(tab$dependencies, list(dep))
       tab
       })
 
