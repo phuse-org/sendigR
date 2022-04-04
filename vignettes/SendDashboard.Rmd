@@ -16,6 +16,106 @@ knitr::opts_chunk$set(
 ```
 
 TO BE WRITTEN!!!
+## Execute sendDashboard app
+
+The sendigR package contains an encapsulated Shiny app - SendDashboard. The app enables the user to search and extract historical control data in a SEND database.
+
+
+| Function | Description |
+|-|------------|
+| [execSendDashboard](../html/execSendDashboard.html) |Starts the SendDashboard app | 
+
+The [SendDashboard](SendDashboard.html)
+
+### Example 
+
+Connect to the database, start the app.
+Remember to disconnect from database when leaving the app.
+```R
+dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db')
+execSendDashboard(dbToken)
+disconnectDB(dbToken)
+```
+
+## Sidebar Menu
+
+__Select Study Start Date Range:__  
+User can select date range from the calender input.  
+__Select Study Design:__  
+User can select study design type from drop down menu.  
+__Select Route of Administration:__      
+User can select one or multiple route of administration from list that extracted from database.   
+__Select Species:__  
+User can select one or multiple species from the suggested list. The list extracted from the current database.  
+__Select Strain:__  
+The suggested list of strain depends on what species selected before. User can select one or multiple strain.  
+__Select Sex:__  
+User can select sex of the animals to filter from drop down menu.  
+__Include uncertain rows:__  
+__Generate/Update Data:__  
+Whenever user change any input in sidebar menu, Generate/Update Data button need to click to update the filter criteria.
+
+## Tab for ANIMALS| MI| LB| BW| Download  
+
+On the top middle of the page there are few tab that shows different table for different domain
+
+### ANIMALS  
+When user click Generate/Update Data button, app will filter and extract a table containing control animal information specified in sidebar input fields.
+
+## Common feature of the table
+
+__Show entries:__  
+User can choose how many entry they want to show at once from the drop down menu located upper left side of the table.  
+__Search:__  
+There is a global search button located upper right side of the table. User can search any word globally in the table. Table will show entry that match the search.  
+__Column name:__  
+If user hover the cursor on the column name, it will show the full name of the column.  
+__Column filter:__    
+Located under the each column name of the table. User can filter the table     
+__Pagination:__  
+Page number is available at bottom right of the table. User can go to specific page using the page number. Next and previous button can be use to go to next and previous page, respectively.  
+__Download Button:__  
+User can download current table as csv or rds format by clicking on appropriate download button located at bottom right of the table.  
+
+__Display Column:__  
+Each of the Individual table of MI, LB and BW domain have a vertical column at left side of table. Individual table shows some specific column by default. More column can be selected by checking the box in display column. This will update the table and show all the columns that selected in left display column. This vertical left display column can be hide by checking the show only table check box located above the display column
+.  
+ 
+### MI
+
+__MI Findings__  
+
+__Individual Records__  
+This table shows control Microscopic Findings (MI) domain information for filtered control animals.    
+
+__Aggregate Table__  
+Aggregate table shows the percentage of Microscopic Findings.
+User can filter specific tissue or organ in MISPEC column and table will shows the count and percentage of the findings. The table is grouped by MISPEC, SPECIES, STRAIN, SEX and ROUTE columns.   
+
+### LB
+
+__Individual Records__  
+This table shows control Laboratory Test Results (LB) domain information for filtered control animals.   
+
+__Aggregate Table__  
+Table shows mean and standard deviation of laboratory test results.
+Table is grouped by LBSPEC, SPECIES, STRAIN, SEX, ROUTE, LBTESTCD, LBTEST and LBSTRESU columns.    
+
+### BW
+
+__Individual Records__  
+This table shows control Body Weight (BW) domain information for filtered control animals.    
+
+__Aggregate Table__  
+Table shows mean and standard deviation of body weight.  
+Table is grouped by AGEDAYS, SPECIES, STRAIN, ROUTE, SEX, BWORRESU columns.   
+
+__Aggregate Plot__  
+
+### Download  
+User can download all the table as RDS format in one file.  
+
+
 
 
 
