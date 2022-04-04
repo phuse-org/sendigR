@@ -482,10 +482,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                             shiny::sliderInput("age_interval", "Choose Interval",
                                                                min = 1,max = 14, value = 3, step = 1),
                                               shiny::selectInput("bw_plot_type", "Choose Plot Type",
-                                                                 choices = c("Line with Error Bar",
-                                                                             "original_data")))),
+                                                                 choices = c("Line with SD (for Selected Interval)",
+                                                                             "Original Data (No Interval)")))),
                                             htmltools::br(),htmltools::br(),
-                                            shiny::plotOutput("bw_agg_plot", height = "600px")))),
+                                            plotly::plotlyOutput("bw_agg_plot", height = "600px")))),
                             shiny::tabPanel("Download",
                                             htmltools::br(),
                             shiny::downloadButton('download_all', "Download"))
@@ -1793,7 +1793,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
     ###### Render BW aggregate plot ----
 
-    output$bw_agg_plot <- shiny::renderPlot({
+    output$bw_agg_plot <- plotly::renderPlotly({
       shiny::req(input$bw_plot_update)
       df <- bw_agg_table_after_filter()
       df <- df[, list(AGEDAYS, SEX,Mean_BWSTRESN,SD_BWSTRESN,N)]
@@ -1829,28 +1829,38 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_plot_f <- cbind(mean_interval_f, Age_f,sex_f)
       names(df_plot_f) <- names(df_plot_m)
       df_plot <- rbind(df_plot_m, df_plot_f)
+	  print(interval)
+	  title_error <- paste0("Mean Body Weight: ",  interval, " AGEDAYS Interval Selected")
+	  
 
-      if (input$bw_plot_type=="Line with Error Bar") {
+      if (input$bw_plot_type=="Line with SD (for Selected Interval)") {
         g <- ggplot2::ggplot(data = df_plot, ggplot2::aes(x=Age, y=Mean, color=sex))+
           ggplot2::geom_line()+
           ggplot2::geom_point()+
           # geom_errorbar(aes(ymin=Mean-Weighted_SD, ymax=Mean+Weighted_SD), width =.2,
           #               position = position_dodge(0.05))+
-          ggplot2::geom_ribbon(ggplot2::aes(ymin=Mean-Weighted_SD, ymax=Mean+Weighted_SD), alpha =.2)+
+          ggplot2::geom_ribbon(ggplot2::aes(ymax=Mean+Weighted_SD, ymin=Mean-Weighted_SD), alpha =.2)+
+		  ggplot2::labs(title = title_error, x = "AGEDAYS", y = "Mean BW")+
+		  ggplot2::theme_minimal()+
           ggplot2::theme(
+			plot.title = element_text(size = 16L,hjust = 0.5),
             axis.title = ggplot2::element_text(size = 14, face = 'bold'),
             axis.text = ggplot2::element_text(size = 14),
             legend.title = ggplot2::element_text(size = 14),
-            legend.text = ggplot2::element_text(size = 14),
-            panel.grid.major.x   = ggplot2::element_blank(),
-            panel.grid.minor.x = ggplot2::element_blank(),
-            panel.grid.major.y = ggplot2::element_blank()
+            legend.text = ggplot2::element_text(size = 14)
+            #panel.grid.major.x   = ggplot2::element_blank(),
+            #panel.grid.minor.x = ggplot2::element_blank(),
+            #panel.grid.major.y = ggplot2::element_blank()
           )
+		  
       } else {
 
         g <- ggplot2::ggplot(data = df_org, ggplot2::aes(x=AGEDAYS, y=Mean_BWSTRESN, color=SEX))+
           ggplot2::geom_point()+
+		  ggplot2::labs(title = "Mean of Body Weight", x = "AGEDAYS", y = "Mean BW")+
+		  ggplot2::theme_minimal()+
           ggplot2::theme(
+			plot.title = element_text(size = 16,hjust = 0.5),
             axis.title = ggplot2::element_text(size = 14, face = 'bold'),
             axis.text = ggplot2::element_text(size = 14),
             legend.title = ggplot2::element_text(size = 14),
@@ -1860,7 +1870,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       }
 
 
-      print(g)
+      plotly::ggplotly(g)
 
     })
 
