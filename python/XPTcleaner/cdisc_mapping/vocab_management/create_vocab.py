@@ -1,4 +1,5 @@
 import pandas
+import numpy
 
 from cdisc_mapping import logger
 from cdisc_mapping import utils
@@ -15,18 +16,30 @@ def gen_vocab(in_file, section_list):
 
     result_dict = {}
 
-    for f in in_file:
-        with open(f, 'r') as my_in_file:
-            vocab_df = pandas.read_csv(my_in_file, sep="\t")
-        for section in section_list:
-            vocab_dict = {}
-            # Filter dataframe to necessary section
-            sect_df = vocab_df[vocab_df["Codelist Name"].isin([section])].drop_duplicates()
+    for section in section_list:
+        # start extensible, finish CDISC to overwrite conflicts
+        vocab_dict = {}
+        sect_df = pandas.DataFrame()
+        for f in in_file:
+            print(f)
+            with open(f, 'r') as my_in_file:
+                vocab_df = pandas.read_csv(my_in_file, sep="\t")
 
-            # Go through the rows and add the data into the blank
-            # vocab dict, replace missing values with empty string
-            sect_df.apply(lambda row: make_dict(row.fillna(""), vocab_dict), axis=1)
-            result_dict[section] = vocab_dict
+            # Filter dataframe to necessary section
+            temp_df = vocab_df[['CDISC Submission Value', 'CDISC Synonym(s)']][vocab_df["Codelist Name"].isin([section])]
+            temp_df['CDISC Submission Value'].str.upper()
+            temp_df['CDISC Synonym(s)'].str.upper()
+            sect_df = sect_df.append(temp_df, ignore_index=True)
+
+        # Go through the rows and add the data into the blank
+        # vocab dict, replace missing values with empty string
+        sect_df.apply(lambda row: make_dict(row.fillna(""), vocab_dict), axis=1)
+        #print("embedded: ", vocab_dict)
+        #print(vocab_dict)
+
+        result_dict[section] = vocab_dict
+
+        #Report errors in synonym mismatches b/w 2 files
 
     #vocab_df.close()
 
