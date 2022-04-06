@@ -9,4 +9,7 @@
 ^status.xlsx$
 ^Misc
 ^data-raw
+^python
 ^tests/data/misc
+^R/dbFunctionsOracle.R
+^importStudies.R

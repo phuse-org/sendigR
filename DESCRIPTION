@@ -35,14 +35,15 @@ Imports:
     dplyr,
     ggplot2,
     Hmisc
-Suggests: 
+Suggests:
     ROracle,
     SASxport,
     sjlabelled,
     logr,
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    shinycssloaders
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 
