@@ -29,11 +29,11 @@ def gen_vocab(in_file, section_list):
             temp_df = vocab_df[['CDISC Submission Value', 'CDISC Synonym(s)']][vocab_df["Codelist Name"].isin([section])]
             temp_df['CDISC Submission Value'].str.upper()
             temp_df['CDISC Synonym(s)'].str.upper()
-            sect_df = sect_df.append(temp_df, ignore_index=True)
+            combined_df = pandas.concat([sect_df, temp_df], ignore_index=True)
 
         # Go through the rows and add the data into the blank
         # vocab dict, replace missing values with empty string
-        sect_df.apply(lambda row: make_dict(row.fillna(""), vocab_dict), axis=1)
+        combined_df.apply(lambda row: make_dict(row.fillna(""), vocab_dict), axis=1)
         #print("embedded: ", vocab_dict)
         #print(vocab_dict)
 

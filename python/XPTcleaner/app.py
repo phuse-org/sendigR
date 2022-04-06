@@ -26,7 +26,6 @@ with open("config.yaml") as f:
 #@click.group()
 def main():
     #standardize_file("//ix1invivo-p/ivdr/InVivoFileFormatAdapter/Mappings/SEND/2020-03-17-11-09-54/done/8381036_12 Feb 2020/","//ix1invivo-p/ivdr/InVivoFileFormatAdapter/Mappings/SEND/2020-03-17-11-09-54/done/8381036_12 Feb 2020/XPT_Cleaner","//lrlhps/lrlhps/users/c143390/Ontology/LRL_cdisc_mapping/cdisc_mapping/generated_vocabs/current.json")
-
     pass
 
 #@main.command()
@@ -41,7 +40,8 @@ def gen_vocab(in_file, out_path):
     """
     section_cols = CONFIG["section_cols"]
 
-    vocab = vocab_management.gen_vocab(list(in_file), section_cols)
+    vocab = vocab_management.gen_vocab(in_file, section_cols)
+
     with open(out_path, "w") as out_file:
         out_file.write(json.dumps(vocab, indent=4, sort_keys=True))
 
