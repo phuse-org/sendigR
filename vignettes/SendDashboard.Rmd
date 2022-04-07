@@ -71,7 +71,7 @@ There is a global search button located upper right side of the table. User can 
 __Column name:__  
 If user hover the cursor on the column name, it will show the full name of the column.  
 
-![](../website_files/column_hover.gif)
+![](https://github.com/phuse-org/sendigR/blob/main/website_files/column_hover.gif)
 
 
 __Column filter:__    
