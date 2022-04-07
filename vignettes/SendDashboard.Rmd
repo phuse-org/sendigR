@@ -70,6 +70,10 @@ __Search:__
 There is a global search button located upper right side of the table. User can search any word globally in the table. Table will show entry that match the search.  
 __Column name:__  
 If user hover the cursor on the column name, it will show the full name of the column.  
+
+![](../website_files/column_hover.gif)
+
+
 __Column filter:__    
 Located under the each column name of the table. User can filter the table     
 __Pagination:__  
