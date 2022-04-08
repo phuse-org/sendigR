@@ -1843,7 +1843,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 		  ggplot2::labs(title = title_error, x = "AGEDAYS", y = "Mean BW")+
 		  ggplot2::theme_minimal()+
           ggplot2::theme(
-			plot.title = element_text(size = 16L,hjust = 0.5),
+			plot.title = ggplot2::element_text(size = 16L,hjust = 0.5),
             axis.title = ggplot2::element_text(size = 14, face = 'bold'),
             axis.text = ggplot2::element_text(size = 14),
             legend.title = ggplot2::element_text(size = 14),
@@ -1860,7 +1860,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 		  ggplot2::labs(title = "Mean of Body Weight", x = "AGEDAYS", y = "Mean BW")+
 		  ggplot2::theme_minimal()+
           ggplot2::theme(
-			plot.title = element_text(size = 16,hjust = 0.5),
+			plot.title = ggplot2::element_text(size = 16,hjust = 0.5),
             axis.title = ggplot2::element_text(size = 14, face = 'bold'),
             axis.text = ggplot2::element_text(size = 14),
             legend.title = ggplot2::element_text(size = 14),
