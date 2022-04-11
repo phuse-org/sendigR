@@ -333,7 +333,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                     htmltools::br()),
 
                             shiny::tabPanel("Aggregate Table",
-                                     DT::dataTableOutput('mi_agg_tab'),
+                                     DT::DTOutput('mi_agg_tab'),
                                      htmltools::br(),htmltools::br(),
                                      download_csv_UI('download_MI_agg'),
                                      htmltools::br(),htmltools::br(),
@@ -482,10 +482,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                             shiny::sliderInput("age_interval", "Choose Interval",
                                                                min = 1,max = 14, value = 3, step = 1),
                                               shiny::selectInput("bw_plot_type", "Choose Plot Type",
-                                                                 choices = c("Line with Error Bar",
-                                                                             "original_data")))),
+                                                                 choices = c("Line with SD (for Selected Interval)",
+                                                                             "Original Data (No Interval)")))),
                                             htmltools::br(),htmltools::br(),
-                                            shiny::plotOutput("bw_agg_plot", height = "600px")))),
+                                            plotly::plotlyOutput("bw_agg_plot", height = "600px")))),
                             shiny::tabPanel("Download",
                                             htmltools::br(),
                             shiny::downloadButton('download_all', "Download"))
@@ -960,7 +960,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       })
 
    ###### MI aggregate table ----
-    output$mi_agg_tab <- DT::renderDataTable(server = T,{
+    output$mi_agg_tab <- DT::renderDT(server = T,{
       tableData <- MI_agg_table()
       tableData <- tableData %>%
         dplyr::mutate_if(is.character, as.factor)
@@ -970,6 +970,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
+      rownames = FALSE, 
+      class = "cell-border stripe",
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtip",
@@ -981,9 +983,20 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                               "}")))
+                               "}"),
+                               rowsGroup = list(0,1,2,3,4)))
+                               
       tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
-      tab
+    path <- "www/DT_extension" # folder containing dataTables.rowsGroup.js
+    dep <- htmltools::htmlDependency(
+      "RowsGroup", "2.0.0", 
+      path, script = "dataTables.rowsGroup.js")
+    tab$dependencies <- c(tab$dependencies, list(dep))
+    tab
+
+###plotData_tab
+
+
       })
 
     ####### Download MI aggregate table csv and rds ----
@@ -1230,6 +1243,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
+	  rownames = FALSE,
+	  class = "cell-border stripe",
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtip",
@@ -1241,8 +1256,15 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                               "}")))
+                               "}"),
+							   rowsGroup = list(0,1,2,3,4)))
       tab <- DT::formatRound(table = tab,columns = c(8,9),digits = 2)
+	  path <- "www/DT_extension" # folder containing dataTables.rowsGroup.js
+    dep <- htmltools::htmlDependency(
+      "RowsGroup", "2.0.0", 
+      path, script = "dataTables.rowsGroup.js")
+    tab$dependencies <- c(tab$dependencies, list(dep))
+
       tab
       })
 
@@ -1642,9 +1664,17 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tableData <- BW_agg_table()
       tableData <- tableData %>%
         dplyr::mutate_if(is.character, as.factor)
+	  tableData <- dplyr::relocate(tableData, AGEDAYS, .after = SEX)
+	  if (input$SEX == "All") {
+		  rowgroup <- list(0,1,2)
+	  } else {
+		  rowgroup  <- list(0,1,2,3)
+	  }
       # Associate table header with labels
       headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
+	  rownames = FALSE,
+	  class = "cell-border stripe",
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtip",
@@ -1656,8 +1686,14 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                               "}")))
+                               "}"),
+							   rowsGroup = rowgroup))
       tab <- DT::formatRound(table = tab,columns = c(6,7),digits = 2)
+	  path <- "www/DT_extension" # folder containing dataTables.rowsGroup.js
+      dep <- htmltools::htmlDependency(
+      "RowsGroup", "2.0.0", 
+      path, script = "dataTables.rowsGroup.js")
+      tab$dependencies <- c(tab$dependencies, list(dep))
       tab
       })
 
@@ -1757,7 +1793,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
     ###### Render BW aggregate plot ----
 
-    output$bw_agg_plot <- shiny::renderPlot({
+    output$bw_agg_plot <- plotly::renderPlotly({
       shiny::req(input$bw_plot_update)
       df <- bw_agg_table_after_filter()
       df <- df[, list(AGEDAYS, SEX,Mean_BWSTRESN,SD_BWSTRESN,N)]
@@ -1793,28 +1829,38 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_plot_f <- cbind(mean_interval_f, Age_f,sex_f)
       names(df_plot_f) <- names(df_plot_m)
       df_plot <- rbind(df_plot_m, df_plot_f)
+	  print(interval)
+	  title_error <- paste0("Mean Body Weight: ",  interval, " AGEDAYS Interval Selected")
+	  
 
-      if (input$bw_plot_type=="Line with Error Bar") {
+      if (input$bw_plot_type=="Line with SD (for Selected Interval)") {
         g <- ggplot2::ggplot(data = df_plot, ggplot2::aes(x=Age, y=Mean, color=sex))+
           ggplot2::geom_line()+
           ggplot2::geom_point()+
           # geom_errorbar(aes(ymin=Mean-Weighted_SD, ymax=Mean+Weighted_SD), width =.2,
           #               position = position_dodge(0.05))+
-          ggplot2::geom_ribbon(ggplot2::aes(ymin=Mean-Weighted_SD, ymax=Mean+Weighted_SD), alpha =.2)+
+          ggplot2::geom_ribbon(ggplot2::aes(ymax=Mean+Weighted_SD, ymin=Mean-Weighted_SD), alpha =.2)+
+		  ggplot2::labs(title = title_error, x = "AGEDAYS", y = "Mean BW")+
+		  ggplot2::theme_minimal()+
           ggplot2::theme(
+			plot.title = ggplot2::element_text(size = 16L,hjust = 0.5),
             axis.title = ggplot2::element_text(size = 14, face = 'bold'),
             axis.text = ggplot2::element_text(size = 14),
             legend.title = ggplot2::element_text(size = 14),
-            legend.text = ggplot2::element_text(size = 14),
-            panel.grid.major.x   = ggplot2::element_blank(),
-            panel.grid.minor.x = ggplot2::element_blank(),
-            panel.grid.major.y = ggplot2::element_blank()
+            legend.text = ggplot2::element_text(size = 14)
+            #panel.grid.major.x   = ggplot2::element_blank(),
+            #panel.grid.minor.x = ggplot2::element_blank(),
+            #panel.grid.major.y = ggplot2::element_blank()
           )
+		  
       } else {
 
         g <- ggplot2::ggplot(data = df_org, ggplot2::aes(x=AGEDAYS, y=Mean_BWSTRESN, color=SEX))+
           ggplot2::geom_point()+
+		  ggplot2::labs(title = "Mean of Body Weight", x = "AGEDAYS", y = "Mean BW")+
+		  ggplot2::theme_minimal()+
           ggplot2::theme(
+			plot.title = ggplot2::element_text(size = 16,hjust = 0.5),
             axis.title = ggplot2::element_text(size = 14, face = 'bold'),
             axis.text = ggplot2::element_text(size = 14),
             legend.title = ggplot2::element_text(size = 14),
@@ -1824,7 +1870,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       }
 
 
-      print(g)
+      plotly::ggplotly(g)
 
     })
 
