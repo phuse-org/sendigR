@@ -271,7 +271,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                    htmltools::br(),
                                    shinycssloaders::withSpinner(
 
-                                   DT::dataTableOutput("animals")),
+                                   DT::dataTableOutput("animals"), 	color = "#134585"),
                                    htmltools::br(),
                                    download_csv_UI('download_filter_animal'),
                                    htmltools::br(),htmltools::br(),
