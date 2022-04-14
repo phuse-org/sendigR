@@ -263,6 +263,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # that particular domain.
 
     shinydashboard::dashboardBody(
+	  shiny::includeCSS("www/theme.css"),
       htmltools::tags$head(shiny::tags$script(shiny::HTML(click_jscode))),
       shiny::tabsetPanel(type = 'tab',
                  shiny::tabPanel('ANIMALS', ##### Animal Tab ----
