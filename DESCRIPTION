@@ -34,10 +34,10 @@ Imports:
     DT,
     dplyr,
     ggplot2,
-    Hmisc
+    Hmisc,
+    haven
 Suggests:
     ROracle,
-    SASxport,
     sjlabelled,
     logr,
     knitr,

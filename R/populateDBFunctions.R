@@ -63,8 +63,10 @@ dbCreateSchema <- function(dbToken) {
                                         SEQ)[,SEQ := NULL],
                    paste0),
             collapse = ' ,')
+    print(cols)
     # Generate and execute create table stmt
     sqlStmt <- paste0("create table '", tab, "' (", cols, ")" )
+    print(sqlStmt)
     res <- RSQLite::dbSendStatement(dbToken$dbHandle, sqlStmt)
     RSQLite::dbClearResult(res)
   }
@@ -470,20 +472,18 @@ loadStudyData <- function(dbToken,
   ##############################################################################
   # Import domain from xpt file - return content in a data table
   importXptFile <- function(file, domain) {
-    # Extract content of xpt file
-    xptContent <- SASxport::read.xport(file.path(xptPath, file),
-                                       as.is = TRUE,
-                                       as.list = TRUE)
+    # Extract content of xpt file using haven
+    xptContent <- haven::read_xpt(file.path(xptPath, file))
     # ...and check if it's valid
-    if (length(names(xptContent)) != 1)
-      stop(paste0('Too many tables included in xpt file: ', file))
-    if (toupper(names(xptContent)) != domain)
-      stop(sprintf('The in xpt file %s contains an unexpected table name %s - should have been %s',
-                   file, names(xptContent), domain))
+    # if (length(names(xptContent)) != 1)
+    #   stop(paste0('Too many tables included in xpt file: ', file))
+    # if (toupper(names(xptContent)) != domain)
+    #   stop(sprintf('The in xpt file %s contains an unexpected table name %s - should have been %s',
+    #                file, names(xptContent), domain))
 
     # Convert to data.table and return
     return(
-      data.table::as.data.table(sjlabelled::remove_all_labels(xptContent[[names(xptContent)]])))
+      data.table::as.data.table(sjlabelled::remove_all_labels(xptContent)))
   }
   ### End of importXptFile
 
