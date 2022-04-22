@@ -9,7 +9,6 @@ pandas.options.mode.chained_assignment = None
 
 LOG = logger.get_logger(__name__)
 
-
 def check_valid_files(input_dir):
     """
     Returns true if dm.xpt is available, otherwise false
@@ -47,28 +46,27 @@ def do_mapping(column, term, json_file):
 
     # make sure we have the column
     if column not in contents.keys():
-        LOG.error("Column: " + column + "was not found in keys")
-        raise ValueError("Column not in contents keys")
-
-    # consider doing text standardization
-    stan_term = utils.standardize_text(term)
-    if stan_term in contents[column]:
-        mapped_term = contents[column][stan_term]
-        if (stan_term != mapped_term):
-            LOG.info(
-                '"' + term + '","' + stan_term + '","' + mapped_term+ '", ' + column
-            #    ", Original Term, " + term + ", Standardized term, " + stan_term + ", Mapped term,  " + mapped_term + " ,Codelist, " + column
-            )
-        return contents[column][stan_term]
-    elif stan_term == '':
-        # Possibly warn this is blank?
-        return "NA"
+        print("Column: " + column + "was not found in keys")
     else:
-         LOG.warning(
-            '"' + term + '","' + stan_term + '",, ' + column
-         )         #return "UNMAPPED"
-        # leave the raw value as it is, it is up to the user to check the log file and correct all the mapping
-         return term
+        # consider doing text standardization
+        stan_term = utils.standardize_text(term)
+        if stan_term in contents[column]:
+            mapped_term = contents[column][stan_term]
+            #if (stan_term != mapped_term):
+            #    LOG.info(
+            #        '"' + term + '","' + stan_term + '","' + mapped_term+ '", ' + column
+            #        ", Original Term, " + term + ", Standardized term, " + stan_term + ", Mapped term,  " + mapped_term + " ,Codelist, " + column
+            #    )
+            return contents[column][stan_term]
+        elif stan_term == '':
+            # Possibly warn this is blank?
+            return "NA"
+        else:
+            LOG.warning(
+                '"' + term + '","' + stan_term + '",, ' + column
+            )         #return "UNMAPPED"
+            # leave the raw value as it is, it is up to the user to check the log file and correct all the mapping
+            return term
 
 def MI_dataframe(xpt_dir, xpt_dict, json_file):
 

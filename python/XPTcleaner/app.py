@@ -70,7 +70,7 @@ def compare_vocabs(vocab_path_a, vocab_path_b):
         )
 
 
-#main.command()
+main.command()
 #@click.argument("input_xpt_dir")
 #@click.argument("output_xpt_dir")
 #@click.argument("json_file")

@@ -29,9 +29,12 @@ def column_mapping(columns_to_map, df, json_file):
         # A possible solution is to replace the first 2 character by "RA", e.g. MISPEC will
         # have the raw value in RASPEC
         # df[column + "_raw"] = df[column]
-        df[column] = df[column].map(
-            lambda x: file_mapping.do_mapping(columns_to_map[column], x, json_file)
-        )
+        try:
+            df[column] = df[column].map(
+                lambda x: file_mapping.do_mapping(columns_to_map[column], x, json_file)
+            )
+        except Exception as e:
+            LOG.error("ERROR exception caught:  " + str(e))
 
     return df
 
@@ -39,8 +42,10 @@ def column_mapping(columns_to_map, df, json_file):
 def read_XPT(file_path, file_name):
     with open(file_path + file_name, "rb") as f:
         result = chardet.detect(f.read())
-     # xpt_df = pandas.read_sas(file_path + file_name, encoding=result["encoding"])
-    xpt_df, meta = pyreadstat.read_xport(file_path + file_name, encoding='ascii', metadataonly=False)
+    xpt_df, meta = pyreadstat.read_xport(file_path + file_name, metadataonly=False, encoding=result["encoding"])
+
+    # xpt_df = pandas.read_sas(file_path + file_name, encoding=result["encoding"])
+    # xpt_df, meta = pyreadstat.read_xport(file_path + file_name, encoding='ascii', metadataonly=False)
     # xpt_df = pandas.read_sas(file_path + file_name, encoding='ascii')
     return xpt_df, meta
 
