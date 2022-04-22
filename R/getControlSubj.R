@@ -150,6 +150,55 @@ getControlSubj<-function(dbToken,
     }
   }
   ###################################################################################################
+  # calculate the age for an animal at the disposition date to days
+  # - returns either the calculated age or a text with reason why the age couldn't be calculated.
+  ###################################################################################################
+  calcDSAgeDays<-function(DSSTDTC, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU) {
+
+    if (!(DSSTDTC == "" | is.na(DSSTDTC) | BRTHDTC == "" | is.na(BRTHDTC))) {
+      # BRTHDTC is populated
+      if (is.na(parsedate::parse_iso_8601(DSSTDTC)) |  is.na(parsedate::parse_iso_8601(BRTHDTC)))
+        return("DSAnimalAge: DSSTDTC or BRTHDTC is not a valid ISO 8601 date")
+      return(ceiling(as.numeric(parsedate::parse_iso_8601(DSSTDTC) - parsedate::parse_iso_8601(BRTHDTC))))
+    } else if (!(((AGE == "" | is.na(AGE)) & (AGETXT == "" | is.na(AGETXT))))) {
+      if (!(RFSTDTC == "" | is.na(RFSTDTC) | DSSTDTC == "" | is.na(DSSTDTC))) {
+        if (is.na(parsedate::parse_iso_8601(RFSTDTC)) |  is.na(parsedate::parse_iso_8601(DSSTDTC)))
+          return("DSAnimalAge: RFSTDTC or DSSTDTC is not a valid ISO 8601 date")
+      }
+      #Remove the time part from the RFSTDTC.
+      dateRFDTC <- substr(RFSTDTC, 1, 10)
+      ageDiff <- floor(as.numeric(parsedate::parse_iso_8601(DSSTDTC) - parsedate::parse_iso_8601(dateRFDTC)))
+      ageCalc <- NA
+      if (!(AGE == "" | is.na(AGE))) {
+        ageCalc <- as.numeric(AGE)
+      } else  {
+        # AGETXT is populated
+        if (!grepl("^\\d+-\\d+$", AGETXT))
+          return("DSAnimalAge: AGETXT does not have a valid format (number-number)")
+        # Use the mid value for calculation
+        ageCalc <- (as.numeric(stringr::word(AGETXT,1,sep = "-")) + as.numeric(stringr::word(AGETXT,2,sep = "-")))/2
+      }
+      #print(paste0("Agediff:", ageDiff, "ageCalc:", ageCalc))
+
+      # Convert age to number of days:
+      if (AGEU=='DAYS') {
+        return(as.character(ceiling(ageCalc + ageDiff)))
+      } else if (AGEU=='WEEKS') {
+        return(as.character(ceiling(ageCalc*7 + ageDiff)))
+      } else if (AGEU=='MONTHS') {
+        return(as.character(ceiling(ageCalc*365/12 + ageDiff)))
+      } else if (AGEU=='YEARS') {
+        return(as.character(ceiling(ageCalc*365 + ageDiff)))
+      } else {
+        # Not supported AGEU - cannot calculate
+        return("DSAnimalAge: Not supported or missing AGEU value has been populated")
+      }
+    } else {
+      # Not enough variables has been populated to do calculations
+      return("DSAnimalAge: Neither DSSTDTC/BRTHDTC nor DSSTDTC/RFSTDTC/AGE/AGETXT/AGEU has been fully populated")
+    }
+  }
+  ###################################################################################################
 
   # Definition of the search words for negative control terms
   negStandAlonesWords <- c('placebo', 'untreated', 'sham')
@@ -250,10 +299,10 @@ getControlSubj<-function(dbToken,
   # Calculate age at RFSTDTC
   txDmCtrlSet[,DM_AGEDAYStxt := mapply(calcDMAgeDays, RFSTDTC,BRTHDTC,AGETXT,AGE,AGEU)]
   # Calculate age at disposition
-  txDmCtrlSet[,DS_AGEDAYStxt := mapply(calcDMAgeDays, DSSTDTC,BRTHDTC,AGETXT,AGE,AGEU)]
+  txDmCtrlSet[,DS_AGEDAYStxt := mapply(calcDSAgeDays, DSSTDTC,RFSTDTC, BRTHDTC,AGETXT,AGE,AGEU)]
   # If an age has been calculated - convert returned value from function to
   # numeric age in days value - else save returned error message
-  # also calculuate the age of the animal in days at the disposition
+  # also calculate the age of the animal in days at the disposition
   txDmCtrlSet[,`:=` (DM_AGEDAYS=suppressWarnings(as.numeric(DM_AGEDAYStxt)),
                      DS_AGEDAYS=suppressWarnings(as.numeric(DS_AGEDAYStxt)),
                      NO_AGE_MSG=ifelse(!grepl("^[0-9]+$",DM_AGEDAYStxt),
