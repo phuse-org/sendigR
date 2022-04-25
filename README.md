@@ -103,26 +103,26 @@ To make it possible to import data for a set of studies with `dbImportStudies`, 
 
 /path/to/SEND/datasets  
 +-- study01  
-   |   +-- ts.xpt  
-   |   +-- dm.xpt  
-   |   +-- ex.xpt  
-   |   +-- etc.  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- ts.xpt  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- dm.xpt  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- ex.xpt  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- etc.  
 +-- study02   
-   |   +-- ts.xpt  
-   |   +-- dm.xpt  
-   |   +-- ex.xpt  
-   |   +-- etc.  
-+-- proj1234
-   |   +-- study11
-        |   +-- ts.xpt  
-        |   +-- dm.xpt  
-        |   +-- ex.xpt  
-        |   +-- etc.
-   |   +-- study12
-        |   +-- ts.xpt  
-        |   +-- dm.xpt  
-        |   +-- ex.xpt  
-        |   +-- etc.
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- ts.xpt  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- dm.xpt  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- ex.xpt  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- etc.  
++-- proj1234<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- study11<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- ts.xpt  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- dm.xpt  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- ex.xpt  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- etc.<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- study12<br>
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- ts.xpt  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- dm.xpt  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- ex.xpt  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+-- etc.<br>
 +-- etc.
 ## Extract and filter SEND data
 
