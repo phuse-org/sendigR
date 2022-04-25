@@ -113,12 +113,12 @@ To make it possible to import data for a set of studies with `dbImportStudies`, 
    |   +-- ex.xpt  
    |   +-- etc.  
 +-- proj1234
-    +-- study11
+   |   +-- study11
         |   +-- ts.xpt  
         |   +-- dm.xpt  
         |   +-- ex.xpt  
         |   +-- etc.
-    +-- study12
+   |   +-- study12
         |   +-- ts.xpt  
         |   +-- dm.xpt  
         |   +-- ex.xpt  
