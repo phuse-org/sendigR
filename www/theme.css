@@ -195,6 +195,125 @@
     box-shadow: inset 0 1px 1px rgb(0 0 0 / 8%), 0 0 8px rgba(249,148,6);
 }
 
+/* action button */
+
+.btn.btn-default.action-button.shiny-bound-input{
+	transition: all .5s ease;
+	background-color:#FFFFFF;
+	color:#E31616;
+	border-color:#BEBEBE;
+	border-style:solid;
+	border-width:1px;
+	border-radius:5%;
+	font-weight:bold;
+	font-size:14px;
+
+}
+
+#refreshData, #refreshData_02 {
+	font-size:18px;
+
+}
+
+.btn.btn-default.action-button.shiny-bound-input:hover {
+	color: #f99406;
+	background-color: #134585;
+
+}
+.btn.btn-default.action-button.shiny-bound-input:active {
+  background-color: #134585;
+  /* box-shadow: 0 5px #666; */
+  transform: translateY(4px);
+
+}
+
+/* selectize-input */
+
+
+
+
+
+/* 
+.form-group.shiny-input-container {
+    animation: growDown 300ms ease-in-out forwards;
+    transform-origin: top center;
+} */
+
+/* https://codinhood.com/micro/10-dropdown-menu-animations-css-transform */
+/* scaledown */
+
+/* .selectize-dropdown-content {
+    animation: growDown 300ms ease-in-out forwards;
+    transform-origin: top center;
+}
+
+@keyframes growDown {
+    0% {
+        transform: scaleY(0)
+    }
+    80% {
+        transform: scaleY(1.1)
+    }
+    100% {
+        transform: scaleY(1)
+    }
+} */
+
+/* rotateX */
+.selectize-dropdown-content {
+    animation: rotateMenu 800ms ease-in-out forwards;
+    transform-origin: top center;
+}
+
+    
+.datepicker-dropdown {
+	animation: rotateMenu 800ms ease-in-out forwards;
+    transform-origin: top;
+} 
+
+@keyframes rotateMenu {
+    0% {
+        transform: rotateX(-90deg)
+    }
+    70% {
+        transform: rotateX(20deg) 
+    }
+    100% {
+        transform: rotateX(0deg) 
+    }
+}
+
+
+
+
+
+/* #refreshData:hover, #refreshData_02:hover {
+	color: #f99406;
+	background-color: #134585;
+
+} */
+
+
+
+/* button {
+    transition: all .5s ease;
+    color: #fff;
+    border: 3px solid white;
+    font-family:'Montserrat', sans-serif;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1;
+    font-size: 17px;
+    background-color : transparent;
+    padding: 10px;
+    outline: none;
+    border-radius: 4px;
+}
+button:hover {
+    color: #001F3F;
+    background-color: #fff;
+} */
+
 
 
 /* data picker background */
