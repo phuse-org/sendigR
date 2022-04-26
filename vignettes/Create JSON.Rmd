@@ -1,0 +1,47 @@
+---
+title: "Create JSON for Vocabulary Mapping"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Create JSON for Vocabulary Mapping}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+This vignettes introduces how to
+
+* 
+
+# Getting started
+
+Before we are ready to use the functions in the package, we must ensure that a minimum of prerequisites are fulfilled.
+
+## Package dependencies 
+
+Beside the required packages listed in the Imports section of [DESCRIPTION](../DESCRIPTION), one or more additional package(s) must be installed:
+
+* To run the Python code within R you you will need:
+    * _reticulate_
+* For the Python environment
+    * __
+
+```
+
+| Function | Description |
+|-|------------|
+| [dbCreateSchema](../html/dbCreateSchema.html)     | Create a SEND schema, i.e. all the tables to represent the domains documented in SEND IG, in an open and empty database|
+| [dbCreateIndexes](../html/dbCreateIndexes.html)   | Create a set of indexes on the tables in a  SEND database to optimize performance of extraction of data|   
+| [dbImportOneStudy](../html/dbImportOneStudy.html) | Import SEND study data in SAS xport format into a SEND database from a single study folder|   
+| [dbImportStudies](../html/dbImportStudies.html)   | Import SEND study data in SAS xport format into a SEND database from a hierarchy study folders|   
+| [dbDeleteStudies](../html/dbDeleteStudies.html)   | Delete one or more studies in SEND database|   
+
+
+### Examples
+
+```
