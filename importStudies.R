@@ -21,7 +21,7 @@ if (!is.null(pyPathBase)) setwd(pyPathBase)
 
 #The source_python() function will source a Python script and make the objects
 #it creates available within an R environment
-source_python("App.py")
+source_python("app.py")
 
 #Call the gen_vocab function with the source CDISC CT file and the target json file
 infile <- "../../data-raw/SEND Terminology.txt"
