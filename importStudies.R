@@ -4,8 +4,12 @@ library(data.table)
 library(reticulate)
 #devtools::install_github("rstudio/reticulate")
 
-baseDir <- "C:/BioCelerate"
-studyRoot <- paste(baseDir,'TDSStudies',sep='/')
+use_python("/opt/python/3.9.5/bin/python")
+
+setwd('~/GitHub/sendigr')
+
+baseDir <- "~/SEND_DATASETS"
+studyRoot <- paste(baseDir,'SEND_DATASETS-test',sep='/')
 dbRoot <- paste(baseDir,'SQLLite_DB',sep='/')
 
 # Set working directory to location of script
@@ -20,7 +24,7 @@ if (!is.null(pyPathBase)) setwd(pyPathBase)
 source_python("App.py")
 
 #Call the gen_vocab function with the source CDISC CT file and the target json file
-infile <- "../../data-raw/SEND Terminology_2021_12_17.txt"
+infile <- "../../data-raw/SEND Terminology.txt"
 jsonfile <- "generated_vocabs/current.json"
 py$gen_vocab(infile,jsonfile )
 
