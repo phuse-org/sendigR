@@ -266,7 +266,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
     shinydashboard::dashboardBody(
 
-	  shiny::includeCSS("www/theme.css"),
+	#   shiny::includeCSS("www/theme.css"),
+	  shiny::includeCSS("www/from_sass_theme.css"),
 	  shiny::includeCSS("https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"),
       htmltools::tags$head(shiny::tags$script(shiny::HTML(click_jscode))),
       shiny::tabsetPanel(type = 'tab',
