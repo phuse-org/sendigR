@@ -21,7 +21,7 @@ def gen_vocab(in_file, section_list):
         vocab_dict = {}
         sect_df = pandas.DataFrame()
         for f in in_file:
-            print(f)
+            # print(f)
             with open(f, 'r') as my_in_file:
                 vocab_df = pandas.read_csv(my_in_file, sep="\t")
 
@@ -29,11 +29,11 @@ def gen_vocab(in_file, section_list):
             temp_df = vocab_df[['CDISC Submission Value', 'CDISC Synonym(s)']][vocab_df["Codelist Name"].isin([section])]
             temp_df['CDISC Submission Value'].str.upper()
             temp_df['CDISC Synonym(s)'].str.upper()
-            combined_df = pandas.concat([sect_df, temp_df], ignore_index=True)
+            sect_df = pandas.concat([sect_df, temp_df], ignore_index=True)
 
         # Go through the rows and add the data into the blank
         # vocab dict, replace missing values with empty string
-        combined_df.apply(lambda row: make_dict(row.fillna(""), vocab_dict), axis=1)
+        sect_df.apply(lambda row: make_dict(row.fillna(""), vocab_dict), axis=1)
         #print("embedded: ", vocab_dict)
         #print(vocab_dict)
 
