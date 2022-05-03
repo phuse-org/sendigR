@@ -162,15 +162,16 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
 ##### Date Range, Design, Route, Species, Strain, Sex, Uncertain ----
                 htmltools::br(),
-                shiny::actionButton("refreshData_02", "Generate/Update Data",
-                  style = "background-color:#FFFFFF;
-                  color:#E31616;
-                  border-color:#BEBEBE;
-                  border-style:solid;
-                  border-width:1px;
-                  border-radius:5%;
-                  font-weight:bold;
-                  font-size:18px;"),
+                shiny::actionButton("refreshData_02", "Generate/Update Data"
+                #   style = "background-color:#FFFFFF;
+                #   color:#E31616;
+                #   border-color:#BEBEBE;
+                #   border-style:solid;
+                #   border-width:1px;
+                #   border-radius:5%;
+                #   font-weight:bold;
+                #   font-size:18px;"
+				  ),
                  shiny::dateRangeInput("STSTDTC",
                                 "Select Study Start Date Range:",
                                 start = minStudyStartDate,
@@ -208,15 +209,16 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                  shiny::checkboxInput('INCL_UNCERTAIN',
                                'Include uncertain rows',
                                value = FALSE),
-                shiny::actionButton("refreshData", "Generate/Update Data",
-                                    style = "background-color:#FFFFFF;
-                                            color:#E31616;
-                                            border-color:#BEBEBE;
-                                            border-style:solid;
-                                            border-width:1px;
-                                            border-radius:5%;
-                                            font-weight:bold;
-                                            font-size:18px;"),
+                shiny::actionButton("refreshData", "Generate/Update Data"
+                                    # style = "background-color:#FFFFFF;
+                                    #         color:#E31616;
+                                    #         border-color:#BEBEBE;
+                                    #         border-style:solid;
+                                    #         border-width:1px;
+                                    #         border-radius:5%;
+                                    #         font-weight:bold;
+                                    #         font-size:18px;"
+											),
                                             htmltools::br())
 
       ),
@@ -237,6 +239,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # that particular domain.
 
     shinydashboard::dashboardBody(
+
+	#   shiny::includeCSS("www/theme.css"),
+	  shiny::includeCSS("www/from_sass_theme.css"),
+	  shiny::includeCSS("https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"),
       htmltools::tags$head(shiny::tags$script(shiny::HTML(click_jscode))),
       shiny::tabsetPanel(type = 'tab',
                  shiny::tabPanel('ANIMALS', ##### Animal Tab ----
@@ -244,7 +250,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                    htmltools::br(),
                                    shinycssloaders::withSpinner(
 
-                                   DT::dataTableOutput("animals")),
+                                   DT::dataTableOutput("animals"), 	color = "#134585"),
                                    htmltools::br(),
                                    download_csv_UI('download_filter_animal'),
                                    htmltools::br(),htmltools::br(),
@@ -261,15 +267,17 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
-                                                 shiny::actionButton("submit_mi_age", "Update",
-                                                                     style="background-color:#FFFFFF;
-                                            color:#E31616;
-                                                                                border-color:#BEBEBE;
-                                                                                border-style:solid;
-                                                                                border-width:1px;
-                                                                                border-radius:5%;
-                                                                                font-weight:bold;
-                                                                                font-size:14px;"))),
+                                                 shiny::actionButton("submit_mi_age", "Update"
+                                                                     
+											# 						 style="background-color:#FFFFFF;
+                                            # color:#E31616;
+                                            #                                     border-color:#BEBEBE;
+                                            #                                     border-style:solid;
+                                            #                                     border-width:1px;
+                                            #                                     border-radius:5%;
+                                            #                                     font-weight:bold;
+                                            #                                     font-size:14px;"
+																				))),
                                  htmltools::br(style="line-height: 10px"),
                           shiny::tabsetPanel(
                             shiny::tabPanel("MI Findings",
@@ -281,15 +289,17 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                                                                availableOrgans,
                                                                                selected='KIDNEY'),
                                                             shiny::uiOutput('mi_findings_filter'),
-                                                            shiny::actionButton('mi_finding_update', 'Generate/Update Table',
-                                                                                style = "background-color:#FFFFFF;
-                                            color:#E31616;
-                                                                                border-color:#BEBEBE;
-                                                                                border-style:solid;
-                                                                                border-width:1px;
-                                                                                border-radius:5%;
-                                                                                font-weight:bold;
-                                                                                font-size:14px;")),
+                                                            shiny::actionButton('mi_finding_update', 'Generate/Update Table'
+                                                                                
+											# 									style = "background-color:#FFFFFF;
+                                            # color:#E31616;
+                                            #                                     border-color:#BEBEBE;
+                                            #                                     border-style:solid;
+                                            #                                     border-width:1px;
+                                            #                                     border-radius:5%;
+                                            #                                     font-weight:bold;
+                                            #                                     font-size:14px;"
+																				)),
                                        shiny::column(width = 6, offset = 1,
                                               DT::dataTableOutput("findingsTable"),
                                               htmltools::br(),htmltools::br(),
@@ -325,15 +335,17 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
-                                   shiny::actionButton("submit_lb_age", "Update",
-                                                       style="background-color:#FFFFFF;
-                                            color:#E31616;
-                                                                                border-color:#BEBEBE;
-                                                                                border-style:solid;
-                                                                                border-width:1px;
-                                                                                border-radius:5%;
-                                                                                font-weight:bold;
-                                                                                font-size:14px;"))),
+                                   shiny::actionButton("submit_lb_age", "Update"
+                                                       
+											# 		   style="background-color:#FFFFFF;
+                                            # color:#E31616;
+                                            #                                     border-color:#BEBEBE;
+                                            #                                     border-style:solid;
+                                            #                                     border-width:1px;
+                                            #                                     border-radius:5%;
+                                            #                                     font-weight:bold;
+                                            #                                     font-size:14px;"
+																				))),
                                  htmltools::br(style="line-height: 10px"),
                           shiny::tabsetPanel(
                             # shiny::tabPanel("LB Findings",
@@ -389,15 +401,17 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
-                                                 shiny::actionButton("submit_bw_age", "Update",
-                                                                     style="background-color:#FFFFFF;
-                                            color:#E31616;
-                                                                                border-color:#BEBEBE;
-                                                                                border-style:solid;
-                                                                                border-width:1px;
-                                                                                border-radius:5%;
-                                                                                font-weight:bold;
-                                                                                font-size:14px;"))),
+                                                 shiny::actionButton("submit_bw_age", "Update"
+                                                                    
+											# 						 style="background-color:#FFFFFF;
+                                            # color:#E31616;
+                                            #                                     border-color:#BEBEBE;
+                                            #                                     border-style:solid;
+                                            #                                     border-width:1px;
+                                            #                                     border-radius:5%;
+                                            #                                     font-weight:bold;
+                                            #                                     font-size:14px;"
+																				))),
                                  htmltools::br(style="line-height: 10px"),
 
 
@@ -423,15 +437,16 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                             shiny::tabPanel("Aggregate Plot",
                                             shiny::fluidRow(shiny::column(width = 4,offset = 1,
                                             shiny::uiOutput("bw_table_filter"),
-                                            shiny::actionButton("bw_plot_update", "Generate/Update Plot",
-                                                                style = "background-color:#FFFFFF;
-                                            color:#E31616;
-                                            border-color:#BEBEBE;
-                                            border-style:solid;
-                                            border-width:1px;
-                                            border-radius:5%;
-                                            font-weight:bold;
-                                            font-size:14px;"
+                                            shiny::actionButton("bw_plot_update", "Generate/Update Plot"
+                                                                
+											# 					style = "background-color:#FFFFFF;
+                                            # color:#E31616;
+                                            # border-color:#BEBEBE;
+                                            # border-style:solid;
+                                            # border-width:1px;
+                                            # border-radius:5%;
+                                            # font-weight:bold;
+                                            # font-size:14px;"
                                             )),
 
                                               shiny::column(width = 4,
