@@ -8,7 +8,11 @@ Authors@R:
     person("Kevin", "Snyder", email = "kevin.snyder@fda.hhs.gov", role = "aut"),
     person("William", "Houser", email = "william.houser@bms.com", role = "aut"),
     person("Brianna", "Paisley", email = "paisley_brianna_meadow@lilly.com", role = "aut"),
-    person("Wenxian", "Wang", email = "wenxian.wang@bms.com", role = "cre"))
+    person("Cmsabbir", "Ahmed", email = "cmsabbir.ahmed@fda.hhs.gov", role = "aut"),
+    person("Susan", "Butler", email = "susan.butler@fda.hhs.gov", role = "aut"),
+    person("Michael", "Rosentreter", email = "michael.rosentreter@bayer.com", role = "aut"),
+    person("Michael", "Denieu", email = "michael.denieu@labcorp.com", role = "aut"),
+    person("Wenxian", "Wang", email = "wenxian.wang@bms.com", role = "cre", "aut"))
 Description: A set of functions to extract and filter study data for control animals 
     from a database containing CDISC SEND data for a set of non-clinical 
     studies. These data types are supported: Body Weights, Laboratory test results 
@@ -34,10 +38,10 @@ Imports:
     DT,
     dplyr,
     ggplot2,
-    Hmisc
+    Hmisc,
+    haven
 Suggests:
     ROracle,
-    SASxport,
     sjlabelled,
     logr,
     knitr,
