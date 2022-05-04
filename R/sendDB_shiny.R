@@ -539,6 +539,35 @@ make_interval <- function(x,bin) {
   return(new_x)
 }
 
+#function to create tooltip for column in the table
+  #tooltip_list is the list of column description (returned from getTabColLabels function)
+  #to show as hover text on column
+  tooltipCallback <- function(tooltip_list) {
+    headerCallback <- c(
+      "function(thead, data, start, end, display){",
+      sprintf("  var tooltips = [%s];", toString(paste0("'", tooltip_list, "'"))),
+      "  for(var i = 1; i <= tooltips.length; i++){",
+      "    $('th:eq('+i+')',thead).attr('title', tooltips[i-1]);",
+      "  }",
+      "}"
+    )
+    return(headerCallback)
+  }
+
+  # fixed for aggregate table
+  tooltipCallback_agg <- function(tooltip_list) {
+    headerCallback <- c(
+      "function(thead, data, start, end, display){",
+      sprintf("  var tooltips = [%s];", toString(paste0("'", tooltip_list, "'"))),
+      "  for(var i = 0; i <= tooltips.length; i++){",
+      "    $('th:eq('+i+')',thead).attr('title', tooltips[i]);",
+      "  }",
+      "}"
+    )
+    return(headerCallback)
+  }
+
+
 
 
 ################################################################################

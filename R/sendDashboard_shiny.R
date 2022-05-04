@@ -115,21 +115,7 @@ execSendDashboard <- function(dbToken) {
   bw_col_names_selected <- c('STUDYID','USUBJID','BWTEST','BWSTRESN'
                              ,'BWSTRESU','VISITDY')
 
-  #function to create tooltip for column in the table
-  #tooltip_list is the list of column description (returned from getTabColLabels function)
-  #to show as hover text on column
-  tooltipCallback <- function(tooltip_list) {
-    headerCallback <- c(
-      "function(thead, data, start, end, display){",
-      sprintf("  var tooltips = [%s];", toString(paste0("'", tooltip_list, "'"))),
-      "  for(var i = 1; i <= tooltips.length; i++){",
-      "    $('th:eq('+i+')',thead).attr('title', tooltips[i-1]);",
-      "  }",
-      "}"
-    )
-    return(headerCallback)
-  }
-
+  
   # JavaScript code for click
   click_jscode <- '
 Shiny.addCustomMessageHandler("mymessage", function(message) {
@@ -867,7 +853,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # so Incidence divide by 100 here
       tableData$Incidence <- tableData$Incidence/100
       # Associate table header with labels
-      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
+      headerCallback <- tooltipCallback_agg(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
       rownames = FALSE, 
       class = "cell-border stripe",
@@ -1063,7 +1049,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       tableData <- tableData %>%
         dplyr::mutate_if(is.character, as.factor)
       # Associate table header with labels
-      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
+      headerCallback <- tooltipCallback_agg(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
 	  rownames = FALSE,
 	  class = "cell-border stripe",
@@ -1332,7 +1318,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 		  rowgroup  <- list(0,1,2,3)
 	  }
       # Associate table header with labels
-      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
+      headerCallback <- tooltipCallback_agg(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
 	  rownames = FALSE,
 	  class = "cell-border stripe",
