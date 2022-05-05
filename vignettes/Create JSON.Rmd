@@ -1,0 +1,71 @@
+---
+title: "Create JSON for Vocabulary Mapping"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Create JSON for Vocabulary Mapping}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+# Description of Vignette
+
+Describes how to use the _gen_vocab_ function in app.py to map synonyms to preferred terms based on the CDISC ontology. Enables extensible terminology to be included.
+
+# Getting started
+
+Before we are ready to use the functions in the package, we must ensure that a minimum of prerequisites are fulfilled.
+
+## Package dependencies 
+
+Requires Python and R to be installed 
+R version 4.1.3 and Python 3.9.6 were the packages used to develop and test the code. Other versions can be used, but some issues may arise depending on versions.
+
+The following package(s) must be installed:
+* Within R environment you will need:
+    * _reticulate_
+    * _data.table_
+* Within the Python environment you will need:
+    * _chardet_
+    * _json_
+    * _yaml_
+    * _pandas_
+    * _shutil_
+    * _pyreadstat_
+
+## Locating the scripts
+
+sendigR is located at: https://github.com/phuse-org/sendigR/
+The importStudies.R script is located at: https://github.com/phuse-org/sendigR/importStudies.R
+The Python code to generate a JSON file for the XPT cleanup is located at: https://github.com/phuse-org/sendigR/tree/main/python/XPTcleaner/app.py
+
+# Creating the JSON for Vocabulary Mapping
+
+## Overview\
+* The _gen_vocab_ function in app.py takes the CDISC codelist and any additional, extensible terms and creates a data dictionary in the form of a JSON file. 
+* This JSON file contains the mapping logic for synonyms to preferred terms for specific fields in the MI, DS, DM, TS and EX domains. 
+* This JSON file only needs to be generated when a new codelist or new extensible terms are added.
+
+## Function arguments
+
+The _gen_vocab_ function located in app.py takes 2 arguments: _in_file_ and _out_path_
+* _in_file_: List of tab-delimited text files starting with any additional/extensible terminology included in a tab-separated .txt file including the following 3 columns: Codelist Name, CDISC Submission Value, CDISC Synonym(s) with CDISC Synonym(s) being semi-colon separated (not a required input). The required file is the most recent CDISC codelist SEND_Terminology.txt file from https://evs.nci.nih.gov/ftp1/CDISC/SEND/ this file needs to be last in the list if more than one file are input for in_file.
+  ** For example: in_file = c(”/path/Extensible_Terminology.txt”,“/path/SEND_Terminology.txt”)
+* _out_path_: The path and file name of the output .json file.
+  ** For example: out_file = “/path/generated_vocabs/SEND_Terminology.json”
+
+## Running the script in R
+
+The importStudies.R script has code that can help the user execute the Python code _gen_vocab_ in app.py through R via the R package _reticulate_. Therefore, only R needs to be used to run the function if the user is not familiar with Python. 
+
+The main logic for this part of the code is:
+_source_python("App.py")
+infile <- c(”/path/Extensible_Terminology.txt”,“/path/SEND_Terminology.txt”)
+jsonfile <- “/path/generated_vocabs/SEND_Terminology.json”
+py$gen_vocab(infile,jsonfile)_
