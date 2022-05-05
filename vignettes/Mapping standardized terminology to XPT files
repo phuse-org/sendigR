@@ -1,0 +1,96 @@
+---
+title: "Mapping standardized terminology to XPT files"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Mapping standardized terminology to XPT files}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+# Description of Vignette
+
+Describes how to use the _standardize_file_ function in app.py to apply JSON ontology terms to SEND XPT files.
+
+# Getting started
+
+Before we are ready to use the functions in the package, we must ensure that a minimum of prerequisites are fulfilled.
+
+## Package dependencies 
+
+Requires Python and R to be installed 
+R version 4.1.3 and Python 3.9.6 were the packages used to develop and test the code. Other versions can be used, but some issues may arise depending on versions.
+
+The following package(s) must be installed:
+* Within R environment you will need:
+    * _reticulate_
+    * _data.table_
+* Within the Python environment you will need:
+    * _chardet_
+    * _json_
+    * _yaml_
+    * _pandas_
+    * _shutil_
+    * _pyreadstat_
+
+## Locating the scripts
+
+sendigR is located at: https://github.com/phuse-org/sendigR/
+The importStudies.R script is located at: https://github.com/phuse-org/sendigR/importStudies.R
+The Python code to generate a JSON file for the XPT cleanup is located at: https://github.com/phuse-org/sendigR/tree/main/python/XPTcleaner/app.py
+
+# Creating the JSON for Vocabulary Mapping
+
+## Overview\
+* The _standardize_file_ function in app.py takes a JSON file mapping and applies the mapping logic. 
+* The mapping can be applied to SEND XPT files to standardize the terminology specific fields in the MI, DS, DM, TS and EX domains. 
+* The function creates a new folder with the cleaned/standardized XPT files from those 5 domains and copies of all other XPT files in that folder.
+
+## Function arguments
+
+The standardize_file function located in app.py takes 3 arguments: _input_xpt_dir_, _output_xpt_dir_, and _json_file_
+* _input_xpt_dir_: Path to the folder that the XPT files are stored.
+  ** For example: input_xpt_dir = "/path/BioCelerate/TDSStudies/35449" 
+  ** In the R file, we refer to this variable as ‘rawXptFolder’
+* _output_xpt_dir_: The path of the new folder for the cleaned/standardized XPT files to be saved. This folder will be generated if it does not already exist.
+  ** For example: output_xpt_dir = “/path/BioCelerate/TDSStudies/35449/CleanXPT”
+  ** In the R file, we refer to this variable as ‘cleanXptFolder’
+* _json_file_: The location and name of the JSON file created in the first step.
+  ** For example: json_file = “/path/generated_vocabs/SEND_Terminology.json”
+  ** In the R file, we refer to this variable as ‘jsonfile’
+
+## Running the script in R
+
+The importStudies.R script has code that can help the user execute the Python code standardize_file in app.py through R via the R package _reticulate_. Therefore, only R needs to be used to run the function if the user is not familiar with Python. 
+
+* The main logic for this part of the code is:
+
+_source_python(“App.py”)
+rawXptFolder <- “/path/BioCelerate/TDSStudies/35449”
+cleanXptFolder <- “/path/BioCelerate/TDSStudies/35449/CleanXPT”
+jsonfile <- “/path/generated_vocabs/SEND_Terminology.json”
+py$standardize_file(rawXptFolder, cleanXptFolder, jsonfile )_
+
+
+* To loop through multiple directories and standardize XPT files:
+_pattern <- “/path/BioCelerate/TDSStudies/*”
+file_list <- as.list(Sys.glob(pattern))
+cleanDirectoryName <- "CleanXPT"
+
+for(f in file_list){
+  rawXptFolder <-paste0(f,"/")
+  print(rawXptFolder)
+  cleanXptFolder <- paste0(rawXptFolder,cleanDirectoryName)
+  if (file.exists(cleanXptFolder)) {
+    cat("The folder already exists")
+  } else {
+    dir.create(cleanXptFolder)
+  }
+  py$standardize_file(rawXptFolder, cleanXptFolder, jsonfile )
+}_
