@@ -1,26 +1,58 @@
-# CDISC Mapping
+# xptcleaner
 
-This is a repository containing the code to generate the vocabularies for mapping SEND + custom terms to datasets.  
+* xptcleaner package provides function for creating json file for vocabulary mappings. Keys for the mapping are synonyms and values are the CDISC Controlled Terminology Submission values. Vocabularies are read by column values from the tab-delimited files, published by CDISC CT team or user defined extensible term.
 
-## Execution
+* xptcleaner package provides functions for Standardizing SEND xpt files using CDISC controlled terminologies.
 
-## CDISC Mapping notes
+## Installation
+You can choose to install xptcleaner using source archive or using wheel file.
 
-### Planning/Thinking
-1. Decouple vocabulary creation/management from mapping (another module)
-    - Take CDISC Vocab, make a preferred term synonym mapping.  This can then be edited for additonal needed synonyms after the first execution.
-   ``` json
-   {
-    "vocab": {
-        "": "U",
-        "COMBINED": "U",
-        "F": "F",
-        "FEMALE": "F",
-        "M": "M",
-        "MALE": "M",
-        "SEX": "SEX",
-        "U": "U",
-        "UNDIFFERENTIATED": "UNDIFFERENTIATED",
-        "UNKNOWN": "U"
-    }
-- Update vocabulary : check for new synonyms, check for mapping changes, check for new terms.  Make sure preferred term is listed as synonym -> for checking.
+* Using source archive:
+Using the below shell command to install the xptcleaner package, assume that the source archive is under 'dist' sub folder.
+
+```
+$ py -m pip install ./dist/xptcleaner-1.0.0.tar.gz
+
+```
+* Using wheel:
+Using the below shell command to install the xptcleaner package, assume that the wheel file is under 'dist' sub folder.
+
+```
+$ py -m pip install ./dist/xptcleaner-1.0.0-py3-none-any.whl
+
+```
+The following required python packages will be installed during the xptcleaner package installation:<br>
+
+    * pandas
+    
+    * pyreadstat
+
+## How to use
+xptcleaner can be used from python script and from R script. 
+
+### Use xptcleaner from python script
+
+```python
+# xptcleaner and module xptclean import
+import xptcleaner
+from xptcleaner import xptclean
+
+#input CDISC and Extensible CT files.
+infile1="C:/Project/src/R/sendigRPkg/SEND Terminology_2021_12_17.txt"
+infile2="C:/Project/src/R/sendigRPkg/SEND_Terminology_EXTENSIBLE.txt"
+#output JSON file
+jsonfile="C:/Project/src/R/sendigRPkg/SENDct.json"
+
+#Call the gen_vocab function with the input and output files
+xptclean.gen_vocab([infile1,infile1],jsonfile)
+
+#Call the standardize_file function to clean the xpt file
+rawXptFolder = "C:/BioCelerate/TDSStudies/96298/"
+cleanXptFolder = "C:/BioCelerate/TDSStudiesClean/96298/"
+xptclean.standardize_file(rawXptFolder, cleanXptFolder, jsonfile)
+
+```
+
+### Use xptcleaner from R script
+
+xptcleaner is integrated with sendigR package. refer to installation and usage on [sendigR](https://github.com/phuse-org/sendigR).
