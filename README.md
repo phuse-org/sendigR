@@ -163,7 +163,10 @@ The complete list of functions:
 | [getSubjSex](../html/getSubjSex.html)                     | Extract the set of animals of the specified sex - or just add the sex of each animal.|
 | [getSubjData](../html/getSubjData.html)                   | Extract data from a subject level domain.|
 | [getFindingsPhase](../html/getFindingsPhase.html)         | Extract a set of findings for a specified study phase - or just add phase for each animal|
-| [getFindingsSubjAge](../html/getFindingsSubjAge.html)     | Add the subject age at finding time - and optionally extract the set of findings within a specified range of ages|   
+| [getFindingsSubjAge](../html/getFindingsSubjAge.html)     | Add the subject age at finding time - and optionally extract the set of findings within a specified range of ages|
+| [gen_vocab](../html/gen_vocab.html)     | Create json file for vocabulary mappings. Keys are synonyms and values are the CDISC Controlled Terminology Submission values. Vocabularies are defined by column values from the tab-delimited files.|   
+| [standardize_file](../html/standardize_file.html)     | Standardizes SEND xpt files using CDISC controlled terminologies.|   
+
 
 
 The search scripts shared in this folder are intended to be used to query and collate information from 
