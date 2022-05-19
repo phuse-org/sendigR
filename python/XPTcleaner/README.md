@@ -4,21 +4,6 @@ This is a repository containing the code to generate the vocabularies for mappin
 
 ## Execution
 
-```
-➜ python app.py --help                                              
-Usage: app.py [OPTIONS] COMMAND [ARGS]...
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  gen-vocab  Writes json files for vocab mappings.
-```
-### Example
-```
-python app.py gen-vocab ../input/SEND\ Terminology.txt output.json
-```
-
 ## CDISC Mapping notes
 
 ### Planning/Thinking
