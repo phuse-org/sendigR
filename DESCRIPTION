@@ -39,7 +39,8 @@ Imports:
     dplyr,
     ggplot2,
     Hmisc,
-    haven
+    haven,
+    reticulate
 Suggests:
     ROracle,
     sjlabelled,
@@ -52,3 +53,5 @@ VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
+SystemRequirements:
+    Python(>=3.9.6)

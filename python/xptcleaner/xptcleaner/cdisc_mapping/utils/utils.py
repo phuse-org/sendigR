@@ -1,8 +1,9 @@
-from cdisc_mapping import logger
-from cdisc_mapping import file_mapping
 import chardet
 import pandas
 import pyreadstat
+
+from xptcleaner.cdisc_mapping.logger import logger
+from xptcleaner.cdisc_mapping.file_mapping import xpt_mapping
 
 LOG = logger.get_logger(__name__)
 
@@ -23,19 +24,17 @@ def standardize_text(s):
 
 def column_mapping(columns_to_map, df, json_file):
     for column in columns_to_map.keys():
-        # FIXME for the raw column name and also need to include the label for the raw column
-        # we cannot append '_raw' to the existing columns, most of the case this will violate
-        # the 8 characters variable name req by SAS 5 xpt file.
-        # A possible solution is to replace the first 2 character by "RA", e.g. MISPEC will
-        # have the raw value in RASPEC
-        # df[column + "_raw"] = df[column]
         try:
+            #df[column] = df[column].map( "necrosys new" "NECROSYS"
             df[column] = df[column].map(
-                lambda x: file_mapping.do_mapping(columns_to_map[column], x, json_file)
+                lambda x: xpt_mapping.do_mapping(columns_to_map[column], x, json_file)
             )
         except Exception as e:
             LOG.error("ERROR exception caught:  " + str(e))
-
+    # TODO resize the df for columns, mapping may change the column length for the dataframe
+    dfnew = pandas.DataFrame(columns=df.columns)
+    for i in range(len(df)):
+        dfnew.loc[i] = df.iloc[i]
     return df
 
 
@@ -43,10 +42,7 @@ def read_XPT(file_path, file_name):
     with open(file_path + file_name, "rb") as f:
         result = chardet.detect(f.read())
     xpt_df, meta = pyreadstat.read_xport(file_path + file_name, metadataonly=False, encoding=result["encoding"])
-
-    # xpt_df = pandas.read_sas(file_path + file_name, encoding=result["encoding"])
-    # xpt_df, meta = pyreadstat.read_xport(file_path + file_name, encoding='ascii', metadataonly=False)
-    # xpt_df = pandas.read_sas(file_path + file_name, encoding='ascii')
+    #xpt_df, meta = pyreadstat.read_xport(file_path + file_name, encoding='ascii', metadataonly=False)
     return xpt_df, meta
 
 

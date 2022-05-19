@@ -2,9 +2,8 @@ import pandas
 import os
 import json
 
-from cdisc_mapping import utils
-from cdisc_mapping import logger
-
+from xptcleaner.cdisc_mapping.logger import logger
+from xptcleaner.cdisc_mapping.utils import utils
 pandas.options.mode.chained_assignment = None
 
 LOG = logger.get_logger(__name__)
@@ -25,7 +24,6 @@ def check_valid_files(input_dir):
     # Get the XPT files that will not be mapped
     xpt_noMap = [v for v in list(files_dict.keys()) if v not in set().union(*combo_xpts)]
 
-    #[files_dict.pop(x, None) for x in xpt_noMap]
     xpt_noMap_dict = dict((d, files_dict.pop(d, None)) for d in xpt_noMap)
     required_dict = dict((d, files_dict.pop(d, None)) for d in required_xpts)
 
@@ -52,11 +50,10 @@ def do_mapping(column, term, json_file):
         stan_term = utils.standardize_text(term)
         if stan_term in contents[column]:
             mapped_term = contents[column][stan_term]
-            #if (stan_term != mapped_term):
-            #    LOG.info(
-            #        '"' + term + '","' + stan_term + '","' + mapped_term+ '", ' + column
-            #        ", Original Term, " + term + ", Standardized term, " + stan_term + ", Mapped term,  " + mapped_term + " ,Codelist, " + column
-            #    )
+            if (stan_term != mapped_term):
+                LOG.info(
+                    '"' + term + '","' + stan_term + '","' + mapped_term+ '", ' + column
+                )
             return contents[column][stan_term]
         elif stan_term == '':
             # Possibly warn this is blank?
@@ -64,14 +61,13 @@ def do_mapping(column, term, json_file):
         else:
             LOG.warning(
                 '"' + term + '","' + stan_term + '",, ' + column
-            )         #return "UNMAPPED"
+            )
             # leave the raw value as it is, it is up to the user to check the log file and correct all the mapping
             return term
 
 def MI_dataframe(xpt_dir, xpt_dict, json_file):
 
     mi_xpt, meta  = utils.read_XPT(xpt_dir, xpt_dict['mi.xpt'])
-
     # General Histopathologic Exam, Qual
     dfMI= mi_xpt[mi_xpt["MITESTCD"] == "GHISTXQL"]
     if len(dfMI) == 0:

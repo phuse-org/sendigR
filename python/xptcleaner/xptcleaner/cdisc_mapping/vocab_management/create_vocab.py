@@ -1,8 +1,7 @@
 import pandas
-import numpy
 
-from cdisc_mapping import logger
-from cdisc_mapping import utils
+from xptcleaner.cdisc_mapping.logger import logger
+from xptcleaner.cdisc_mapping.utils import utils
 
 LOG = logger.get_logger(__name__)
 
@@ -34,14 +33,7 @@ def gen_vocab(in_file, section_list):
         # Go through the rows and add the data into the blank
         # vocab dict, replace missing values with empty string
         sect_df.apply(lambda row: make_dict(row.fillna(""), vocab_dict), axis=1)
-        #print("embedded: ", vocab_dict)
-        #print(vocab_dict)
-
         result_dict[section] = vocab_dict
-
-        #Report errors in synonym mismatches b/w 2 files
-
-    #vocab_df.close()
 
     return result_dict
 
@@ -56,7 +48,7 @@ def make_dict(row, vocab_dict):
     # Standardize text
     synonyms = list(map(utils.standardize_text, synonyms))
     for synonym in filter(None, synonyms):
-        vocab_dict[synonym] = row['CDISC Submission Value']
+         vocab_dict[synonym] = row['CDISC Submission Value']
 
     # Include the preferred term as another lookup term
     standardized_perferred = utils.standardize_text(row['CDISC Submission Value'])
