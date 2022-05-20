@@ -73,7 +73,9 @@ devtools::install_github('phuse-org/sendigR')
 
 sendigR is located at: https://github.com/phuse-org/sendigR/<br>
 The importStudies.R script is located at: https://github.com/phuse-org/sendigR/importStudies.R<br>
-The Python code to generate a JSON file for the XPT cleanup is located at: https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner
+The Python code to generate a JSON file for the XPT cleanup is located at: https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner<br>
+
+The sample CDISC CT file and the extensible CT file are located under the 'data-raw' subfolder of the sendigR package. 
 
 # Creating the JSON for Vocabulary Mapping
 ```R
