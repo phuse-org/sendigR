@@ -1,5 +1,6 @@
 # Supress warnings ....
 import warnings
+import os
 
 import pandas
 
@@ -64,6 +65,14 @@ def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
     """
 # Read in the file
     is_valid, dm_dict, optional_files_dict, xpt_extra = xpt_mapping.check_valid_files(input_xpt_dir)
+    #create the output folder if not exist, remove the xpt files if exist in the folder
+    isExist = os.path.exists(output_xpt_dir)
+    if not isExist:
+        os.makedirs(output_xpt_dir)
+    for f in os.listdir(output_xpt_dir):
+        if f.endswith(".xpt"):
+            os.remove(os.path.join(output_xpt_dir, f))
+
     if is_valid:
         dfDM, meta = xpt_mapping.DM_dataframe(input_xpt_dir, dm_dict, json_file)
         pyreadstat.write_xport(dfDM, output_xpt_dir + "/" + "dm.xpt",

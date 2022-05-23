@@ -31,10 +31,7 @@ def column_mapping(columns_to_map, df, json_file):
             )
         except Exception as e:
             LOG.error("ERROR exception caught:  " + str(e))
-    # TODO resize the df for columns, mapping may change the column length for the dataframe
-    dfnew = pandas.DataFrame(columns=df.columns)
-    for i in range(len(df)):
-        dfnew.loc[i] = df.iloc[i]
+
     return df
 
 

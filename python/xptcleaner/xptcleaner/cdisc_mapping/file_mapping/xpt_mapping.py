@@ -57,7 +57,7 @@ def do_mapping(column, term, json_file):
             return contents[column][stan_term]
         elif stan_term == '':
             # Possibly warn this is blank?
-            return "NA"
+            return ""
         else:
             LOG.warning(
                 '"' + term + '","' + stan_term + '",, ' + column
@@ -110,32 +110,18 @@ def EX_dataframe(xpt_dir, xpt_dict, json_file):
 
 
 def TS_dataframe(xpt_dir, xpt_dict, json_file):
-    # TODO: Rewrite to add rows, not columns
     TS_xpt, meta = utils.read_XPT(xpt_dir, xpt_dict['ts.xpt'])
-
-    # Replace original TS data with non-mapping rows and raw mapping rows
-    dfTS_orig = TS_xpt[-TS_xpt["TSPARMCD"].isin(["ROUTE", "SPECIES", "STRAIN"])] #non mapping rows
-    dfTS = TS_xpt[TS_xpt["TSPARMCD"].isin(["ROUTE", "SPECIES", "STRAIN"])] #rows to map
-    dfTS_raw = dfTS.copy() #duplicate of mapping rows
-    dfTS_raw["TSPARMCD"] = dfTS_raw["TSPARMCD"].astype(str) + "_raw" #original raw data for mapping rows
-    TS_xpt = pandas.concat([dfTS_orig, dfTS_raw], ignore_index=True) #raw and non-mapping rows combined
-
     #Map the TS rows of interest
     columns_to_map = {"ROUTE": "Route of Administration Response",
                       "SPECIES": "Species",
                       "STRAIN": "Strain/Substrain"}
 
-    for index, row in dfTS.iterrows():
+    for index, row in TS_xpt.iterrows():
         for col_short in row[["TSPARMCD"]]:
             col_long = columns_to_map.get(col_short)
-
-            row[["TSVAL"]] = row[["TSVAL"]].map(
-                lambda x: do_mapping(col_long, x, json_file)
-            )
-
-    dfTS_map = pandas.concat([TS_xpt, dfTS], ignore_index=True)
-
-    return dfTS_map, meta
+            if (col_long is not None):
+                TS_xpt.at[index, "TSVAL"]=do_mapping(col_long, TS_xpt.at[index, "TSVAL"], json_file)
+    return TS_xpt, meta
 
 
 def DS_dataframe(xpt_dir, xpt_dict, json_file):
