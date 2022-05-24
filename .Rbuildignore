@@ -14,3 +14,11 @@
 ^R/dbFunctionsOracle.R
 ^importStudies.R
 ^sass.R
+^vignettes/Create JSON\.Rmd$
+^vignettes/Mapping standardized terminology to XPT files$
+^docs/articles/Create JSON\.html$
+^pkgdown\.yml$
+^docs$
+^pkgdown$
+^Create JSON\.Rmd$
+^Mapping standardized terminology to XPT files$
