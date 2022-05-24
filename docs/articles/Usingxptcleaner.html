@@ -50,7 +50,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -95,41 +95,56 @@
 <div class="section level2">
 <h2 id="description-of-vignette">Description of Vignette<a class="anchor" aria-label="anchor" href="#description-of-vignette"></a>
 </h2>
-<p>Describes how to use the python package xptcleaner to apply JSON ontology terms to SEND xpt files.</p>
+<p>Describes how to use the python package xptcleaner to apply JSON
+ontology terms to SEND xpt files.</p>
 </div>
 <div class="section level2">
 <h2 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h2>
-<p>Before we are ready to use the functions in the package, we must ensure that a minimum of prerequisites are fulfilled.</p>
+<p>Before we are ready to use the functions in the package, we must
+ensure that a minimum of prerequisites are fulfilled.</p>
 <div class="section level3">
 <h3 id="xptcleaner-python-package-and-sendigr-r-package-installation">xptcleaner python package and sendigR R package installation<a class="anchor" aria-label="anchor" href="#xptcleaner-python-package-and-sendigr-r-package-installation"></a>
 </h3>
 <div class="section level4">
 <h4 id="python-and-r-installation">Python and R installation<a class="anchor" aria-label="anchor" href="#python-and-r-installation"></a>
 </h4>
-<p>R version 4.1.2 and above, Python 3.9.6 and above were the packages used to develop and test the code. Other versions can be used, but some issues may arise depending on versions.</p>
-<p>The source archive ‘xptcleaner-1.0.0.tar.gz’ consists of the source code and any supporting files wrapped into one tar file. <br> The wheel ‘xptcleaner-1.0.0-py3-none-any.whl’ is a zip archive containing the code. In contrast to the source archive, the wheel includes any extensions ready to use.</p>
+<p>R version 4.1.2 and above, Python 3.9.6 and above were the packages
+used to develop and test the code. Other versions can be used, but some
+issues may arise depending on versions.</p>
+<p>The source archive ‘xptcleaner-1.0.0.tar.gz’ consists of the source
+code and any supporting files wrapped into one tar file. <br> The wheel
+‘xptcleaner-1.0.0-py3-none-any.whl’ is a zip archive containing the
+code. In contrast to the source archive, the wheel includes any
+extensions ready to use.</p>
 <p>The source archive and the wheel for xptcleaner can be obtained:</p>
 <ul>
 <li><p>Under ‘Inst’ folder of <a href="https://github.com/phuse-org/sendigR" class="external-link">sendigR</a></p></li>
-<li><p>Unpack the <a href="https://github.com/phuse-org/sendigR/blob/main/sendigR_0.0.1.tar.gz" class="external-link">sendigR_0.0.1.tar.gz</a>, the python xptcleaner package is under the ‘python’ folder in the root of the sendigR package.</p></li>
+<li><p>Unpack the <a href="https://github.com/phuse-org/sendigR/blob/main/sendigR_0.0.1.tar.gz" class="external-link">sendigR_0.0.1.tar.gz</a>,
+the python xptcleaner package is under the ‘python’ folder in the root
+of the sendigR package.</p></li>
 </ul>
 </div>
 <div class="section level4">
 <h4 id="xptcleaner-pathon-package-installation">xptcleaner pathon package installation<a class="anchor" aria-label="anchor" href="#xptcleaner-pathon-package-installation"></a>
 </h4>
-<p>You can choose to install xptcleaner using source archive or using wheel file.</p>
+<p>You can choose to install xptcleaner using source archive or using
+wheel file.</p>
 <ul>
-<li>Using source archive: Using the below shell command to install the xptcleaner package, assume that the source archive is under ‘dist’ sub folder.</li>
+<li>Using source archive: Using the below shell command to install the
+xptcleaner package, assume that the source archive is under ‘dist’ sub
+folder.</li>
 </ul>
 <pre><code>$ py -m pip install ./dist/xptcleaner-1.0.0.tar.gz
 </code></pre>
 <ul>
-<li>Using wheel: Using the below shell command to install the xptcleaner package, assume that the wheel file is under ‘dist’ sub folder.</li>
+<li>Using wheel: Using the below shell command to install the xptcleaner
+package, assume that the wheel file is under ‘dist’ sub folder.</li>
 </ul>
 <pre><code>$ py -m pip install ./dist/xptcleaner-1.0.0-py3-none-any.whl
 </code></pre>
-<p>The following required python packages will be installed during the xptcleaner package installation:<br></p>
+<p>The following required python packages will be installed during the
+xptcleaner package installation:<br></p>
 <pre><code>* pandas
 
 * pyreadstat</code></pre>
@@ -137,7 +152,8 @@
 <div class="section level4">
 <h4 id="sendigr-r-package-installation">sendigR R package installation<a class="anchor" aria-label="anchor" href="#sendigr-r-package-installation"></a>
 </h4>
-<p>Install sendigR packages, refer to <a href="../README.html">README</a> for more details.</p>
+<p>Install sendigR packages, refer to <a href="../README.html">README</a>
+for more details.</p>
 <pre><code><span class="co"># Get CRAN version</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"sendigR"</span><span class="op">)</span>
 <span class="co"># Or the development version from GitHub:</span>
@@ -148,8 +164,12 @@
 <div class="section level3">
 <h3 id="locating-the-scripts">Locating the scripts<a class="anchor" aria-label="anchor" href="#locating-the-scripts"></a>
 </h3>
-<p>sendigR is located at: <a href="https://github.com/phuse-org/sendigR/" class="external-link uri">https://github.com/phuse-org/sendigR/</a><br> The importStudies.R script is located at: <a href="https://github.com/phuse-org/sendigR/importStudies.R" class="external-link uri">https://github.com/phuse-org/sendigR/importStudies.R</a><br> The Python code to generate a JSON file for the XPT cleanup is located at: <a href="https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner" class="external-link uri">https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner</a><br></p>
-<p>The sample CDISC CT file and the extensible CT file are located under the ‘data-raw’ subfolder of the sendigR package.</p>
+<p>sendigR is located at: <a href="https://github.com/phuse-org/sendigR/" class="external-link uri">https://github.com/phuse-org/sendigR/</a><br> The
+importStudies.R script is located at: <a href="https://github.com/phuse-org/sendigR/importStudies.R" class="external-link uri">https://github.com/phuse-org/sendigR/importStudies.R</a><br>
+The Python code to generate a JSON file for the XPT cleanup is located
+at: <a href="https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner" class="external-link uri">https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner</a><br></p>
+<p>The sample CDISC CT file and the extensible CT file are located under
+the ‘data-raw’ subfolder of the sendigR package.</p>
 </div>
 </div>
 <div class="section level2">
@@ -164,7 +184,7 @@
 <span class="co">#output JSON file</span>
 <span class="va">jsonfile</span> <span class="op">&lt;-</span> <span class="st">"C:/Project/src/R/sendigRPkg/SENDct.json"</span>
 <span class="co">#Call the gen_vocab function with the input and output files</span>
-<span class="fu">sendigR</span><span class="fu">::</span><span class="fu">gen_vocab</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">infile1</span>, <span class="va">infile2</span><span class="op">)</span>,<span class="va">jsonfile</span> <span class="op">)</span></code></pre></div>
+<span class="fu">sendigR</span><span class="fu">::</span><span class="fu"><a href="../reference/gen_vocab.html">gen_vocab</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">infile1</span>, <span class="va">infile2</span><span class="op">)</span>,<span class="va">jsonfile</span> <span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="standardize-xpt-files-with-the-json-file-created">Standardize xpt files with the json file created<a class="anchor" aria-label="anchor" href="#standardize-xpt-files-with-the-json-file-created"></a>
@@ -181,7 +201,7 @@
 <span class="co">#folder containing the cleaned target xpt files</span>
 <span class="va">cleanXptFolder</span> <span class="op">&lt;-</span> <span class="st">"C:/StudiesClean/96298/"</span>
 <span class="co">#Call the standardize_file function to clean the xpt file</span>
-<span class="fu">sendigR</span><span class="fu">::</span><span class="fu">standardize_file</span><span class="op">(</span><span class="va">rawXptFolder</span>, <span class="va">cleanXptFolder</span>, <span class="va">jsonfile</span> <span class="op">)</span></code></pre></div>
+<span class="fu">sendigR</span><span class="fu">::</span><span class="fu"><a href="../reference/standardize_file.html">standardize_file</a></span><span class="op">(</span><span class="va">rawXptFolder</span>, <span class="va">cleanXptFolder</span>, <span class="va">jsonfile</span> <span class="op">)</span></code></pre></div>
 </div>
   </div>
 
@@ -197,12 +217,15 @@
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser, Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter, Michael Denieu, Wenxian aut Wang.</p>
+<p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser,
+Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter,
+Michael Denieu, Wenxian aut Wang.</p>
 </div>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.2.</p>
 </div>
 
       </footer>

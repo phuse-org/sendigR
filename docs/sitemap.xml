@@ -49,6 +49,9 @@
     <loc>/reference/execSendDashboard.html</loc>
   </url>
   <url>
+    <loc>/reference/gen_vocab.html</loc>
+  </url>
+  <url>
     <loc>/reference/genericQuery.html</loc>
   </url>
   <url>
@@ -89,5 +92,8 @@
   </url>
   <url>
     <loc>/reference/initEnvironment.html</loc>
+  </url>
+  <url>
+    <loc>/reference/standardize_file.html</loc>
   </url>
 </urlset>

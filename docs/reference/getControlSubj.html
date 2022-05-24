@@ -27,7 +27,7 @@ negative control in the given list of studies."><meta property="og:image" conten
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -93,6 +93,10 @@ of whether its a negative control group or not</p></li>
 <li><p>DM_AGEDAYS    (integer)<br>
 The calculated age in days of the animal at the reference start day
 - i.e. the age registered in DM.</p></li>
+<li><p>DSDECOD    (character)<br>
+The standardized disposition term for the animal</p></li>
+<li><p>DS_AGEDAYS    (integer)<br>
+The calculated age in days of the animal at the disposition</p></li>
 <li><p>NO_AGE_MSG    (character)<br>
 Empty or contains the reason if a DM_AGEDAYS couldn't be calculated</p></li>
 <li><p>UNCERTAIN_MSG (character)<br>
@@ -150,11 +154,14 @@ Positive control according to the algorithm described above</p></li>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser, Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter, Michael Denieu, Wenxian aut Wang.</p>
+  <p></p><p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser,
+Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter,
+Michael Denieu, Wenxian aut Wang.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.2.</p>
 </div>
 
       </footer></div>

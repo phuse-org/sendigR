@@ -33,6 +33,10 @@ of whether its a negative control group or not
 \item DM_AGEDAYS    (integer)\cr
 The calculated age in days of the animal at the reference start day
 - i.e. the age registered in DM.
+\item DSDECOD    (character)\cr
+The standardized disposition term for the animal
+\item DS_AGEDAYS    (integer)\cr
+The calculated age in days of the animal at the disposition
 \item NO_AGE_MSG    (character)\cr
 Empty or contains the reason if a DM_AGEDAYS couldn't be calculated
 \item UNCERTAIN_MSG (character)\cr

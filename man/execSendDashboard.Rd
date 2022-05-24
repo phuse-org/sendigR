@@ -17,9 +17,6 @@ data from the app in different formats to use for further processing
 Executes an encapsulated Shiny which to query, visualize and extract historical
 control data from a SEND database.
 }
-\details{
-See ++ADD REFERENCE TO A VIGNETTE WITH DOC OF APP++ for further details
-}
 \examples{
 \dontrun{
 dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/database/send.db')
