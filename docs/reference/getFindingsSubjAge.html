@@ -38,10 +38,16 @@ string), all rows from findings are returned."><meta property="og:image" content
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/Create%20JSON.html">Create JSON for Vocabulary Mapping</a>
+    </li>
+    <li>
       <a href="../articles/Introduction.html">Introduction to sendigR</a>
     </li>
     <li>
       <a href="../articles/SendDashboard.html">SendDashboard</a>
+    </li>
+    <li>
+      <a href="../articles/Usingxptcleaner.html">Using xptcleaner</a>
     </li>
   </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
@@ -99,7 +105,7 @@ and <code>LBDTC</code></p></dd>
 <dd><p>Mandatory, data.table.<br>
 A data with the set of animals included in the <code>findings</code> table
 (may contain more animals than included in <code>findings</code>).<br>
-The data set must contain at least these columns returned by the function getControlSubj</p><ul><li><p><code>STUDYID</code></p></li>
+The data set must contain at least these columns returned by the function <a href="getControlSubj.html">getControlSubj</a></p><ul><li><p><code>STUDYID</code></p></li>
 <li><p><code>USUBJID</code></p></li>
 <li><p><code>RFSTDTC</code></p></li>
 <li><p><code>DM_AGEDAYS</code></p></li>
@@ -174,7 +180,7 @@ algorithm:</p><ul><li><p>Determine the number of study days between study start 
         findings]</code><br>
 where <code>animalList.AGEDAYS</code> is the  subject age at reference
 start date(calculated during extraction of control subjects in
-<code>getControlSubj</code>.</p></li>
+<code><a href="getControlSubj.html">getControlSubj</a></code>.</p></li>
 <li><p>For pooled findings rows - i.e. POOLID is populated instead of
 USUBJID - the animal age at time of finding is calculated per animal
 included in the each pool and finding.</p><ul><li><p>If all calculated ages are equal within a pool and finding,
@@ -230,13 +236,11 @@ animals in a pool.</p></li>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser,
-Brianna Paisley, Wenxian Wang.</p>
+  <p></p><p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser, Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter, Michael Denieu, Wenxian aut Wang.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer></div>

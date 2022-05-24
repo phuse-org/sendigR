@@ -1,9 +1,10 @@
-pandoc: 2.17.1.1
+pandoc: 2.14.0.3
 pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
+  Create JSON: Create JSON.html
   Introduction: Introduction.html
   SendDashboard: SendDashboard.html
-  Usingxptcleaner:Usingxptcleaner.html
-last_built: 2022-04-08T13:14Z
+  Usingxptcleaner: Usingxptcleaner.html
+last_built: 2022-05-24T12:22Z
 
