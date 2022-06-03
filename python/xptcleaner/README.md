@@ -5,6 +5,20 @@
 * xptcleaner package provides functions for Standardizing SEND xpt files using CDISC controlled terminologies.
 
 ## Installation
+### Using pip
+
+Probably the easiest way: from your conda, virtualenv or just base installation do:
+
+```
+pip install xptcleaner
+```
+
+If you are running on a machine without admin rights, and you want to install against your base installation you can do:
+
+```
+pip install xptcleaner --user
+```
+### Using source archive or using wheel file
 You can choose to install xptcleaner using source archive or using wheel file.
 
 * Using source archive:
