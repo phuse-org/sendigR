@@ -21,8 +21,8 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/phuse-org/sendigR/tree/main/python/XPTcleaner",
-    author=["Brianna Paisley", "Wenxian Wang"],
-    author_email=["paisley_brianna_meadow@lilly.com", "wenxian.wang@bms.com"],
+    author="Brianna Paisley, Wenxian Wang",
+    author_email="paisley_brianna_meadow@lilly.com, wenxian.wang@bms.com",
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
