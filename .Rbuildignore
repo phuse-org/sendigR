@@ -16,3 +16,5 @@
 ^sass.R
 ^Create JSON\.Rmd$
 ^Mapping standardized terminology to XPT files$
+^inst/www/theme_sass\.scss$
+^inst/www/theme\.css$
