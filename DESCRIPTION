@@ -12,7 +12,7 @@ Authors@R:
     person("Susan", "Butler", email = "susan.butler@fda.hhs.gov", role = "aut"),
     person("Michael", "Rosentreter", email = "michael.rosentreter@bayer.com", role = "aut"),
     person("Michael", "Denieu", email = "michael.denieu@labcorp.com", role = "aut"),
-    person("Wenxian", "Wang", email = "wenxian.wang@bms.com", role = "cre", "aut"))
+    person("Wenxian", "Wang", email = "wenxian.wang@bms.com", role = c("cre", "aut")))
 Description: A set of functions to extract and filter study data for control animals 
     from a database containing CDISC SEND data for a set of non-clinical 
     studies. These data types are supported: Body Weights, Laboratory test results 

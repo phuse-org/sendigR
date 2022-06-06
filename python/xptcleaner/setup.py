@@ -16,14 +16,16 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="xptcleaner",
-    version="1.0.0",
-    description="CDISC SEND XPT files cleaner",
-    long_description=README,
+    version="0.0.1",
+    description="CDISC SEND xpt (SAS v5 Transport format) files cleaner",
+    long_description="README.md",
     long_description_content_type="text/markdown",
     url="https://github.com/phuse-org/sendigR/tree/main/python/XPTcleaner",
+    download_url="https://github.com/phuse-org/sendigR/tree/main/inst/python",
     author="Brianna Paisley, Wenxian Wang",
     author_email="paisley_brianna_meadow@lilly.com, wenxian.wang@bms.com",
     license="MIT",
+    license_file ="LICENSE",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",

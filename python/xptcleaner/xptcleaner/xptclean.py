@@ -11,7 +11,6 @@ from io import StringIO
 import json
 import shutil
 import pyreadstat
-import csv
 from xptcleaner import CONFIG
 
 from .cdisc_mapping.logger import logger
@@ -26,9 +25,16 @@ LOG = logger.setup_applevel_logger(file_name=str(logfile))
 
 def gen_vocab(in_file, out_path):
     """
-    Writes json files for vocab mappings.  Keys are synonyms and
-    values are the preferred terms.  Vocabs are defined by column values
-    from the tab-separated file.
+    Create json file for vocabulary mappings.
+    Keys are synonyms and values are the CDISC Controlled Terminology Submission values.
+    Vocabularies are defined by column values from the tab-delimited files.
+
+    Parameters
+    ----------
+    in_file : str
+        List of tab-delimited files with synonyms and preferred terms.
+    Out_path : str
+        output json filename.
 
     """
     section_cols = CONFIG["section_cols"]
@@ -61,7 +67,25 @@ def compare_vocabs(vocab_path_a, vocab_path_b):
 
 def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
     """
-    Standardizes provided .xpt file
+    Standardizes SEND xpt files using CDISC controlled terminologies.
+    Here is the list of CDISC codelist supported.
+    - Sex
+    - Strain/Substrain
+    - Species
+    - SEND Severity
+    - Route of Administration Response
+    - Standardized Disposition Term
+    - Specimen
+    - Non-Neoplastic Finding Type
+
+     Parameters
+    ----------
+    input_xpt_dir : str
+        input folder name with xpt files under the folder.
+    output_xpt_dir : str
+        output folder name for writing the cleaned xpt files.
+    json_file : str
+        json filename used for mapping.
     """
 # Read in the file
     is_valid, dm_dict, optional_files_dict, xpt_extra = xpt_mapping.check_valid_files(input_xpt_dir)
