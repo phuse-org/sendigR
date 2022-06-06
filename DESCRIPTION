@@ -40,7 +40,8 @@ Imports:
     ggplot2,
     Hmisc,
     haven,
-    reticulate
+    reticulate,
+    plotly
 Suggests:
     ROracle,
     sjlabelled,

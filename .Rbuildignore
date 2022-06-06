@@ -18,3 +18,7 @@
 ^Mapping standardized terminology to XPT files$
 ^inst/www/theme_sass\.scss$
 ^inst/www/theme\.css$
+^docs$
+^pkgdown$
+^website_files$
+^x\.ignore_files$
