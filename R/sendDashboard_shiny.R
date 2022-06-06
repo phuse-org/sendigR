@@ -115,7 +115,7 @@ execSendDashboard <- function(dbToken) {
   bw_col_names_selected <- c('STUDYID','USUBJID','BWTEST','BWSTRESN'
                              ,'BWSTRESU','VISITDY')
 
-  
+
   # JavaScript code for click
   click_jscode <- '
 Shiny.addCustomMessageHandler("mymessage", function(message) {
@@ -124,6 +124,12 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 '
   # shortcut for find not in
   '%ni%' <- Negate('%in%')
+
+
+  ## get css file
+  www_path <- system.file("", package = "sendigR")
+  dt_extension <- paste0(www_path, "/www/DT_extension" )
+
 
 ########### UI #######
 
@@ -227,7 +233,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     shinydashboard::dashboardBody(
 
 	#   shiny::includeCSS("www/theme.css"),
-	  shiny::includeCSS("www/from_sass_theme.css"),
+	  shiny::includeCSS(paste0(www_path, "/www/from_sass_theme.css")),
 	  shiny::includeCSS("https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"),
       htmltools::tags$head(shiny::tags$script(shiny::HTML(click_jscode))),
       shiny::tabsetPanel(type = 'tab',
@@ -254,7 +260,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
                                                  shiny::actionButton("submit_mi_age", "Update"
-                                                                     
+
 											# 						 style="background-color:#FFFFFF;
                                             # color:#E31616;
                                             #                                     border-color:#BEBEBE;
@@ -276,7 +282,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                                                                selected='KIDNEY'),
                                                             shiny::uiOutput('mi_findings_filter'),
                                                             shiny::actionButton('mi_finding_update', 'Generate/Update Table'
-                                                                                
+
 											# 									style = "background-color:#FFFFFF;
                                             # color:#E31616;
                                             #                                     border-color:#BEBEBE;
@@ -322,7 +328,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
                                    shiny::actionButton("submit_lb_age", "Update"
-                                                       
+
 											# 		   style="background-color:#FFFFFF;
                                             # color:#E31616;
                                             #                                     border-color:#BEBEBE;
@@ -388,7 +394,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
                                                  shiny::actionButton("submit_bw_age", "Update"
-                                                                    
+
 											# 						 style="background-color:#FFFFFF;
                                             # color:#E31616;
                                             #                                     border-color:#BEBEBE;
@@ -424,7 +430,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                             shiny::fluidRow(shiny::column(width = 4,offset = 1,
                                             shiny::uiOutput("bw_table_filter"),
                                             shiny::actionButton("bw_plot_update", "Generate/Update Plot"
-                                                                
+
 											# 					style = "background-color:#FFFFFF;
                                             # color:#E31616;
                                             # border-color:#BEBEBE;
@@ -855,7 +861,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       # Associate table header with labels
       headerCallback <- tooltipCallback_agg(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
-      rownames = FALSE, 
+      rownames = FALSE,
       class = "cell-border stripe",
                            filter = list(position = 'top'),
                            options = list(
@@ -870,11 +876,11 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}"),
                                rowsGroup = list(0,1,2,3,4)))
-                               
+
       tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
-    path <- "www/DT_extension" 
+    path <- dt_extension
     dep <- htmltools::htmlDependency(
-      "RowsGroup", "2.0.0", 
+      "RowsGroup", "2.0.0",
       path, script = "dataTables.rowsGroup.js")
     tab$dependencies <- c(tab$dependencies, list(dep))
     tab
@@ -1030,7 +1036,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     shiny::callModule(download_rds, id="download_LB_individual_rds",
                       data=lb_table_to_show, filename="LB_Individual_Table")
 
-    
+
     ###### LB Numerical aggregate table ----
 
     LB_agg_table <- shiny::reactive({
@@ -1067,9 +1073,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                "}"),
 							   rowsGroup = list(0,1,2,3,4)))
       tab <- DT::formatRound(table = tab,columns = c(8,9),digits = 2)
-	  path <- "www/DT_extension" # folder containing dataTables.rowsGroup.js
+	  path <- dt_extension # folder containing dataTables.rowsGroup.js
     dep <- htmltools::htmlDependency(
-      "RowsGroup", "2.0.0", 
+      "RowsGroup", "2.0.0",
       path, script = "dataTables.rowsGroup.js")
     tab$dependencies <- c(tab$dependencies, list(dep))
 
@@ -1092,9 +1098,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       domainData <- merge(animal_list, lb_sub,
                           by = c('STUDYID', 'USUBJID'), allow.cartesian=TRUE)
       domainData <- domainData[is.na(LBSTRESN), ]
-     
+
       grpByCols <- c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST', 'LBSTRESC')
-      
+
       domainData <- domainData[LBSTRESC!=""]
 
       # apply aggDomain function from sendDB_shiny.R file, this count Incidence
@@ -1150,7 +1156,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     shiny::callModule(download_rds, id="download_LB_cat_agg_rds",
                       data=LB_cat_agg_table, filename="LB_cat_Aggregate_Table")
 
-    
+
     ###### get BW individual records table ----
     get_bw_subj <- shiny::reactive({
       animal_list <- animalList()
@@ -1194,7 +1200,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     })
 
 
-# get filtered animal 
+# get filtered animal
     BW_subject <- shiny::eventReactive(input$submit_bw_age,{
       animal_list <- get_bw_subj()
       age_range <- input$bw_age_range
@@ -1336,9 +1342,9 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
                                "}"),
 							   rowsGroup = rowgroup))
       tab <- DT::formatRound(table = tab,columns = c(6,7),digits = 2)
-	  path <- "www/DT_extension" # folder containing dataTables.rowsGroup.js
+	  path <- dt_extension #folder containing dataTables.rowsGroup.js
       dep <- htmltools::htmlDependency(
-      "RowsGroup", "2.0.0", 
+      "RowsGroup", "2.0.0",
       path, script = "dataTables.rowsGroup.js")
       tab$dependencies <- c(tab$dependencies, list(dep))
       tab
@@ -1463,7 +1469,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
       df_plot <- rbind(df_plot_m, df_plot_f)
 	  print(interval)
 	  title_error <- paste0("Mean Body Weight: ",  interval, " AGEDAYS Interval Selected")
-	  
+
       if (input$bw_plot_type=="Line with SD (for Selected Interval)") {
         g <- ggplot2::ggplot(data = df_plot, ggplot2::aes(x=Age, y=Mean, color=sex))+
           ggplot2::geom_line()+
