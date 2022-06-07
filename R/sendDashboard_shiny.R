@@ -129,6 +129,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
   ## get css file
   www_path <- system.file("", package = "sendigR")
   dt_extension <- paste0(www_path, "/www/DT_extension" )
+  animate_css_path <- paste0(www_path, "/www")
 
 
 ########### UI #######
@@ -234,7 +235,10 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
 
 	#   shiny::includeCSS("www/theme.css"),
 	  shiny::includeCSS(paste0(www_path, "/www/from_sass_theme.css")),
-	  shiny::includeCSS("https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"),
+	  htmltools::htmlDependency(
+      "animate.css", "4.1.1",
+	  animate_css_path, stylesheet = "animate.min.css"),
+	#   shiny::includeCSS("https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"),
       htmltools::tags$head(shiny::tags$script(shiny::HTML(click_jscode))),
       shiny::tabsetPanel(type = 'tab',
                  shiny::tabPanel('ANIMALS', ##### Animal Tab ----
