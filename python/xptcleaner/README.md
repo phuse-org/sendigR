@@ -1,8 +1,3 @@
----
-output:
-  html_document: default
-  pdf_document: default
----
 # xptcleaner
 
 * xptcleaner package provides functions for creating json file for vocabulary mappings and for Standardizing SEND xpt files (SAS v5 Transport format) using CDISC controlled terminologies.
