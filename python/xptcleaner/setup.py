@@ -20,7 +20,7 @@ setup(
     description="CDISC SEND xpt (SAS v5 Transport format) files cleaner",
     long_description="README.md",
     long_description_content_type="text/markdown",
-    url="https://github.com/phuse-org/sendigR/tree/main/python/XPTcleaner",
+    url="https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner",
     download_url="https://github.com/phuse-org/sendigR/tree/main/inst/python",
     author="Brianna Paisley, Wenxian Wang",
     author_email="paisley_brianna_meadow@lilly.com, wenxian.wang@bms.com",
