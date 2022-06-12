@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 ```
 # Description of Vignette
 
-Describes how to use the python package xptcleaner to apply JSON ontology terms to SEND xpt files.
+Describes how to use the python package xptcleaner to apply JSON ontology terms to clean SEND xpt files.
 
 # Getting started
 
@@ -27,16 +27,7 @@ Before we are ready to use the functions in the package, we must ensure that a m
 ### Python and R installation
 R version 4.1.2 and above, Python 3.9.6 and above were the packages used to develop and test the code. Other versions can be used, but some issues may arise depending on versions.
 
-The source archive 'xptcleaner-1.0.0.tar.gz' consists of the source code and any supporting files wrapped into one tar file. <br>
-The wheel 'xptcleaner-1.0.0-py3-none-any.whl' is a zip archive containing the code. In contrast to the source archive, the wheel includes any extensions ready to use.
-
-The source archive and the wheel for xptcleaner can be obtained:
-
-  * Under 'Inst' folder of [sendigR](https://github.com/phuse-org/sendigR)
-
-  * Unpack the [sendigR_0.0.1.tar.gz](https://github.com/phuse-org/sendigR/blob/main/sendigR_0.0.1.tar.gz), the python xptcleaner package is under the 'python' folder in the root of the sendigR package.
-
-### xptcleaner pathon package installation
+### xptcleaner python package installation
 #### Using pip
 
 Probably the easiest way: from your conda, virtualenv or just base installation do:
@@ -52,6 +43,9 @@ pip install xptcleaner --user
 ```
 
 #### Using source archive or using wheel file.
+In addtional to install from Python Package Index(PyPI), the source archive and the wheel archive can also be used for installation.
+
+The source archive and the wheel for xptcleaner can be obtained from sendigR Github  [sendigR- xptcleaner](https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner/dist)
 
 * Using source archive:
 Using the below shell command to install the xptcleaner package, assume that the source archive is under 'dist' sub folder. Replace {version} with the correct version number, e.g. 1.0.0.
@@ -74,7 +68,7 @@ The following required python packages will be installed during the xptcleaner p
     * pyreadstat
 
 ### sendigR R package installation
-Install sendigR packages, refer to [README](../README.md) for more details.    
+Install sendigR packages, refer to [README](https://github.com/phuse-org/sendigR/blob/main/README.md) for more details.    
 ```
 # Get CRAN version
 install.packages("sendigR")
@@ -96,10 +90,10 @@ The sample CDISC CT file and the extensible CT file are located under the 'data-
 library(reticulate)
 library(sendigR)
 #input CDISC and Extensible CT files.
-infile1 <- "C:/Project/src/R/sendigRPkg/SEND Terminology_2021_12_17.txt"
-infile2 <- "C:/Project/src/R/sendigRPkg/SEND_Terminology_EXTENSIBLE.txt"
+infile1 <- "{path to CT file}/SEND_Terminology_EXTENSIBLE.txt"
+infile2 <- "{path to CT file}/SEND Terminology_2021_12_17.txt"
 #output JSON file
-jsonfile <- "C:/Project/src/R/sendigRPkg/SENDct.json"
+jsonfile <- "{path to CT file to be created}/SENDct.json"
 #Call the gen_vocab function with the input and output files
 sendigR::gen_vocab(list(infile1, infile2),jsonfile )
 ```
@@ -109,12 +103,12 @@ library(reticulate)
 library(sendigR)
 
 #JSON file used for the xpt cleaning
-jsonfile <- "C:/Project/src/R/sendigRPkg/SENDct.json"
+jsonfile <- "{path to CT file to be created}/SENDct.json"
 
 #folder containing the source xpt files
-rawXptFolder <- "C:/Studies/96298/"
+rawXptFolder <- "{path to xpt files}/96298/"
 #folder containing the cleaned target xpt files
-cleanXptFolder <- "C:/StudiesClean/96298/"
+cleanXptFolder <- "{path to cleaned xpt files}/96298/"
 #Call the standardize_file function to clean the xpt file
 sendigR::standardize_file(rawXptFolder, cleanXptFolder, jsonfile )
 ```

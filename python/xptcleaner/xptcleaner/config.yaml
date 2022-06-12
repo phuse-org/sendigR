@@ -8,4 +8,5 @@ section_cols:
     - Specimen
     - Anatomical Location
     - Non-Neoplastic Finding Type
+    - SEND Control Type
 log_file: "c:/temp/xptcleaner_log.csv"

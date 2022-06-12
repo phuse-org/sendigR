@@ -49,7 +49,7 @@ The following required python packages will be installed during the xptcleaner p
         ----------
         in_file : str
             List of tab-delimited files with synonyms and preferred terms.
-        Out_path : str
+        out_path : str
             output json filename.
     
 ### standardize_file(input_xpt_dir, output_xpt_dir, json_file)
@@ -63,7 +63,8 @@ The following required python packages will be installed during the xptcleaner p
         - Standardized Disposition Term
         - Specimen
         - Non-Neoplastic Finding Type
-        
+        - SEND Control Type
+		
          Parameters
         ----------
         input_xpt_dir : str
@@ -85,17 +86,17 @@ import xptcleaner
 from xptcleaner import xptclean
 
 #input CDISC and Extensible CT files.
-infile1="C:/Project/src/R/sendigRPkg/SEND Terminology_2021_12_17.txt"
-infile2="C:/Project/src/R/sendigRPkg/SEND_Terminology_EXTENSIBLE.txt"
+infile1="{path to CT file}/SEND_Terminology_EXTENSIBLE.txt"
+infile2="{path to CT file}/SEND Terminology_2021_12_17.txt"
 #output JSON file
-jsonfile="C:/Project/src/R/sendigRPkg/SENDct.json"
+jsonfile="{path to CT file to be created}/SENDct.json"
 
 #Call the gen_vocab function with the input and output files
 xptclean.gen_vocab([infile1,infile2],jsonfile)
 
 #Call the standardize_file function to clean the xpt file
-rawXptFolder = "C:/BioCelerate/TDSStudies/96298/"
-cleanXptFolder = "C:/BioCelerate/TDSStudiesClean/96298/"
+rawXptFolder = "{path to xpt files}/96298/"
+cleanXptFolder = "{path to cleaned xpt files}/96298/"
 xptclean.standardize_file(rawXptFolder, cleanXptFolder, jsonfile)
 
 ```

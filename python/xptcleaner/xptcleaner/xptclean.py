@@ -1,13 +1,6 @@
 # Supress warnings ....
 import warnings
 import os
-
-import pandas
-
-warnings.filterwarnings("ignore")
-
-from io import StringIO
-
 import json
 import shutil
 import pyreadstat
@@ -17,11 +10,12 @@ from .cdisc_mapping.logger import logger
 from .cdisc_mapping.file_mapping import xpt_mapping
 from .cdisc_mapping.vocab_management import create_vocab
 
+warnings.filterwarnings("ignore")
+
 # Set up log file
 logfile = CONFIG["log_file"]
 print(logfile)
 LOG = logger.setup_applevel_logger(file_name=str(logfile))
-
 
 def gen_vocab(in_file, out_path):
     """
@@ -33,7 +27,7 @@ def gen_vocab(in_file, out_path):
     ----------
     in_file : str
         List of tab-delimited files with synonyms and preferred terms.
-    Out_path : str
+    out_path : str
         output json filename.
 
     """
@@ -121,6 +115,15 @@ def standardize_file(input_xpt_dir, output_xpt_dir, json_file):
                                    file_format_version=5,
                                    table_name="TS",
                                    file_label="Trial Summary",
+                                   column_labels=meta.column_labels
+                                   )
+
+        if "tx.xpt" in optional_files_dict.keys():
+            dfTx, meta = xpt_mapping.TX_dataframe(input_xpt_dir, optional_files_dict, json_file)
+            pyreadstat.write_xport(dfTx, output_xpt_dir + "/" + "tx.xpt",
+                                   file_format_version=5,
+                                   table_name="TX",
+                                   file_label="Trial Set",
                                    column_labels=meta.column_labels
                                    )
 

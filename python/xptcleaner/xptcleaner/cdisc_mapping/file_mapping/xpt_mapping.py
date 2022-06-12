@@ -18,7 +18,7 @@ def check_valid_files(input_dir):
     files_dict = dict(zip(input_xpt_cleaned, input_xpt))
     #search in files_dict.keys() for cleaned file name
     required_xpts = ["dm.xpt"]
-    optional_xpts = ["mi.xpt", "ds.xpt", "ex.xpt", "ts.xpt"]
+    optional_xpts = ["mi.xpt", "ds.xpt", "ex.xpt", "ts.xpt", "tx.xpt"]
     combo_xpts = [required_xpts, optional_xpts]
   
     # Get the XPT files that will not be mapped
@@ -123,6 +123,17 @@ def TS_dataframe(xpt_dir, xpt_dict, json_file):
                 TS_xpt.at[index, "TSVAL"]=do_mapping(col_long, TS_xpt.at[index, "TSVAL"], json_file)
     return TS_xpt, meta
 
+def TX_dataframe(xpt_dir, xpt_dict, json_file):
+    TX_xpt, meta = utils.read_XPT(xpt_dir, xpt_dict['tx.xpt'])
+    #Map the TS rows of interest
+    columns_to_map = {"TCNTRL": "SEND Control Type"}
+
+    for index, row in TX_xpt.iterrows():
+        for col_short in row[["TXPARMCD"]]:
+            col_long = columns_to_map.get(col_short)
+            if (col_long is not None):
+                TX_xpt.at[index, "TXVAL"]=do_mapping(col_long, TX_xpt.at[index, "TXVAL"], json_file)
+    return TX_xpt, meta
 
 def DS_dataframe(xpt_dir, xpt_dict, json_file):
 
