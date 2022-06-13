@@ -83,6 +83,8 @@ If the <code>phaseFilter</code> is empty (null, na or empty string), all rows fr
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
+
+
 <dt>findings</dt>
 <dd><p>Mandatory, data.table.<br>
 A data.table with the set of finding rows to process.<br>
@@ -93,24 +95,33 @@ The table must include at least columns named</p><ul><li><p>STUDYID</p></li>
 <li><p>domainDTC</p></li>
 </ul><p>where domain is the name of the actual findings domain - e.g. LBSEQ and
 LBDTC</p></dd>
+
+
 <dt>phaseFilter</dt>
 <dd><p>Optional, character.<br>
 The phase value criterion to be used for filtering of the list of animals.<br>
 It can be a single string, a vector or a list of multiple strings.</p></dd>
+
+
 <dt>inclUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Only relevant if the <code>phaseFilter</code> is not empty.<br>
 Indicates whether finding rows for which the phase cannot be confidently
 identified shall be included or not in the output data table.</p></dd>
+
+
 <dt>noFilterReportUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Only relevant if the <code>phaseFilter</code> is empty.<br>
 Indicates if the reason should be included if the phase cannot be
 confidently decided for an animal.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>The function returns a data.table with columns in this order:</p><ul><li><p>All columns contained in the <code>findings</code> input table (original
+    
+
+<p>The function returns a data.table with columns in this order:</p><ul><li><p>All columns contained in the <code>findings</code> input table (original
 order except optional UNCERTAIN_MSG and NOT_VALID_MSG)</p></li>
 <li><p>PHASE          (character)</p></li>
 <li><p>UNCERTAIN_MSG  (character)<br>
@@ -194,14 +205,11 @@ pool for a given finding</p></li>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser,
-Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter,
-Michael Denieu, Wenxian aut Wang.</p>
+  <p></p><p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser, Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter, Michael Denieu, Wenxian Wang.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

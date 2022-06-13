@@ -4,10 +4,7 @@
     <loc>/404.html</loc>
   </url>
   <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE.html</loc>
+    <loc>/articles/index.html</loc>
   </url>
   <url>
     <loc>/articles/Introduction.html</loc>
@@ -19,13 +16,16 @@
     <loc>/articles/Usingxptcleaner.html</loc>
   </url>
   <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
     <loc>/authors.html</loc>
   </url>
   <url>
     <loc>/index.html</loc>
+  </url>
+  <url>
+    <loc>/LICENSE-text.html</loc>
+  </url>
+  <url>
+    <loc>/LICENSE.html</loc>
   </url>
   <url>
     <loc>/reference/dbCreateIndexes.html</loc>
@@ -49,10 +49,10 @@
     <loc>/reference/execSendDashboard.html</loc>
   </url>
   <url>
-    <loc>/reference/gen_vocab.html</loc>
+    <loc>/reference/genericQuery.html</loc>
   </url>
   <url>
-    <loc>/reference/genericQuery.html</loc>
+    <loc>/reference/gen_vocab.html</loc>
   </url>
   <url>
     <loc>/reference/getControlSubj-CDL0208461.html</loc>

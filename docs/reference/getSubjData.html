@@ -70,25 +70,40 @@ of subjects included in <code>animalList</code>.<br></p>
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
+
+
 <dt>animalList</dt>
 <dd><p>Mandatory, data.table.<br>
 A table with the list of animals to be included in the output data.<br>
 The table must include at least columns named 'STUDYID' and 'USUBJID'.</p></dd>
+
+
 <dt>domain</dt>
 <dd><p>Mandatory, character, not case sensitive.<br>
 The name of the domain table to extract data from.<br>
 The name must be a subject level domain - i.e. a table including a 'USUBJID'
 column.</p></dd>
+
+
 <dt>colList</dt>
 <dd><p>Optional, character, not case sensitive.<br>
 The list of columns to be extracted from the specified domain table.<br>
 It can be a single string, a vector or a list of multiple strings.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>The function returns a data.table with all the rows for the animals
-included in <code>animalList</code>.<br>If no columns have been specified in <code>colList</code>, all the columns in
-the table <code>colList</code> are included.<br>If a list of columns have been specified in <code>colList</code>, these are
+    
+
+<p>The function returns a data.table with all the rows for the animals
+included in <code>animalList</code>.<br></p>
+
+
+<p>If no columns have been specified in <code>colList</code>, all the columns in
+the table <code>colList</code> are included.<br></p>
+
+
+<p>If a list of columns have been specified in <code>colList</code>, these are
 included. In addition, a set of columns are always included, whether they
 are included in <code>colList</code> or not:</p><ul><li><p>To ensure each row can be uniquely identified:</p><ul><li><p>DOMAIN</p></li>
 <li><p>STUDYID</p></li>
@@ -101,7 +116,10 @@ study phase:</p><ul><li><p>domainDTC</p></li>
 <li><p>domainDY</p></li>
 </ul></li>
 </ul><p>The order of the columns are as they are defined for the domain in the
-SEND IG.<br>The data table contains both</p><ul><li><p>subject level data - i.e. rows where USUBJID is not empty</p></li>
+SEND IG.<br></p>
+
+
+<p>The data table contains both</p><ul><li><p>subject level data - i.e. rows where USUBJID is not empty</p></li>
 <li><p>if applicable for the <code>domain</code>, pool level data - i.e. rows
 where POOLID is not empty.<br>
 In this case, all pools, which includes any of the subjects included in
@@ -120,14 +138,11 @@ In this case, all pools, which includes any of the subjects included in
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser,
-Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter,
-Michael Denieu, Wenxian aut Wang.</p>
+  <p></p><p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser, Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter, Michael Denieu, Wenxian Wang.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer></div>

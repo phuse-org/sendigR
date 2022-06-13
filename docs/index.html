@@ -89,382 +89,70 @@
 <div class="page-header"><h1 id="sendigr">sendigR<a class="anchor" aria-label="anchor" href="#sendigr"></a>
 </h1></div>
 <p><a href="https://github.com/phuse-org/sendigR" class="external-link"><img src="reference/figures/logo.png" alt="sendigR logo" align="right"></a></p>
-<div class="section level2">
-<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
-</h2>
-<p>The purpose of the <code>sendigR</code> package is to extract data
-from a set of nonclinical studies stored in <a href="https://www.cdisc.org/standards/foundational/send" class="external-link">CDISC SEND</a>
-format in a database to be used for cross study analysis. It can either
-be done in a script by execution of a set of functions from the package
-to extract data for further processing or by execution an encapsulated R
-Shiny application.</p>
-<p>The package supports currently these types of databases:</p>
+<p>The purpose of the <code>sendigR</code> package is to extract control data from a set of nonclinical studies stored in <a href="https://www.cdisc.org/standards/foundational/send" class="external-link">CDISC SEND</a> format in a database to be used for cross study analysis.</p>
+<p><code>sendigR</code> includes:</p>
 <ul>
-<li>
-<a href="https://www.sqlite.org/index.html" class="external-link">SQLite</a> It’s possible
-to access an existing SEND database or build a database with SEND data
-imported from SAS transport/xpt files, which then can be accessed.</li>
-<li>Oracle It’s possible to access an already existing SEND
-database</li>
+<li><p>Functions to construct a relational database from any collection of SEND datasets;</p></li>
+<li><p>functions to query control data from database;</p></li>
+<li><p>An R Shiny application with a graphical user interface for facilitating cross-study analysis.</p></li>
+<li><p>An optional Python package (xptclearner) to harmonize SEND datasets using SEND controlled terminology and extensible terminology;</p></li>
 </ul>
-<p>This vignettes introduces how to use <code>sendigR</code> to:</p>
-<ul>
-<li>initiate the use of the functions.</li>
-<li>build and maintain a SQLite database of SEND data.</li>
-<li>filter and extract SEND data from a database.</li>
-<li>execute the R Shiny application to browse the SEND control data
-stored in the database.</li>
-</ul>
-<p>Familiarity with the CDISC SEND data model and at least basic
-knowledge about animal studies is necessary to follow this vignette and
-to use the package.</p>
-</div>
-</div>
-<div class="section level1">
-<h1 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
-</h1>
+<p>Familiarity with the CDISC SEND data model and at least basic knowledge about animal studies is necessary to use the package.</p>
 <div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+<h2 id="step-by-step-installation">Step by Step Installation<a class="anchor" aria-label="anchor" href="#step-by-step-installation"></a>
 </h2>
-<pre><code><span class="co"># Get CRAN version</span>
+<div class="section level4">
+<h4 id="installation-of-r-and-rstudio">Installation of R and RStudio<a class="anchor" aria-label="anchor" href="#installation-of-r-and-rstudio"></a>
+</h4>
+<p>R version 4.1.2 and above are used in developing and testing the <code>sendigR</code>.</p>
+<p><a href="https://rstudio-education.github.io/hopr/starting.html" class="external-link">R and RStudio Installation</a></p>
+</div>
+<div class="section level4">
+<h4 id="installation-of-python-and-xptcleaner-optional">Installation of Python and xptcleaner (optional)<a class="anchor" aria-label="anchor" href="#installation-of-python-and-xptcleaner-optional"></a>
+</h4>
+<p>Python version 3.9.6 and above are used in developing and testing the xptcleaner of <code>sendigR</code>. This is an optional component, you can skip this step if you will not use the xptcleaner to clean the xpt files.</p>
+<p><a href="https://docs.python.org/3/using/index.html" class="external-link">Python installation</a></p>
+<p><a href="https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html" class="external-link">xptcleaner Python package installation</a></p>
+</div>
+<div class="section level4">
+<h4 id="installation-of-sendigr-package">Installation of sendigR package<a class="anchor" aria-label="anchor" href="#installation-of-sendigr-package"></a>
+</h4>
+<pre><code><span class="co"># Get CRAN version, this will be available soon</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"sendigR"</span><span class="op">)</span>
+
 <span class="co"># Or the development version from GitHub:</span>
-<span class="co"># install.packages("devtools")</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
 <span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">'phuse-org/sendigR'</span><span class="op">)</span></code></pre>
 </div>
-<div class="section level2">
-<h2 id="package-dependencies">Package dependencies<a class="anchor" aria-label="anchor" href="#package-dependencies"></a>
-</h2>
-<p>Before we are ready to use the functions in the package, we must
-ensure that a minimum of prerequisites are fulfilled. Beside the
-required packages listed in the Imports section of <a href="../DESCRIPTION">DESCRIPTION</a>, one or more additional package(s)
-must be installed:</p>
-<ul>
-<li>If the SEND databases is stored in an Oracle database:
-<ul>
-<li><em>ROracle</em></li>
-</ul>
-</li>
-<li>If a SEND database are to be build using this package’s functions
-<ul>
-<li><em>SASxport</em></li>
-<li><em>sjlabelled</em></li>
-</ul>
-</li>
-<li>If the sendDashboard app is to be executed:
-<ul>
-<li>TO BE ADDED</li>
-</ul>
-</li>
-</ul>
 </div>
 <div class="section level2">
-<h2 id="database">Database<a class="anchor" aria-label="anchor" href="#database"></a>
+<h2 id="sendigr-usage">sendigR Usage<a class="anchor" aria-label="anchor" href="#sendigr-usage"></a>
 </h2>
-<p>If an existing SEND database is to be accessed, it must contain a set
-of tables and columns representing the domains and variables described
-in the SEND IG version <a href="https://www.cdisc.org/standards/foundational/send/sendig-v3-0" class="external-link">3.0</a>
-or <a href="https://www.cdisc.org/standards/foundational/send/sendig-v3-1" class="external-link">3.1</a>
-- or a union of the two versions.</p>
-<p>It is required that all names and basic data types (i.e. numerical or
-character) are as described the the SEND IG.</p>
+<div class="section level4">
+<h4 id="sendigr-overview">
+<a href="https://phuse-org.github.io/sendigR/articles/Introduction.html" class="external-link">sendigR Overview</a><a class="anchor" aria-label="anchor" href="#sendigr-overview"></a>
+</h4>
+</div>
+<div class="section level4">
+<h4 id="sendigr-r-shiny-application">
+<a href="https://phuse-org.github.io/sendigR/articles/SendDashboard.html" class="external-link">sendigR R Shiny Application</a><a class="anchor" aria-label="anchor" href="#sendigr-r-shiny-application"></a>
+</h4>
+</div>
+<div class="section level4">
+<h4 id="using-the-sendigr-xptcleaner">
+<a href="https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html" class="external-link">Using the sendigR xptcleaner</a><a class="anchor" aria-label="anchor" href="#using-the-sendigr-xptcleaner"></a>
+</h4>
+</div>
 </div>
 <div class="section level2">
-<h2 id="study-data-to-import">Study data to import<a class="anchor" aria-label="anchor" href="#study-data-to-import"></a>
+<h2 id="sendigr-license">sendigR License<a class="anchor" aria-label="anchor" href="#sendigr-license"></a>
 </h2>
-<p>If study data are to be imported into a SQLite database, data for
-each study must be located in a separate folder as <a href="https://documentation.sas.com/?cdcId=pgmsascdc&amp;cdcVersion=9.4_3.5&amp;docsetId=movefile&amp;docsetTarget=n1xbwdre0giahfn11c99yjkpi2yb.htm&amp;locale=en" class="external-link">SAS
-transport</a> files - also konw as XPT files.</p>
-<p>Multiple studies may be located together in a folder hierarchy as
-described below.</p>
-</div>
-<div class="section level2">
-<h2 id="send-controlled-terminology">SEND controlled terminology<a class="anchor" aria-label="anchor" href="#send-controlled-terminology"></a>
-</h2>
-<p>Several of the function in the packages uses CDISC SEND terminology
-code list to verify validity of the SEND data. The package includes the
-values for the relevant code lists extracted from the newest CT version
-at build time. If it is relevant to use another version - newer or older
-- this version must be downloaded in Excel format from <a href="https://evs.nci.nih.gov/ftp1/CDISC/SEND/" class="external-link">NCI</a> or <a href="https://www.cdisc.org/members-only/cdisc-library-archives" class="external-link">CDISC
-library archives</a> and saved in any folder which is accessible from
-the R script(s) using this package.</p>
-</div>
-</div>
-<div class="section level1">
-<h1 id="function-overview">Function overview.<a class="anchor" aria-label="anchor" href="#function-overview"></a>
-</h1>
-<p>The package contains 5 sets of functions covering different areas -
-each of these are described below, including detailed examples.</p>
-<div class="section level2">
-<h2 id="initiation-and-closure-of-send-environment">Initiation and closure of SEND environment<a class="anchor" aria-label="anchor" href="#initiation-and-closure-of-send-environment"></a>
-</h2>
-<p>Before any use of the package’s function, a database must be opened
-and the database must be closed again as the final action.</p>
-<table class="table">
-<colgroup>
-<col width="7%">
-<col width="92%">
-</colgroup>
-<thead><tr class="header">
-<th>Function</th>
-<th>Description</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><a href="../html/initEnvironment.html">initEnvironment</a></td>
-<td>Initialize the environment. It must be executed as the absolute
-first function before any other package functions. It opens an existing
-or create a new empty database and returns a handle to the database,
-which must be used in all following function calls.</td>
-</tr>
-<tr class="even">
-<td><a href="../html/disconnectDB.html">disconnectDB</a></td>
-<td>Close the open database. It must be called as the absolute last
-function in a session.</td>
-</tr>
-</tbody>
-</table>
-<p>The call of <code>initEnvironment</code> returns a handle with a
-reference to the open database and pointers to low level functions
-accessing the specific type of database. This handle must be given as
-the first input parameter in the execution of all other function in the
-package. It is possible to open and access multiple databases - also of
-different types - in the same R session. Just execute
-<code>initEnvironment</code> for each relevant database and save the
-returned db handles in each distinct variable.</p>
-<p>Examples in the following sections demonstrates the use of these
-functions in a complete work flow.</p>
-</div>
-<div class="section level2">
-<h2 id="build-a-sqlite-send-database">Build a SQLite SEND database<a class="anchor" aria-label="anchor" href="#build-a-sqlite-send-database"></a>
-</h2>
-<p>It is possible to build an SQLite database with SEND data imported
-from a set of studies.</p>
-<table class="table">
-<colgroup>
-<col width="7%">
-<col width="92%">
-</colgroup>
-<thead><tr class="header">
-<th>Function</th>
-<th>Description</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><a href="../html/dbCreateSchema.html">dbCreateSchema</a></td>
-<td>Create a SEND schema, i.e. all the tables to represent the domains
-documented in SEND IG, in an open and empty database</td>
-</tr>
-<tr class="even">
-<td><a href="../html/dbCreateIndexes.html">dbCreateIndexes</a></td>
-<td>Create a set of indexes on the tables in a SEND database to optimize
-performance of extraction of data</td>
-</tr>
-<tr class="odd">
-<td><a href="../html/dbImportOneStudy.html">dbImportOneStudy</a></td>
-<td>Import SEND study data in SAS xport format into a SEND database from
-a single study folder</td>
-</tr>
-<tr class="even">
-<td><a href="../html/dbImportStudies.html">dbImportStudies</a></td>
-<td>Import SEND study data in SAS xport format into a SEND database from
-a hierarchy study folders</td>
-</tr>
-<tr class="odd">
-<td><a href="../html/dbDeleteStudies.html">dbDeleteStudies</a></td>
-<td>Delete one or more studies in SEND database</td>
-</tr>
-</tbody>
-</table>
-<p>It should be possible to import data into an existing SQLite SEND
-database using <code>dbImportOneStudy</code> and
-<code>dbImportStudies</code>, even though the tables are not created by
-<code>dbCreateSchema</code>. It is possible to delete studies in any
-SQLite SEND database <code>dbDeleteStudies</code> - whether or not the
-tables are created by <code>dbCreateSchema</code>.</p>
-<p>To make it possible to import data for a set of studies with
-<code>dbImportStudies</code>, the input data should be saved in folder
-structure like this:</p>
-<p>/path/to/SEND/datasets<br>
-+– study01<br>
-     +– ts.xpt<br>
-     +– dm.xpt<br>
-     +– ex.xpt<br>
-     +– etc.<br>
-+– study02<br>
-     +– ts.xpt<br>
-     +– dm.xpt<br>
-     +– ex.xpt<br>
-     +– etc.<br>
-+– proj1234<br>      +– study11<br>           +– ts.xpt<br>
-          +– dm.xpt<br>
-          +– ex.xpt<br>
-          +– etc.<br>      +– study12<br>           +– ts.xpt<br>
-          +– dm.xpt<br>
-          +– ex.xpt<br>
-          +– etc.<br> +– etc. ## Extract and filter SEND data</p>
-<p>These functions are divided into different groups:</p>
-<ul>
-<li>
-<strong>Fetch rows from data</strong> A single function
-<code>genericQuery</code> gives the possibility to execute a SQL query
-against the database, i.e.it executes any user defined select statement
-and returns the selected rows. It is used internally by the functions
-described below, but can also be used directly to fetcg rows which ar e
-not possible with any of the specific extraction functions described
-below.<br>
-</li>
-<li>
-<strong>Extract sets of studies</strong><br>
-Each of these functions extracts, filter and return studies for
-different kinds of conditions.<br>
-They can all be called with or without a set of studies given as input.
-In the former case, the extraction/filtering is based on the
-<code>TS</code> subset of input studies. In the latter case, the
-extraction/filtering is based on the full <code>TS</code> table.<br>
-The naming convention of these function are
-<code>getStudies</code><em><code>TSPARMCD</code></em>, where
-<em><code>TSPARMCD</code></em> is the specific TSPARMCD value handled by
-the function - e.g. <code>STSTDTC</code>.</li>
-<li>
-<strong>Extract full set of control animals</strong><br>
-One function, <code>getControlSubj</code>, which extracts and return the
-set of control animals for a given input set of study id values.<br>
-Only ‘negative’ control animals are included in the set of control
-animals - i.e. animals which are not treated with a compound but only
-vehicle.</li>
-<li>
-<strong>Extract subsets of animals</strong><br>
-Each of these functions take a set of animals as input, extracts and
-return a subset fulfilling a given condition - e.g. for species or route
-of administration.<br>
-It is possible to execute each of these functions with no conditions for
-filtering - it will then just return the set of input rows with
-additional variables for the actual kind of attributes, e.g. sex or
-species/strain.<br>
-The naming convention of these function are
-<code>getSubj</code><em><code>attributes</code></em> where
-<em><code>attributes</code></em> is the specific attribute handled by
-the function - e.g. <code>Sex</code>.</li>
-<li>
-<strong>Extract subject level data</strong><br>
-One function, <code>getSubjData</code>, which extracts and return all
-rows for a given input set of animals from a specified subject level
-table - it can be any SEND table including <code>USUBJID</code>
-column.</li>
-<li>
-<strong>Extract subsets of findings</strong><br>
-Each of these functions take a set of finding rows as input, extracts
-and return a subset fulfilling a given condition - e.g. for a specific
-study phase.<br>
-It is possible to execute each of these functions with no conditions for
-filtering - it will then just return the set of input rows with
-additional variables for the actual kind of attributes, e.g. the study
-phase.<br>
-The naming convention of these function are
-<code>getFindings</code><em><code>attributes</code></em> where
-<em><code>attributes</code></em> is the specific attribute handled by
-the function - e.g. <code>Phase</code>.</li>
-</ul>
-<p>The functions rely on the <em>data.table</em> package - and all
-input/output sets of data are data tables.</p>
-<p>The complete list of functions:</p>
-<table class="table">
-<colgroup>
-<col width="7%">
-<col width="92%">
-</colgroup>
-<thead><tr class="header">
-<th>Function</th>
-<th>Description</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><a href="../html/genericQuery.html">genericQuery</a></td>
-<td>Execute database query and returns fetched rows</td>
-</tr>
-<tr class="even">
-<td><a href="../html/getStudiesSDESIGN.html">getStudiesSDESIGN</a></td>
-<td>Extract a list of SEND studies with a specified study design</td>
-</tr>
-<tr class="odd">
-<td><a href="../html/getStudiesSTSTDTC.html">getStudiesSTSTDTC</a></td>
-<td>Extract a list of SEND studies with study start date within a
-specified interval</td>
-</tr>
-<tr class="even">
-<td><a href="../html/getControlSubj.html">getControlSubj</a></td>
-<td>Extract a list of control animals for a list of studies</td>
-</tr>
-<tr class="odd">
-<td><a href="../html/getSubjRoute.html">getSubjRoute</a></td>
-<td>Extract the set of animals of the specified route of administration
-- or just add actual route of administration for each animal.</td>
-</tr>
-<tr class="even">
-<td><a href="../html/getSubjSpeciesStrain.html">getSubjSpeciesStrain</a></td>
-<td>Extract the set of animals of the specified species and strain - or
-just add the species and strain for each animal.</td>
-</tr>
-<tr class="odd">
-<td><a href="../html/getSubjSex.html">getSubjSex</a></td>
-<td>Extract the set of animals of the specified sex - or just add the
-sex of each animal.</td>
-</tr>
-<tr class="even">
-<td><a href="../html/getSubjData.html">getSubjData</a></td>
-<td>Extract data from a subject level domain.</td>
-</tr>
-<tr class="odd">
-<td><a href="../html/getFindingsPhase.html">getFindingsPhase</a></td>
-<td>Extract a set of findings for a specified study phase - or just add
-phase for each animal</td>
-</tr>
-<tr class="even">
-<td><a href="../html/getFindingsSubjAge.html">getFindingsSubjAge</a></td>
-<td>Add the subject age at finding time - and optionally extract the set
-of findings within a specified range of ages</td>
-</tr>
-<tr class="odd">
-<td><a href="../html/gen_vocab.html">gen_vocab</a></td>
-<td>Create json file for vocabulary mappings. Keys are synonyms and
-values are the CDISC Controlled Terminology Submission values.
-Vocabularies are defined by column values from the tab-delimited
-files.</td>
-</tr>
-<tr class="even">
-<td><a href="../html/standardize_file.html">standardize_file</a></td>
-<td>Standardizes SEND xpt files using CDISC controlled
-terminologies.</td>
-</tr>
-</tbody>
-</table>
-<p>The search scripts shared in this folder are intended to be used to
-query and collate information from SEND datasets which can then be
-utilized by the searcher for their own cross-study analysis. Nothing in
-these scripts in intended to guide the analytic process and any
-interpretations of data found as a result of using these scripts are
-solely the responsibility of the user of the scripts and not the
-developers.</p>
-<p>The scripts in this folder are subject to the MIT Open Source
-License:</p>
+<p>The <code>sendigR</code> package including the optional Python xptcleaner is subject to the MIT Open Source License:</p>
 <p>MIT License</p>
-<p>Copyright (c) 2019 PhUSEPermission is hereby granted, free of charge,
-to any person obtaining a copy of this software and associated
-documentation files (the “Software”), to deal in the Software without
-restriction, including without limitation the rights to use, copy,
-modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to
-do so, subject to the following conditions:</p>
-<p>The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.</p>
-<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<p>Copyright (c) 2022 PHUSE and BioCelerate</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 </div>
 </div>
 
@@ -499,7 +187,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 <li>Susan Butler <br><small class="roles"> Author </small>  </li>
 <li>Michael Rosentreter <br><small class="roles"> Author </small>  </li>
 <li>Michael Denieu <br><small class="roles"> Author </small>  </li>
-<li>Wenxian aut Wang <br><small class="roles"> Maintainer </small>  </li>
+<li>Wenxian Wang <br><small class="roles"> Maintainer, author </small>  </li>
 </ul>
 </div>
 
@@ -516,15 +204,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser,
-Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter,
-Michael Denieu, Wenxian aut Wang.</p>
+<p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser, Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter, Michael Denieu, Wenxian Wang.</p>
 </div>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
       </footer>
