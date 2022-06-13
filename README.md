@@ -8,17 +8,17 @@ The purpose of the `sendigR` package is to extract control data from a set of no
 
 `sendigR` includes:
 
+
+* Functions to construct a relational database from any collection of SEND datasets;
+  
+* functions to query control data from database;
+
+* An R Shiny application with a graphical user interface for facilitating cross-study analysis.
+
 * An optional Python package (xptclearner) to harmonize SEND datasets using SEND controlled terminology and extensible terminology;
 
-* An R package to construct a relational database from any collection of SEND datasets;
 
-* An R Shiny application with a graphical user interface for facilitating crosss study analysis.
-
-
-This vignettes describes the `sendigR` Step by Step Installation, usage and license.
-
-
-Familiarity with the CDISC SEND data model and at least basic knowledge about animal studies is necessary to follow this vignette and to use the package.
+Familiarity with the CDISC SEND data model and at least basic knowledge about animal studies is necessary to use the package.
 
 
 ## Step by Step Installation
@@ -50,14 +50,12 @@ devtools::install_github('phuse-org/sendigR')
 
 ## sendigR Usage
 
+#### [sendigR Overview](https://phuse-org.github.io/sendigR/articles/Introduction.html)
+
+#### [sendigR R Shiny Application](https://phuse-org.github.io/sendigR/articles/SendDashboard.html)
+
 #### [Using the sendigR xptcleaner](https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html)
 
-#### [sendigR Overview and Functional Descriptions](https://phuse-org.github.io/sendigR/articles/Introduction.html)
-
-#### [Running the sendigR R Shiny Application](https://phuse-org.github.io/sendigR/articles/SendDashboard.html)
-
-#### An Example R script
-An example R script [importStudies.R](https://github.com/phuse-org/sendigR/blob/main/importStudies.R) is provided for using functions provided by `sendigR`.
 
 ## sendigR License
 
@@ -66,7 +64,7 @@ The `sendigR` package including the optional Python xptcleaner is subject to the
 
 MIT License
 
-Copyright (c) 2022 PhUSE and Biocelearate
+Copyright (c) 2022 PHUSE and BioCelerate
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
