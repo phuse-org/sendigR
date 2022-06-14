@@ -120,7 +120,7 @@ execSendDashboard <- function(dbToken) {
   click_jscode <- '
 Shiny.addCustomMessageHandler("mymessage", function(message) {
   document.getElementById(message).click();
-});
+}); 
 '
   # shortcut for find not in
   '%ni%' <- Negate('%in%')
@@ -131,6 +131,56 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
   dt_extension <- paste0(www_path, "/www/DT_extension" )
   animate_css_path <- paste0(www_path, "/www")
 
+### tour ----
+
+guide <- cicerone::Cicerone$new()$step(
+	".main-header",
+	"Need an Introduction? \U270B",
+	"If you want a step by step introduction, press next \U1F449. Otherwise hit the close button \U1F447",
+	is_id = FALSE
+)$step(
+	el = "STSTDTC",
+	title = "Date Range", 
+	description = "Choose the date range that you want to include for control animal"
+)$step(
+	"SDESIGN-label",
+	"Study Design",
+	"Select study design. You can only choose one study design from the list."
+
+)$step(
+	"ROUTE",
+	"Route of Administration",
+	"You can select multiple route of administration from drop-down list.
+	All availbale route of administraion will be included if kept blank"
+)$step(
+	"SPECIES-label",
+	"Species",
+	"You can select multiple species from drop-down list.
+	All availbale species will be included if kept blank"
+)$step(
+	"STRAIN-label",
+	"Strain",
+	"You can select multiple strain from drop-down list.
+	All availbale strain will be included if kept blank. Available strain list will
+	depends on what species you selected in previous step"
+)$step(
+	"SEX-label",
+	"Route of Administration",
+	"You can select multiple route of administration from drop-down list.
+	All availbale route of administraion will be included if kept blank"
+)$step(
+	"INCL_UNCERTAIN",
+	"Whether to include uncertain control animal",
+	"Check this box if you want to include uncertain control animal"
+)$step(
+	"refreshData",
+	"Extract Control Animal",
+	"Depending on filtering criteria you provided, this will extract all the control animal from the database"
+)$step(
+	"refreshData_02",
+	"same as before",
+	"This is same as previous button, two generate/update button just for your convenience \U1F604"
+)
 
 ########### UI #######
 
@@ -232,6 +282,7 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
     # that particular domain.
 
     shinydashboard::dashboardBody(
+		cicerone::use_cicerone(),
 
 	#   shiny::includeCSS("www/theme.css"),
 	  shiny::includeCSS(paste0(www_path, "/www/from_sass_theme.css")),
@@ -471,6 +522,8 @@ Shiny.addCustomMessageHandler("mymessage", function(message) {
   # in controlFiltering.R.
 
   server <- function(input, output, session) {
+
+	  guide$init()$start()
     # This is the logic for changing
     # the STRAIN based ON changes SPECIES
     shiny::observeEvent(input$SPECIES, {
