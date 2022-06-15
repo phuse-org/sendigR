@@ -83,7 +83,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>SendDashboard</h1>
             
-            <h4 data-toc-skip class="date">2022-06-13</h4>
+            <h4 data-toc-skip class="date">2022-06-15</h4>
       
       
       <div class="hidden name"><code>SendDashboard.Rmd</code></div>
@@ -108,18 +108,18 @@ control data in a SEND database.</p>
 <th>Description</th>
 </tr></thead>
 <tbody><tr class="odd">
-<td><a href="../html/execSendDashboard.html">execSendDashboard</a></td>
+<td><a href="reference/execSendDashboard.html">execSendDashboard</a></td>
 <td>Starts the SendDashboard app</td>
 </tr></tbody>
 </table>
-<p>The <a href="SendDashboard.html">SendDashboard</a></p>
 <div class="section level3">
 <h3 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h3>
-<p>Connect to the database, start the app. Remember to disconnect from
-database when leaving the app.</p>
+<p>Connect to the database and start the app. Remember to disconnect
+from database when leaving the app.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">dbToken</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/initEnvironment.html">initEnvironment</a></span><span class="op">(</span>dbType<span class="op">=</span><span class="st">'sqlite'</span>, dbPath<span class="op">=</span><span class="st">'/path/to/db/send.db'</span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">sendigR</span><span class="op">)</span>
+<span class="va">dbToken</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/initEnvironment.html">initEnvironment</a></span><span class="op">(</span>dbType<span class="op">=</span><span class="st">'sqlite'</span>, dbPath<span class="op">=</span><span class="st">'/path/to/db/send.db'</span><span class="op">)</span>
 <span class="fu"><a href="../reference/execSendDashboard.html">execSendDashboard</a></span><span class="op">(</span><span class="va">dbToken</span><span class="op">)</span>
 <span class="fu"><a href="../reference/disconnectDB.html">disconnectDB</a></span><span class="op">(</span><span class="va">dbToken</span><span class="op">)</span></code></pre></div>
 </div>
@@ -128,7 +128,7 @@ database when leaving the app.</p>
 <h2 id="sidebar-menu">Sidebar Menu<a class="anchor" aria-label="anchor" href="#sidebar-menu"></a>
 </h2>
 <p><strong>Select Study Start Date Range:</strong><br>
-User can select date range from the calender input.<br><strong>Select Study Design:</strong><br>
+User can select date range from the calendar input.<br><strong>Select Study Design:</strong><br>
 User can select study design type from drop down menu.<br><strong>Select Route of Administration:</strong><br>
 User can select one or multiple route of administration from list that
 extracted from database.<br><strong>Select Species:</strong><br>
