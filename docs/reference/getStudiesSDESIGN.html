@@ -90,47 +90,34 @@ rows for the TSPARMCD 'SDESIGN' are returned.</p>
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory.<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
-
-
 <dt>studyList</dt>
 <dd><p>Optional, data.table.<br>
 A table with the list of studies to process. If empty, all studies in
 the data base are processed<br>
 The table must include at least a column named 'STUDYID'</p></dd>
-
-
 <dt>studyDesignFilter</dt>
 <dd><p>Mandatory, character. The study design to use as
 criterion for filtering of the study id values. It can be a single string,
 a vector or a list of multiple strings.</p></dd>
-
-
 <dt>exclusively</dt>
 <dd><p>Mandatory, boolean.</p><ul><li><p>TRUE: Include studies only for studies with no other study
 design(s) than included in <code>studyDesignFilter</code>.</p></li>
 <li><p>FALSE: Include all studies with study design matching
 <code>studyDesignFilter</code>.</p></li>
 </ul></dd>
-
-
 <dt>inclUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Indicates whether study ids with SDESIGN value which are is missing or wrong
 shall be included or not in the output data table.</p></dd>
-
-
 <dt>noFilterReportUncertain</dt>
 <dd><p>Mandatory, boolean<br>
 Only relevant if the <code>studyDesignFilter</code> is empty.<br>
 Indicates if the reason should be included if the SDESIGN cannot be
 confidently decided for an animal.</p></dd>
-
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>The function returns a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
+    <p>The function returns a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
 <li><p>Additional columns contained in the <code>studyList</code> table (if such
 an input table is given)</p></li>
 <li><p>SDESIGN       (character)<br>
@@ -188,7 +175,7 @@ column UNCERTAIN_MSG):</p><ul><li><p>without any row for TSPARMCD='SDESIGN' or</
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer></div>

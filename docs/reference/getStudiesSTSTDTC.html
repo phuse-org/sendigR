@@ -91,44 +91,31 @@ If the <code>fromDTC</code> and<code>toDTC</code> are empty (null, na or empty s
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory.<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
-
-
 <dt>studyList</dt>
 <dd><p>Optional.<br>
 A data.table with the list of studies to process. If empty, all studies in
 the data base are processed <br>
 The table must include at least a column named 'STUDYID'.</p></dd>
-
-
 <dt>fromDTC</dt>
 <dd><p>Optional (either or both of <code>fromDTC</code> and <code>toDTC</code>
 must be filled).<br>
 The start of the date interval to extract - must be in ISO8601 date format.</p></dd>
-
-
 <dt>toDTC</dt>
 <dd><p>Optional (either or both of <code>fromDTC</code> and <code>toDTC</code> must be filled).<br>
 The end of the date interval to extract - must be in ISO8601 date format.</p></dd>
-
-
 <dt>inclUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Indicates whether study ids with STSTDTC which are are missing or wrong
 shall be included or not in the output data table.</p></dd>
-
-
 <dt>noFilterReportUncertain</dt>
 <dd><p>Mandatory, boolean<br>
 Only relevant if the <code>fromDTC</code> and<code>toDTC</code> are empty.<br>
 Indicates if the reason should be included if the STSTDTC cannot be
 confidently decided for an animal.</p></dd>
-
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>The function return a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
+    <p>The function return a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
 <li><p>Additional columns contained in the <code>studyList</code> table (if such an input
 table is given)</p></li>
 <li><p>STSTDTC       (character - ISO8601 format)</p></li>
@@ -200,7 +187,7 @@ UNCERTAIN_MSG):</p><ul><li><p>TS contains now row for TSPARMCD='STSTDTC'</p></li
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer></div>

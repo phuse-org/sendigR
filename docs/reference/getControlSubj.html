@@ -76,27 +76,20 @@ negative control in the given list of studies.<br></p>
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory.<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
-
-
 <dt>studyList</dt>
 <dd><p>Mandatory, data.table.<br>
 A table with a list of studies to limit the output to be within this
 set of studies.<br>
 The table must include a column named 'STUDYID'.</p></dd>
-
-
 <dt>inclUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Indicates whether animals, which cannot be identified as neither negative
 nor positive control (i.e. uncertain animals), shall be included or not in
 the output data table.</p></dd>
-
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>The function return a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
+    <p>The function return a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
 <li><p>Additional columns contained in the <code>studyList</code> table</p></li>
 <li><p>TCNTRL        (character)<br>
 The value of the TX parameter TCNTRL which is used for identification
@@ -171,7 +164,7 @@ Positive control according to the algorithm described above</p></li>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer></div>

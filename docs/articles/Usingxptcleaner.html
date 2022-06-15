@@ -102,23 +102,19 @@
 <div class="section level2">
 <h2 id="description-of-vignette">Description of Vignette<a class="anchor" aria-label="anchor" href="#description-of-vignette"></a>
 </h2>
-<p>Describes how to use the python package xptcleaner to apply JSON
-ontology terms to clean SEND xpt files.</p>
+<p>Describes how to use the python package xptcleaner to apply JSON ontology terms to clean SEND xpt files.</p>
 </div>
 <div class="section level2">
 <h2 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h2>
-<p>Before we are ready to use the functions in the package, we must
-ensure that a minimum of prerequisites are fulfilled.</p>
+<p>Before we are ready to use the functions in the package, we must ensure that a minimum of prerequisites are fulfilled.</p>
 <div class="section level3">
 <h3 id="xptcleaner-python-package-and-sendigr-r-package-installation">xptcleaner python package and sendigR R package installation<a class="anchor" aria-label="anchor" href="#xptcleaner-python-package-and-sendigr-r-package-installation"></a>
 </h3>
 <div class="section level4">
 <h4 id="python-and-r-installation">Python and R installation<a class="anchor" aria-label="anchor" href="#python-and-r-installation"></a>
 </h4>
-<p>R version 4.1.2 and above, Python 3.9.6 and above were the packages
-used to develop and test the code. Other versions can be used, but some
-issues may arise depending on versions.</p>
+<p>R version 4.1.2 and above, Python 3.9.6 and above were the packages used to develop and test the code. Other versions can be used, but some issues may arise depending on versions.</p>
 </div>
 <div class="section level4">
 <h4 id="xptcleaner-python-package-installation">xptcleaner python package installation<a class="anchor" aria-label="anchor" href="#xptcleaner-python-package-installation"></a>
@@ -126,37 +122,27 @@ issues may arise depending on versions.</p>
 <div class="section level5">
 <h5 id="using-pip">Using pip<a class="anchor" aria-label="anchor" href="#using-pip"></a>
 </h5>
-<p>Probably the easiest way: from your conda, virtualenv or just base
-installation do:</p>
+<p>Probably the easiest way: from your conda, virtualenv or just base installation do:</p>
 <pre><code>pip install xptcleaner</code></pre>
-<p>If you are running on a machine without admin rights, and you want to
-install against your base installation you can do:</p>
+<p>If you are running on a machine without admin rights, and you want to install against your base installation you can do:</p>
 <pre><code>pip install xptcleaner --user</code></pre>
 </div>
 <div class="section level5">
 <h5 id="using-source-archive-or-using-wheel-file-">Using source archive or using wheel file.<a class="anchor" aria-label="anchor" href="#using-source-archive-or-using-wheel-file-"></a>
 </h5>
-<p>In addtional to install from Python Package Index(PyPI), the source
-archive and the wheel archive can also be used for installation.</p>
-<p>The source archive and the wheel for xptcleaner can be obtained from
-sendigR Github <a href="https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner/dist" class="external-link">sendigR-
-xptcleaner</a></p>
+<p>In addtional to install from Python Package Index(PyPI), the source archive and the wheel archive can also be used for installation.</p>
+<p>The source archive and the wheel for xptcleaner can be obtained from sendigR Github <a href="https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner/dist" class="external-link">sendigR- xptcleaner</a></p>
 <ul>
-<li>Using source archive: Using the below shell command to install the
-xptcleaner package, assume that the source archive is under ‘dist’ sub
-folder. Replace {version} with the correct version number,
-e.g. 1.0.0.</li>
+<li>Using source archive: Using the below shell command to install the xptcleaner package, assume that the source archive is under ‘dist’ sub folder. Replace {version} with the correct version number, e.g. 1.0.0.</li>
 </ul>
 <pre><code>$ py -m pip install ./dist/xptcleaner-{version}.tar.gz
 </code></pre>
 <ul>
-<li>Using wheel: Using the below shell command to install the xptcleaner
-package, assume that the wheel file is under ‘dist’ sub folder.</li>
+<li>Using wheel: Using the below shell command to install the xptcleaner package, assume that the wheel file is under ‘dist’ sub folder.</li>
 </ul>
 <pre><code>$ py -m pip install ./dist/xptcleaner-{version}-py3-none-any.whl
 </code></pre>
-<p>The following required python packages will be installed during the
-xptcleaner package installation:<br></p>
+<p>The following required python packages will be installed during the xptcleaner package installation:<br></p>
 <pre><code>* pandas
 
 * pyreadstat</code></pre>
@@ -165,24 +151,19 @@ xptcleaner package installation:<br></p>
 <div class="section level4">
 <h4 id="sendigr-r-package-installation">sendigR R package installation<a class="anchor" aria-label="anchor" href="#sendigr-r-package-installation"></a>
 </h4>
-<p>Install sendigR packages, refer to <a href="https://github.com/phuse-org/sendigR/blob/main/README.md" class="external-link">README</a>
-for more details.</p>
+<p>Install sendigR packages, refer to <a href="https://github.com/phuse-org/sendigR/blob/main/README.md" class="external-link">README</a> for more details.</p>
 <pre><code><span class="co"># Get CRAN version</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"sendigR"</span><span class="op">)</span>
 <span class="co"># Or the development version from GitHub:</span>
 <span class="co"># install.packages("devtools")</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/devtools/man/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">'phuse-org/sendigR'</span><span class="op">)</span></code></pre>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">'phuse-org/sendigR'</span><span class="op">)</span></code></pre>
 </div>
 </div>
 <div class="section level3">
 <h3 id="locating-the-scripts">Locating the scripts<a class="anchor" aria-label="anchor" href="#locating-the-scripts"></a>
 </h3>
-<p>sendigR is located at: <a href="https://github.com/phuse-org/sendigR/" class="external-link uri">https://github.com/phuse-org/sendigR/</a><br> The
-importStudies.R script is located at: <a href="https://github.com/phuse-org/sendigR/importStudies.R" class="external-link uri">https://github.com/phuse-org/sendigR/importStudies.R</a><br>
-The Python code to generate a JSON file for the XPT cleanup is located
-at: <a href="https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner" class="external-link uri">https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner</a><br></p>
-<p>The sample CDISC CT file and the extensible CT file are located under
-the ‘data-raw’ subfolder of the sendigR package.</p>
+<p>sendigR is located at: <a href="https://github.com/phuse-org/sendigR/" class="external-link uri">https://github.com/phuse-org/sendigR/</a><br> The importStudies.R script is located at: <a href="https://github.com/phuse-org/sendigR/importStudies.R" class="external-link uri">https://github.com/phuse-org/sendigR/importStudies.R</a><br> The Python code to generate a JSON file for the XPT cleanup is located at: <a href="https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner" class="external-link uri">https://github.com/phuse-org/sendigR/tree/main/python/xptcleaner</a><br></p>
+<p>The sample CDISC CT file and the extensible CT file are located under the ‘data-raw’ subfolder of the sendigR package.</p>
 </div>
 </div>
 <div class="section level2">
@@ -235,7 +216,7 @@ the ‘data-raw’ subfolder of the sendigR package.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer>
