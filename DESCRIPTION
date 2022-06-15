@@ -45,7 +45,6 @@ Imports:
     reticulate,
     plotly
 Suggests:
-    ROracle,
     sjlabelled,
     logr,
     knitr,
