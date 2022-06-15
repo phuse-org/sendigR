@@ -68,7 +68,14 @@
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/phuse-org/sendigR/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -85,7 +92,7 @@
             
             <h4 data-toc-skip class="date">2022-06-15</h4>
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/phuse-org/sendigR/blob/HEAD/vignettes/SendDashboard.Rmd" class="external-link"><code>vignettes/SendDashboard.Rmd</code></a></small>
       <div class="hidden name"><code>SendDashboard.Rmd</code></div>
 
     </div>
@@ -118,7 +125,7 @@ control data in a SEND database.</p>
 <p>Connect to the database and start the app. Remember to disconnect
 from database when leaving the app.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">sendigR</span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/phuse-org/sendigR" class="external-link">sendigR</a></span><span class="op">)</span>
 <span class="va">dbToken</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/initEnvironment.html">initEnvironment</a></span><span class="op">(</span>dbType<span class="op">=</span><span class="st">'sqlite'</span>, dbPath<span class="op">=</span><span class="st">'/path/to/db/send.db'</span><span class="op">)</span>
 <span class="fu"><a href="../reference/execSendDashboard.html">execSendDashboard</a></span><span class="op">(</span><span class="va">dbToken</span><span class="op">)</span>
 <span class="fu"><a href="../reference/disconnectDB.html">disconnectDB</a></span><span class="op">(</span><span class="va">dbToken</span><span class="op">)</span></code></pre></div>
