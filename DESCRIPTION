@@ -18,6 +18,8 @@ Description: A set of functions to extract and filter study data for control ani
     studies. These data types are supported: Body Weights, Laboratory test results 
     and Microscopic findings. These database types are supported: SQLite and Oracle.
 License: MIT + file LICENSE
+URL: https://github.com/phuse-org/sendigR
+BugReports: https://github.com/phuse-org/sendigR/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
