@@ -39,7 +39,7 @@ Before we are ready to use the functions in the package, we must ensure that a m
 
 ## Package dependencies 
 
-Beside the required packages listed in the Imports section of [DESCRIPTION](../DESCRIPTION), one or more additional package(s) must be installed:
+Beside the required packages listed in the Imports section of [DESCRIPTION](https://github.com/phuse-org/sendigR/blob/main/DESCRIPTION), one or more additional package(s) must be installed:
 
 * If the SEND databases is stored in an Oracle database:
     * _ROracle_
