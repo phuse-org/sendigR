@@ -22,3 +22,4 @@
 ^pkgdown$
 ^website_files$
 ^x\.ignore_files$
+^\.github$
