@@ -75,8 +75,8 @@ Before any use of the package's function, a database must be opened and the data
 
 | Function | Description |
 |-|------------|
-| [initEnvironment](reference/initEnvironment.html) |	Initialize the environment. It must be executed as the absolute first function before any other package functions. It opens an existing or create a new empty database and returns a handle to the database, which must be used in all following function calls. |
-| [disconnectDB](reference/disconnectDB.html)       | Close the open database. It must be called as the absolute last function in a session. |   
+| [initEnvironment](../reference/initEnvironment.html) |	Initialize the environment. It must be executed as the absolute first function before any other package functions. It opens an existing or create a new empty database and returns a handle to the database, which must be used in all following function calls. |
+| [disconnectDB](../reference/disconnectDB.html)       | Close the open database. It must be called as the absolute last function in a session. |   
 
 The call of `initEnvironment` returns a handle with a reference to the open database and pointers to low level functions accessing the specific type of database. This handle must be given as the first input parameter in the execution of all other function in the package.
 It is possible to open and access multiple databases - also of different types - in the same R session. Just execute `initEnvironment` for each relevant database and save the returned db handles in each distinct variable.

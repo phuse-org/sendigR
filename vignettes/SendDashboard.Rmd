@@ -23,7 +23,7 @@ The sendigR package contains an encapsulated Shiny app - SendDashboard. The app 
 
 | Function | Description |
 |-|------------|
-| [execSendDashboard](reference/execSendDashboard.html) |Starts the SendDashboard app | 
+| [execSendDashboard](../reference/execSendDashboard.html) |Starts the SendDashboard app | 
 
 
 ### Example 
