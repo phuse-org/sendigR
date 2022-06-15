@@ -141,7 +141,7 @@ guide <- cicerone::Cicerone$new()$step(
 )$step(
 	el = "STSTDTC",
 	title = "Date Range", 
-	description = "Choose the date range that you want to include for control animal"
+	description = "Choose the date range that you want to include for control animal."
 )$step(
 	"SDESIGN-label",
 	"Study Design",
@@ -150,32 +150,31 @@ guide <- cicerone::Cicerone$new()$step(
 )$step(
 	"ROUTE",
 	"Route of Administration",
-	"You can select multiple route of administration from drop-down list.
-	All availbale route of administraion will be included if kept blank"
+	"You can select multiple route of administration from drop-down list. 
+	All availbale route of administraion will be included if kept blank."
 )$step(
 	"SPECIES-label",
 	"Species",
 	"You can select multiple species from drop-down list.
-	All availbale species will be included if kept blank"
+	All availbale species will be included if kept blank."
 )$step(
 	"STRAIN-label",
 	"Strain",
 	"You can select multiple strain from drop-down list.
 	All availbale strain will be included if kept blank. Available strain list will
-	depends on what species you selected in previous step"
+	depends on what species you selected in previous step."
 )$step(
 	"SEX-label",
-	"Route of Administration",
-	"You can select multiple route of administration from drop-down list.
-	All availbale route of administraion will be included if kept blank"
+	"SEX",
+	"You can select animal sex from drop-down list."
 )$step(
 	"INCL_UNCERTAIN",
 	"Whether to include uncertain control animal",
-	"Check this box if you want to include uncertain control animal"
+	"Check this box if you want to include uncertain control animal."
 )$step(
 	"refreshData",
 	"Extract Control Animal",
-	"Depending on filtering criteria you provided, this will extract all the control animal from the database"
+	"Depending on filtering criteria you provided, this will extract all the control animal from the database."
 )$step(
 	"refreshData_02",
 	"same as before",
@@ -205,6 +204,7 @@ guide <- cicerone::Cicerone$new()$step(
 
 ##### Date Range, Design, Route, Species, Strain, Sex, Uncertain ----
                 htmltools::br(),
+				shiny::actionButton("tour", "want a tour?"),
                 shiny::actionButton("refreshData_02", "Generate/Update Data"
                 #   style = "background-color:#FFFFFF;
                 #   color:#E31616;
@@ -523,7 +523,11 @@ guide <- cicerone::Cicerone$new()$step(
 
   server <- function(input, output, session) {
 
-	  guide$init()$start()
+      shiny::observeEvent(input$tour, {
+		  guide$init()$start()
+
+	  })
+	  
     # This is the logic for changing
     # the STRAIN based ON changes SPECIES
     shiny::observeEvent(input$SPECIES, {
