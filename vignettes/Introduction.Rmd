@@ -46,8 +46,7 @@ Beside the required packages listed in the Imports section of [DESCRIPTION](http
 * If a SEND database are to be build using this package's functions
     * _SASxport_
     * _sjlabelled_
-* If the sendDashboard app is to be executed:
-    * TO BE ADDED
+
 
 ## Database
 
