@@ -45,7 +45,13 @@ for function dbImportOneStudy."><meta property="og:image" content="/logo.png"><!
       <a href="../articles/Usingxptcleaner.html">Using xptcleaner</a>
     </li>
   </ul></li>
-      </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
+      </ul><ul class="nav navbar-nav navbar-right"><li>
+  <a href="https://github.com/phuse-org/sendigR/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
@@ -56,7 +62,7 @@ for function dbImportOneStudy."><meta property="og:image" content="/logo.png"><!
     <div class="page-header">
     <h1>Import SEND study data in SAS xport format into a SEND database from a
 hierarchy study folders.</h1>
-    
+    <small class="dont-index">Source: <a href="https://github.com/phuse-org/sendigR/blob/HEAD/R/populateDBFunctions.R" class="external-link"><code>R/populateDBFunctions.R</code></a></small>
     <div class="hidden name"><code>dbImportStudies.Rd</code></div>
     </div>
 
@@ -82,34 +88,24 @@ for function <a href="dbImportOneStudy.html">dbImportOneStudy</a>.</p>
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
-
-
 <dt>xptPathRoot</dt>
 <dd><p>Mandatory, character<br>
 Root location of a set of sub folders - each sub folder with a if SAS xport
 files per study to import.<br>
 The folder tree is traversed recursively - i.e. a multilevel folder
 hierarchy is allowed.</p></dd>
-
-
 <dt>overWrite</dt>
 <dd><p>Mandatory, boolean<br>
 Whether an already existing study in the database may be overwritten by
 newly imported data.</p></dd>
-
-
 <dt>checkRequiredVars</dt>
 <dd><p>Mandatory, boolean<br>
 Whether not-required domains are checked for existence and content of
 required variables</p></dd>
-
-
 <dt>verbose</dt>
 <dd><p>Mandatory, boolean<br>
 Whether the status of the import shall be continuously written to the
 console for for each processed sub folder.</p></dd>
-
-
 <dt>logFilePath</dt>
 <dd><p>Optional, character<br>
 A path to a folder to contain a log file with the status of the import for
@@ -118,17 +114,11 @@ The name of the log file is <code>logFilePath/dbImportStudies_&lt;date &amp;
   time&gt;.log</code> where <code>&lt;date &amp; time&gt;</code> is the actual date and time in format
 <code>YYYYmmdd_HH24MISS</code> - e.g. <code>dbImportStudies_20210323_084150.log</code>
 if the function was called 23. March 2021 at 8:41:50</p></dd>
-
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A list containing a named element with the the import status for each
-of the processed sub folders.<br></p>
-
-
-<p>Each of the statuses are one of three variants:</p><ul><li><p>'OK' - the SAS xport files has been imported to the database with
+    <p>A list containing a named element with the the import status for each
+of the processed sub folders.<br>Each of the statuses are one of three variants:</p><ul><li><p>'OK' - the SAS xport files has been imported to the database with
 no errors or warnings</p></li>
 <li><p>'Warning: [list of warnings]' - the SAS xport files has been
 imported to the database but have one or more warnings</p></li>
@@ -177,7 +167,7 @@ supported by this function.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer></div>

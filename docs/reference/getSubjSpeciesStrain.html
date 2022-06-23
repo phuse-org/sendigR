@@ -48,7 +48,13 @@ populated SPECIES and STRAIN columns."><meta property="og:image" content="/logo.
       <a href="../articles/Usingxptcleaner.html">Using xptcleaner</a>
     </li>
   </ul></li>
-      </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
+      </ul><ul class="nav navbar-nav navbar-right"><li>
+  <a href="https://github.com/phuse-org/sendigR/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
@@ -59,7 +65,7 @@ populated SPECIES and STRAIN columns."><meta property="og:image" content="/logo.
     <div class="page-header">
     <h1>Extract the set of animals of the specified species and strain - or just add
 the species and strain for each animal.</h1>
-    
+    <small class="dont-index">Source: <a href="https://github.com/phuse-org/sendigR/blob/HEAD/R/getSubjSpeciesStrain.R" class="external-link"><code>R/getSubjSpeciesStrain.R</code></a></small>
     <div class="hidden name"><code>getSubjSpeciesStrain.Rd</code></div>
     </div>
 
@@ -89,21 +95,15 @@ populated SPECIES and STRAIN columns.</p>
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
-
-
 <dt>animalList</dt>
 <dd><p>Mandatory, data.table.<br>
 A table with the list of animals to process.<br>
 The table must include at least columns named 'STUDYID' and 'USUBJID'.</p></dd>
-
-
 <dt>speciesFilter</dt>
 <dd><p>Optional, character.<br>
 The species value(s) to use as criterion for filtering of the input data
 table.<br>
 It can be a single string, a vector or a list of multiple strings.</p></dd>
-
-
 <dt>strainFilter</dt>
 <dd><p>Optional, character.<br>
 The strain value(s) to use as criterion for filtering of the input data
@@ -115,14 +115,10 @@ When multiple values are specified for <code>speciesFilter</code>, each strain
 value must be prefixed by species and ':' , e.g.
 <code>c('RAT:WISTAR','DOG: BEAGLE')</code>.<br>
 There may be included any number of blanks after ':'</p></dd>
-
-
 <dt>inclUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Indicates whether animals for which the species or strain cannot be
 confidently identified shall be included or not in the output data table.</p></dd>
-
-
 <dt>exclusively</dt>
 <dd><p>Mandatory, boolean.</p><ul><li><p>TRUE: Include animals only for studies with no other species and
 optional strains then included in <code>speciesFilter</code> and
@@ -130,21 +126,16 @@ optional strains then included in <code>speciesFilter</code> and
 <li><p>FALSE: Include animals for all studies with species and strain
 matching <code>speciesFilter</code> and <code>strainFilter</code> respectively.</p></li>
 </ul></dd>
-
-
 <dt>noFilterReportUncertain</dt>
 <dd><p>Optional, boolean.<br>
 Only relevant if the <code>speciesFilter</code> and  <code>strainFilter</code> are
 empty.<br>
 Indicates if the reason should be included if the species or strain cannot
 be confidently decided for an animal.</p></dd>
-
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>The function returns a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
+    <p>The function returns a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
 <li><p>Additional columns contained in the <code>animalList</code> table</p></li>
 <li><p>SPECIES       (character)
 The value is always returned in uppercase and trimmed for leading/trailing
@@ -215,7 +206,7 @@ and TX parameter SPECIES/STRAIN and DM.SPECIES/STRAIN are unequal.</p></li>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer></div>

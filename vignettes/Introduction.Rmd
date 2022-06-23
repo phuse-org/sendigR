@@ -39,15 +39,14 @@ Before we are ready to use the functions in the package, we must ensure that a m
 
 ## Package dependencies 
 
-Beside the required packages listed in the Imports section of [DESCRIPTION](../DESCRIPTION), one or more additional package(s) must be installed:
+Beside the required packages listed in the Imports section of [DESCRIPTION](https://github.com/phuse-org/sendigR/blob/main/DESCRIPTION), one or more additional package(s) must be installed:
 
 * If the SEND databases is stored in an Oracle database:
     * _ROracle_
 * If a SEND database are to be build using this package's functions
     * _SASxport_
     * _sjlabelled_
-* If the sendDashboard app is to be executed:
-    * TO BE ADDED
+
 
 ## Database
 
@@ -75,8 +74,8 @@ Before any use of the package's function, a database must be opened and the data
 
 | Function | Description |
 |-|------------|
-| [initEnvironment](../html/initEnvironment.html) |	Initialize the environment. It must be executed as the absolute first function before any other package functions. It opens an existing or create a new empty database and returns a handle to the database, which must be used in all following function calls. |
-| [disconnectDB](../html/disconnectDB.html)       | Close the open database. It must be called as the absolute last function in a session. |   
+| [initEnvironment](../reference/initEnvironment.html) |	Initialize the environment. It must be executed as the absolute first function before any other package functions. It opens an existing or create a new empty database and returns a handle to the database, which must be used in all following function calls. |
+| [disconnectDB](../reference/disconnectDB.html)       | Close the open database. It must be called as the absolute last function in a session. |   
 
 The call of `initEnvironment` returns a handle with a reference to the open database and pointers to low level functions accessing the specific type of database. This handle must be given as the first input parameter in the execution of all other function in the package.
 It is possible to open and access multiple databases - also of different types - in the same R session. Just execute `initEnvironment` for each relevant database and save the returned db handles in each distinct variable.
@@ -89,11 +88,11 @@ It is possible to build an SQLite database with SEND data imported from a set of
 
 | Function | Description |
 |-|------------|
-| [dbCreateSchema](../html/dbCreateSchema.html)     | Create a SEND schema, i.e. all the tables to represent the domains documented in SEND IG, in an open and empty database|
-| [dbCreateIndexes](../html/dbCreateIndexes.html)   | Create a set of indexes on the tables in a  SEND database to optimize performance of extraction of data|   
-| [dbImportOneStudy](../html/dbImportOneStudy.html) | Import SEND study data in SAS xport format into a SEND database from a single study folder|   
-| [dbImportStudies](../html/dbImportStudies.html)   | Import SEND study data in SAS xport format into a SEND database from a hierarchy study folders|   
-| [dbDeleteStudies](../html/dbDeleteStudies.html)   | Delete one or more studies in SEND database|   
+| [dbCreateSchema](../reference/dbCreateSchema.html)     | Create a SEND schema, i.e. all the tables to represent the domains documented in SEND IG, in an open and empty database|
+| [dbCreateIndexes](../reference/dbCreateIndexes.html)   | Create a set of indexes on the tables in a  SEND database to optimize performance of extraction of data|   
+| [dbImportOneStudy](../reference/dbImportOneStudy.html) | Import SEND study data in SAS xport format into a SEND database from a single study folder|   
+| [dbImportStudies](../reference/dbImportStudies.html)   | Import SEND study data in SAS xport format into a SEND database from a hierarchy study folders|   
+| [dbDeleteStudies](../reference/dbDeleteStudies.html)   | Delete one or more studies in SEND database|   
 
 It should be possible to import data into an existing SQLite SEND database using `dbImportOneStudy` and `dbImportStudies`, even though the tables are not created by `dbCreateSchema`. 
 It is possible to delete studies in any SQLite SEND database `dbDeleteStudies` - whether or not the tables are created by `dbCreateSchema`. 
@@ -194,18 +193,18 @@ The complete list of functions:
 
 | Function | Description |
 |-|------------|
-| [genericQuery](../html/genericQuery.html)                 | Execute database query and returns fetched rows |
-| [getStudiesSDESIGN](../html/getStudiesSDESIGN.html)       | Extract a list of SEND studies with a specified study design |
-| [getStudiesSTSTDTC](../html/getStudiesSTSTDTC.html)       | Extract a list of SEND studies with study start date within a specified interval|
-| [getControlSubj](../html/getControlSubj.html)             | Extract a list of control animals for a list of studies|
-| [getSubjRoute](../html/getSubjRoute.html)                 | Extract the set of animals of the specified route of administration - or just add actual route of administration for each animal.|
-| [getSubjSpeciesStrain](../html/getSubjSpeciesStrain.html) | Extract the set of animals of the specified species and strain - or just add the species and strain for each animal.|
-| [getSubjSex](../html/getSubjSex.html)                     | Extract the set of animals of the specified sex - or just add the sex of each animal.|
-| [getSubjData](../html/getSubjData.html)                   | Extract data from a subject level domain.|
-| [getFindingsPhase](../html/getFindingsPhase.html)         | Extract a set of findings for a specified study phase - or just add phase for each animal|
-| [getFindingsSubjAge](../html/getFindingsSubjAge.html)     | Add the subject age at finding time - and optionally extract the set of findings within a specified range of ages| 
-| [gen_vocab](../html/gen_vocab.html)                       | Create json file for vocabulary mappings|
-| [standardize_file](../html/standardize_file.html)         | Standardizes SEND xpt files using CDISC controlled terminologies|  
+| [genericQuery](../reference/genericQuery.html)                 | Execute database query and returns fetched rows |
+| [getStudiesSDESIGN](../reference/getStudiesSDESIGN.html)       | Extract a list of SEND studies with a specified study design |
+| [getStudiesSTSTDTC](../reference/getStudiesSTSTDTC.html)       | Extract a list of SEND studies with study start date within a specified interval|
+| [getControlSubj](../reference/getControlSubj.html)             | Extract a list of control animals for a list of studies|
+| [getSubjRoute](../reference/getSubjRoute.html)                 | Extract the set of animals of the specified route of administration - or just add actual route of administration for each animal.|
+| [getSubjSpeciesStrain](../reference/getSubjSpeciesStrain.html) | Extract the set of animals of the specified species and strain - or just add the species and strain for each animal.|
+| [getSubjSex](../reference/getSubjSex.html)                     | Extract the set of animals of the specified sex - or just add the sex of each animal.|
+| [getSubjData](../reference/getSubjData.html)                   | Extract data from a subject level domain.|
+| [getFindingsPhase](../reference/getFindingsPhase.html)         | Extract a set of findings for a specified study phase - or just add phase for each animal|
+| [getFindingsSubjAge](../reference/getFindingsSubjAge.html)     | Add the subject age at finding time - and optionally extract the set of findings within a specified range of ages| 
+| [gen_vocab](../reference/gen_vocab.html)                       | Create json file for vocabulary mappings|
+| [standardize_file](../reference/standardize_file.html)         | Standardizes SEND xpt files using CDISC controlled terminologies|  
 
 All the functions have an input parameter called `inclUncertain`, default value is `FALSE`.  
 If a function which is doing any kind of filtering is executed with:
@@ -301,7 +300,7 @@ The sendigR package contains an encapsulated Shiny app - SendDashboard. The app 
 
 | Function | Description |
 |-|------------|
-| [execSendDashboard](../html/execSendDashboard.html) |Starts the SendDashboard app | 
+| [execSendDashboard](../reference/execSendDashboard.html) |Starts the SendDashboard app | 
 
 The [SendDashboard](SendDashboard.html)
 
@@ -310,6 +309,7 @@ The [SendDashboard](SendDashboard.html)
 Connect to the database, start the app.
 Remember to disconnect from database when leaving the app.
 ```R
+library(sendigR)
 dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db')
 
 execSendDashboard(dbToken)

@@ -47,7 +47,13 @@ string), all rows from findings are returned."><meta property="og:image" content
       <a href="../articles/Usingxptcleaner.html">Using xptcleaner</a>
     </li>
   </ul></li>
-      </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
+      </ul><ul class="nav navbar-nav navbar-right"><li>
+  <a href="https://github.com/phuse-org/sendigR/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
@@ -58,7 +64,7 @@ string), all rows from findings are returned."><meta property="og:image" content
     <div class="page-header">
     <h1>Add the subject age at finding time - and optionally extract the set of
 findings within a specified range of age.</h1>
-    
+    <small class="dont-index">Source: <a href="https://github.com/phuse-org/sendigR/blob/HEAD/R/getFindingsSubjAge.R" class="external-link"><code>R/getFindingsSubjAge.R</code></a></small>
     <div class="hidden name"><code>getFindingsSubjAge.Rd</code></div>
     </div>
 
@@ -87,8 +93,6 @@ string), all rows from <code>findings</code> are returned.</p>
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
-
-
 <dt>findings</dt>
 <dd><p>Mandatory, data.table.<br>
 A table with the set of input finding rows to process.<br>
@@ -100,8 +104,6 @@ The table must include at least columns named</p><ul><li><p><code>STUDYID</code>
 <li><p><code>[domain]DTC</code></p></li>
 </ul><p>where <code>[domain]</code> is the name of the actual findings domain - e.g. <code>LBSEQ</code>, <code>LBDY</code>
 and <code>LBDTC</code></p></dd>
-
-
 <dt>animalList</dt>
 <dd><p>Mandatory, data.table.<br>
 A data with the set of animals included in the <code>findings</code> table
@@ -112,8 +114,6 @@ The data set must contain at least these columns returned by the function <a hre
 <li><p><code>DM_AGEDAYS</code></p></li>
 <li><p><code>NO_AGE_MSG</code></p></li>
 </ul></dd>
-
-
 <dt>fromAge</dt>
 <dd><p>Optional, character <br>
 The start of age interval to extract.<br>
@@ -123,33 +123,24 @@ Must be in a string in this format:<br><code>[value][age unit]</code> where <cod
 <li><p><code>y, year, years</code></p></li>
 </ul><p>The unit is case-insensitive, space(s) between age value and unit is
 allowed.</p></dd>
-
-
 <dt>toAge</dt>
 <dd><p>Optional. character <br>
 The start of age interval to extract.<br>
 Must be in a string in in the same format as described for <code>fromAge</code>.</p></dd>
-
-
 <dt>inclUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Only relevant if the <code>fromAge</code> and/or <code>toAge</code> is/are not empty.<br>
 Indicates whether finding rows for which the age at finding time cannot be
 confidently identified, shall be included or not in the output data table.</p></dd>
-
-
 <dt>noFilterReportUncertain</dt>
 <dd><p>Optional, boolean.<br>
 Only relevant if the <code>fromAge</code> and <code>toAge</code> are empty.<br>
 Indicates if the reason should be included if the age at finding time cannot
 be confidently decided for an animal.</p></dd>
-
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>The function returns a data.table with columns in this order:</p><ul><li><p>All columns contained in the <code>findings</code> input table (original
+    <p>The function returns a data.table with columns in this order:</p><ul><li><p>All columns contained in the <code>findings</code> input table (original
 order except optional <code>UNCERTAIN_MSG</code> and <code>NOT_VALID_MSG</code>)</p></li>
 <li><p><code>AGEDAYS</code>        (character)<br>
 The subject age at finding time calculated in days. Is <code>NA</code> if thge age
@@ -252,7 +243,7 @@ animals in a pool.</p></li>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer></div>

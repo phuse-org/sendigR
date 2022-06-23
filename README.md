@@ -56,6 +56,9 @@ devtools::install_github('phuse-org/sendigR')
 
 #### [Using the sendigR xptcleaner](https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html)
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/phuse-org/sendigR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/phuse-org/sendigR/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
 
 ## sendigR License
 

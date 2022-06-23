@@ -42,7 +42,13 @@ connection."><meta property="og:image" content="/logo.png"><!-- mathjax --><scri
       <a href="../articles/Usingxptcleaner.html">Using xptcleaner</a>
     </li>
   </ul></li>
-      </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
+      </ul><ul class="nav navbar-nav navbar-right"><li>
+  <a href="https://github.com/phuse-org/sendigR/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
@@ -52,7 +58,7 @@ connection."><meta property="og:image" content="/logo.png"><!-- mathjax --><scri
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Initialize the environment.</h1>
-    
+    <small class="dont-index">Source: <a href="https://github.com/phuse-org/sendigR/blob/HEAD/R/initSENDFunctions.R" class="external-link"><code>R/initSENDFunctions.R</code></a></small>
     <div class="hidden name"><code>initEnvironment.Rd</code></div>
     </div>
 
@@ -80,50 +86,35 @@ connection.</p>
 The type of database, valid values (case insensitive):</p><ul><li><p>'sqlite'</p></li>
 <li><p>'oracle'</p></li>
 </ul></dd>
-
-
 <dt>dbPath</dt>
 <dd><p>Mandatory, character<br>
 The path to the database (path to file or another kind of db reference)</p></dd>
-
-
 <dt>dbCreate</dt>
 <dd><p>Mandatory, boolean<br>
 If <code>TRUE</code>, a new database is to be created - this is only valid for
 <code>dbType</code> 'sqlite'</p></dd>
-
-
 <dt>dbUser</dt>
 <dd><p>Mandatory, character - if login credentials are required for the
 specific db type<br>
 The user name to be used for login to database.</p></dd>
-
-
 <dt>dbPwd</dt>
 <dd><p>Mandatory, character - if login credentials are required for the
 specific db type<br>
 The password to be used for login to database.</p></dd>
-
-
 <dt>dbSchema</dt>
 <dd><p>Optional, character<br>
 The table owner of the SEND table in the specific database.<br>
 This parameter is only relevant to specify if it is necessary to prefix
 table names with schema in SQL statements i the database.</p></dd>
-
-
 <dt>ctFile</dt>
 <dd><p>Optional, character.<br>
 Name (full path) of CDISC CT file in Excel xls format to be imported.
 Only relevant to use if another CDISC CT version than the version
 included in packages is wanted.<br></p></dd>
-
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>The function returns a token which is a data structure describing
+    <p>The function returns a token which is a data structure describing
 the open database connection. This token must be given as input parameter
 to all functions accessing the actual database.</p>
     </div>
@@ -179,7 +170,7 @@ time of the build of the current version of the package which is included.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
       </footer></div>

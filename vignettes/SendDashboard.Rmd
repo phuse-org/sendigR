@@ -23,15 +23,15 @@ The sendigR package contains an encapsulated Shiny app - SendDashboard. The app 
 
 | Function | Description |
 |-|------------|
-| [execSendDashboard](../html/execSendDashboard.html) |Starts the SendDashboard app | 
+| [execSendDashboard](../reference/execSendDashboard.html) |Starts the SendDashboard app | 
 
-The [SendDashboard](SendDashboard.html)
 
 ### Example 
 
-Connect to the database, start the app.
+Connect to the database and start the app.
 Remember to disconnect from database when leaving the app.
 ```R
+library(sendigR)
 dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db')
 execSendDashboard(dbToken)
 disconnectDB(dbToken)
@@ -40,7 +40,7 @@ disconnectDB(dbToken)
 ## Sidebar Menu
 
 __Select Study Start Date Range:__  
-User can select date range from the calender input.  
+User can select date range from the calendar input.  
 __Select Study Design:__  
 User can select study design type from drop down menu.  
 __Select Route of Administration:__      
