@@ -27,3 +27,4 @@
 ^\.github$
 ^app\.R$
 ^\.Rprofile$
+^\.vscode$
