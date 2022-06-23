@@ -262,7 +262,10 @@ guide <- cicerone::Cicerone$new()$step(
                                     #         font-weight:bold;
                                     #         font-size:18px;"
 											),
-                                            htmltools::br())
+                                            htmltools::br()),
+											shinydashboard::menuItem("Project links",
+											shinydashboard::menuSubItem(text = "GitHub Link", href = "https://github.com/phuse-org/sendigR"),
+											shinydashboard::menuSubItem(text = "Shiny App", href= "https://phuse-org.github.io/sendigR/articles/SendDashboard.html"))
 
       ),
 
