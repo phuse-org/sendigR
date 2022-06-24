@@ -43,7 +43,8 @@ Imports:
     Hmisc,
     haven,
     reticulate,
-    plotly
+    plotly,
+    cicerone
 Suggests:
     sjlabelled,
     logr,
