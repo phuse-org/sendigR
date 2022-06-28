@@ -285,6 +285,9 @@ guide <- cicerone::Cicerone$new()$step(
     # that particular domain.
 
     shinydashboard::dashboardBody(
+		#shinyjs
+		shinyjs::useShinyjs(),
+		shinyjs::runcodeUI(),
 		cicerone::use_cicerone(),
 
 	#   shiny::includeCSS("www/theme.css"),
@@ -1221,14 +1224,33 @@ select_cols <- c(
 
 output$lb_findings_filter  <- shiny::renderUI({
 	df <- lb_domain_data()
+	 df_lbspec <- unique(df[["LBSPEC"]])
+	 df_lbtestcd <- unique(df[["LBTESTCD"]])
       df_route <- unique(df[['ROUTE']])
       df_species <- unique(df[['SPECIES']])
       df_strain <- unique(df[['STRAIN']])
       df_sex <- unique(df[['SEX']])
-      shiny::fluidRow(addUIDep(shiny::selectizeInput("lb_route",
+      shiny::fluidRow(
+		  		  	shiny::selectInput("lb_spec",
+                                         "Select Organ Specimen:",
+                                         choices=df_lbspec
+                                        #  selected="",
+                                        #  multiple=FALSE
+                                        #  options=list(plugins=list('drag_drop','remove_button')
+                                        #  )
+										 ),
+					shiny::selectInput("lb_lbtestcd",
+                                         "Select Test Code:",
+                                         choices=df_lbtestcd
+                                        #  selected=df_lbtestcd
+                                        #  multiple=TRUE,
+                                        #  options=list(plugins=list('drag_drop','remove_button')
+                                        #  )
+										 ),
+		  			addUIDep(shiny::selectizeInput("lb_route",
                                          "Select Route:",
                                          choices=df_route,
-                                         selected=df_route,
+                                        #  selected=df_route,
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button')
                                          ))),
@@ -1256,14 +1278,33 @@ output$lb_findings_filter  <- shiny::renderUI({
 
 })
 
+	shiny::observeEvent(input$lb_spec, {
+		df <- lb_domain_data()
+		df <- df[LBSPEC %in% input$lb_spec,]
+		df_lbtestcd <- unique(df[["LBTESTCD"]])
+		shiny::updateSelectInput(session = session,
+		inputId = "lb_lbtestcd",
+		choices = df_lbtestcd)
 
+	})
+
+	shiny::observeEvent(input$lb_lbtestcd, {
+		df <- lb_domain_data()
+		df <- df[LBTESTCD %in% input$lb_lbtestcd,]
+		df_route <- unique(df[["ROUTE"]])
+		shiny::updateSelectInput(session = session,
+		inputId = "lb_route",
+		choices = df_route)
+
+	})
     # update species and strain when route selected
     shiny::observeEvent(input$lb_route, {
       df <- lb_domain_data()
       df <- df[ROUTE %in% input$lb_route, ]
       df_species <- unique(df[['SPECIES']])
       df_strain <- unique(df[['STRAIN']])
-      shiny::updateSelectizeInput(session = session, inputId = "lb_species", choices = df_species )
+      shiny::updateSelectizeInput(session = session,
+	   inputId = "lb_species", choices = df_species )
       shiny::updateSelectizeInput(session = session, inputId = "lb_strain", choices = df_strain)
     })
 
@@ -1286,6 +1327,7 @@ output$lb_findings_filter  <- shiny::renderUI({
     ## MI finding table after filter
     lb_finding_table_after_filter <- shiny::eventReactive(input$lb_finding_update, {
       df <- lb_domain_data()
+	  df <- df[LBSPEC %in% input$lb_spec & LBTESTCD %in% input$lb_lbtestcd]
       df <- df[ROUTE %in% input$lb_route & STRAIN %in% input$lb_strain & SPECIES %in% input$lb_species & SEX %in% input$lb_sex,]
       df
     })
@@ -1294,12 +1336,27 @@ output$lb_findings_filter  <- shiny::renderUI({
 
 get_lb_observation_count <- shiny::eventReactive(input$lb_finding_update,{
 	df <- lb_finding_table_after_filter()
+	df <- create_lb_cat_agg_table(df)
+	df <- df[!duplicated(LBSTRESC), .(LBSTRESC, count_col)]
 	df
 })
 
 output$lb_findingsTable  <- DT::renderDataTable({
 	df <- get_lb_observation_count()  
-	df
+	 tab <- DT::datatable(df,
+                           filter = list(position = 'top'),
+                           options = list(
+                             dom = "lfrtip",
+                             scrollY = TRUE,
+                             scrollX=TRUE,
+                             pageLength = 25,
+                            #  headerCallback= DT::JS(headerCallback),
+                             columnDefs = list(list(className = "dt-center", targets = "_all")),
+                             initComplete = DT::JS(
+                               "function(settings, json) {",
+                               "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+                               "}")))
+	tab
 })
 
 
@@ -1788,6 +1845,8 @@ output$lb_findingsTable  <- DT::renderDataTable({
             )
         }
     )
+
+	shinyjs::runcodeServer()
 
     # CLose connection to database at end of execution
     shiny::onSessionEnded(function() {
