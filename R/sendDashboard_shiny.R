@@ -437,7 +437,32 @@ guide <- cicerone::Cicerone$new()$step(
                                             download_csv_UI('download_LB_cat_agg'),
                                             htmltools::br(),htmltools::br(),
                                             download_rds_UI('download_LB_cat_agg_rds'),
-                                            htmltools::br(),htmltools::br())
+                                            htmltools::br(),htmltools::br()),
+							shiny::tabPanel("LB Observation",
+					shiny::fluidRow(
+						htmltools::br(),
+						shiny::column(width = 3, offset = 1,
+									
+									shiny::uiOutput('lb_findings_filter'),
+									shiny::actionButton('lb_finding_update', 'Generate/Update Table'
+
+					# 									style = "background-color:#FFFFFF;
+					# color:#E31616;
+					#                                     border-color:#BEBEBE;
+					#                                     border-style:solid;
+					#                                     border-width:1px;
+					#                                     border-radius:5%;
+					#                                     font-weight:bold;
+					#                                     font-size:14px;"
+														)),
+				shiny::column(width = 6, offset = 1,
+						DT::dataTableOutput("lb_findingsTable"),
+						htmltools::br(),htmltools::br(),
+						htmltools::br(),htmltools::br())))
+							# shiny::tabPanel("LB Observation Rate",
+							# shiny::uiOutput("lb_obs_rate_filter",
+							# htmltools::br(),
+							# DT::dataTableOutput("")))
 
                           )
                           ),
@@ -1152,8 +1177,138 @@ guide <- cicerone::Cicerone$new()$step(
     shiny::callModule(download_rds, id="download_LB_agg_rds",
                       data=LB_agg_table, filename="LB_Aggregate_Table")
 
+## domain data for LB categorical aggregation table
+
+lb_domain_data <- shiny::reactive({
+	 animal_list <- animalList()
+      lb_sub <- LB_subject()
+
+      domainData <- merge(animal_list, lb_sub,
+                          by = c('STUDYID', 'USUBJID'), allow.cartesian=TRUE)
+      domainData <- domainData[is.na(LBSTRESN), ]
+
+      grpByCols <- c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST', 'LBSTRESC')
+select_cols <- c(
+    "STUDYID",
+    "USUBJID",
+    "STSTDTC",
+    "SDESIGN",
+    "TCNTRL",
+    "RFSTDTC",
+    "DM_AGEDAYS",
+    "DSDECOD",
+    "DS_AGEDAYS",
+    "SEX",
+    "SPECIES",
+    "STRAIN",
+    "ROUTE",
+    "NO_AGE_MSG",
+    "LBSPEC",
+    "LBTESTCD",
+    "LBTEST",
+    "LBSTRESC",
+    "LBSTRESN"
+)
+      domainData <- domainData[LBSTRESC!="", ..select_cols]
+	  print(names(domainData))
+	  print(str(domainData))
+	  domainData
+
+})
+
+############## LB observation ----- 
+
+
+output$lb_findings_filter  <- shiny::renderUI({
+	df <- lb_domain_data()
+      df_route <- unique(df[['ROUTE']])
+      df_species <- unique(df[['SPECIES']])
+      df_strain <- unique(df[['STRAIN']])
+      df_sex <- unique(df[['SEX']])
+      shiny::fluidRow(addUIDep(shiny::selectizeInput("lb_route",
+                                         "Select Route:",
+                                         choices=df_route,
+                                         selected=df_route,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button')
+                                         ))),
+                      addUIDep(shiny::selectizeInput("lb_species",
+                                         "Select Species:",
+                                         df_species,
+                                         selected=df_species,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button'))
+                                         )),
+                      addUIDep( shiny::selectizeInput("lb_strain",
+                                         "Select Strain:",
+                                         df_strain,
+                                         selected=df_strain,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button'))
+                                         )),
+                      addUIDep(shiny::selectizeInput("lb_sex",
+                                         "Select Sex:",
+                                         df_sex,
+                                         selected=df_sex,
+                                         multiple=TRUE,
+                                         options=list(plugins=list('drag_drop','remove_button'))
+                                         )))
+
+})
+
+
+    # update species and strain when route selected
+    shiny::observeEvent(input$lb_route, {
+      df <- lb_domain_data()
+      df <- df[ROUTE %in% input$lb_route, ]
+      df_species <- unique(df[['SPECIES']])
+      df_strain <- unique(df[['STRAIN']])
+      shiny::updateSelectizeInput(session = session, inputId = "lb_species", choices = df_species )
+      shiny::updateSelectizeInput(session = session, inputId = "lb_strain", choices = df_strain)
+    })
+
+    # update strain when species selected
+    shiny::observeEvent(input$lb_species, {
+      df <- lb_domain_data()
+      df <- df[ROUTE %in% input$lb_route & SPECIES %in% input$lb_species, ]
+      df_strain <- unique(df[['STRAIN']])
+      shiny::updateSelectizeInput(session = session, inputId = "lb_strain", choices = df_strain)
+    })
+
+    shiny::observeEvent(input$lb_strain, {
+      df <- lb_domain_data()
+      df <- df[ROUTE %in% input$lb_route & SPECIES %in% input$lb_species & STRAIN %in% input$lb_strain, ]
+      df_sex <- unique(df[['SEX']])
+      shiny::updateSelectizeInput(session = session, inputId = "lb_sex", choices = df_sex)
+    })
+
+
+    ## MI finding table after filter
+    lb_finding_table_after_filter <- shiny::eventReactive(input$lb_finding_update, {
+      df <- lb_domain_data()
+      df <- df[ROUTE %in% input$lb_route & STRAIN %in% input$lb_strain & SPECIES %in% input$lb_species & SEX %in% input$lb_sex,]
+      df
+    })
+
+
+
+get_lb_observation_count <- shiny::eventReactive(input$lb_finding_update,{
+	df <- lb_finding_table_after_filter()
+	df
+})
+
+output$lb_findingsTable  <- DT::renderDataTable({
+	df <- get_lb_observation_count()  
+	df
+})
+
+
+
 
     ####### LB categorical agg table #####
+
+
+
 
     LB_cat_agg_table <- shiny::reactive({
       animal_list <- animalList()
@@ -1167,22 +1322,23 @@ guide <- cicerone::Cicerone$new()$step(
 
       domainData <- domainData[LBSTRESC!=""]
 
+
+
       # apply aggDomain function from sendDB_shiny.R file, this count Incidence
-      shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
-                                            includeUncertain=input$INCL_UNCERTAIN))
+    #   shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
+    #                                         includeUncertain=input$INCL_UNCERTAIN))
 
-      # find number of unique subject grouped by 'MISPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE'
-      tissueCounts <- domainData[, list(Animals.In.LBSPEC=length(unique(USUBJID))),
-                                 by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST')]
+     
+    #   tissueCounts <- domainData[, list(Animals.In.LBSPEC=length(unique(USUBJID))),
+    #                              by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST')]
 
-      # merge incidence count and unique subject number from tableData and tissueCount table
-      tableData <- merge(tableData, tissueCounts,
-                         by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST'))
-      # add Incidence variable, Divide number of incidence (N) by number of unique subject (Animal.In.MISPEC)
-      # then multiply by 100
-      tableData[, Incidence:=round(((N/Animals.In.LBSPEC)*100),2)]
-      tableData[, Animals.In.LBSPEC:=NULL]
-      return(tableData)
+   
+    #   tableData <- merge(tableData, tissueCounts,
+    #                      by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST'))
+     
+    #   tableData[, Incidence:=round(((N/Animals.In.LBSPEC)*100),2)]
+    #   tableData[, Animals.In.LBSPEC:=NULL]
+      domainData
     })
 
 
@@ -1219,6 +1375,7 @@ guide <- cicerone::Cicerone$new()$step(
                       data=LB_cat_agg_table, filename="LB_cat_Aggregate_Table")
     shiny::callModule(download_rds, id="download_LB_cat_agg_rds",
                       data=LB_cat_agg_table, filename="LB_cat_Aggregate_Table")
+#############
 
 
     ###### get BW individual records table ----
