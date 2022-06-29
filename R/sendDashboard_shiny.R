@@ -1210,7 +1210,7 @@ select_cols <- c(
     "LBTESTCD",
     "LBTEST",
     "LBSTRESC",
-    "LBSTRESN"
+    "LBCAT"
 )
       domainData <- domainData[LBSTRESC!="", ..select_cols]
 	  print(names(domainData))
@@ -1368,16 +1368,15 @@ output$lb_findingsTable  <- DT::renderDataTable({
 
 
     LB_cat_agg_table <- shiny::reactive({
-      animal_list <- animalList()
-      lb_sub <- LB_subject()
+      df <- lb_domain_data()
 
-      domainData <- merge(animal_list, lb_sub,
-                          by = c('STUDYID', 'USUBJID'), allow.cartesian=TRUE)
-      domainData <- domainData[is.na(LBSTRESN), ]
+    #   grpByCols <- c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST', 'LBSTRESC')
+	  group_by_cols <- c("SPECIES", "STRAIN", "SEX", "ROUTE", "LBSPEC",'LBCAT', "LBTESTCD")
 
-      grpByCols <- c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST', 'LBSTRESC')
+      df <- df[LBSTRESC!=""]
 
-      domainData <- domainData[LBSTRESC!=""]
+      get_table <- df %>% dplyr::group_by_at(group_by_cols) %>%
+	   dplyr::group_modify(~ create_lb_cat_agg_table_2(.x))
 
 
 
@@ -1395,7 +1394,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
      
     #   tableData[, Incidence:=round(((N/Animals.In.LBSPEC)*100),2)]
     #   tableData[, Animals.In.LBSPEC:=NULL]
-      domainData
+      get_table
     })
 
 
@@ -1405,11 +1404,9 @@ output$lb_findingsTable  <- DT::renderDataTable({
       tableData <- LB_cat_agg_table()
       tableData <- tableData %>%
         dplyr::mutate_if(is.character, as.factor)
-      # DT::formatPercentage() function applied later, function multiply Incidence by 100,
-      # so Incidence divide by 100 here
-      tableData$Incidence <- tableData$Incidence/100
+      
       # Associate table header with labels
-      headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
+    #   headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
                            filter = list(position = 'top'),
                            options = list(
@@ -1417,13 +1414,13 @@ output$lb_findingsTable  <- DT::renderDataTable({
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
-                             headerCallback= DT::JS(headerCallback),
+                            #  headerCallback= DT::JS(headerCallback),
                              columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
-      tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
+    #   tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
       tab
     })
 

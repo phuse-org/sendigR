@@ -475,6 +475,38 @@ create_lb_cat_agg_table <- function(dt) {
     dt
 }
 
+# create group by table
+create_lb_cat_agg_table_2 <- function(dt) {
+    dt$observation_count <- NA
+    possible_results <- unique(dt[["LBSTRESC"]])
+
+    for (result in possible_results) {
+        total_count <- 0
+        animal_usubj <- unique(dt[["USUBJID"]])
+        animal_count <- 0
+        for (animal in animal_usubj) {
+            animal_index <- which(dt$USUBJID == animal)
+
+            animal_observations <- dt[["LBSTRESC"]][animal_index]
+
+
+            for (observation in animal_observations) {
+                if (observation == result) {
+                    animal_count <- animal_count + 1 / length(animal_observations)
+                }
+            }
+            animal_count <- total_count + animal_count
+        }
+        animal_count <- round(animal_count / length(animal_usubj), digits = 3)
+
+
+
+        index_count <- which(dt$LBSTRESC == result)
+        dt[["observation_count"]][index_count] <- animal_count
+    }
+    dt
+}
+
 
 
 # calculate mean for interval 
