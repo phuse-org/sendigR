@@ -1337,16 +1337,30 @@ output$lb_findings_filter  <- shiny::renderUI({
 get_lb_observation_count <- shiny::eventReactive(input$lb_finding_update,{
 	df <- lb_finding_table_after_filter()
 	df <- create_lb_cat_agg_table(df)
-	df <- df[!duplicated(LBSTRESC), .(LBSTRESC, count_col)]
+	df <- df[!duplicated(LBSTRESC), .(LBSTRESC, Incidence)]
 	df
 })
 
 output$lb_findingsTable  <- DT::renderDataTable({
 	df <- get_lb_observation_count()  
 	 tab <- DT::datatable(df,
-                           filter = list(position = 'top'),
+	 						extensions = list("Buttons" = NULL),
+                        #    filter = list(position = 'top'),
                            options = list(
-                             dom = "lfrtip",
+                             dom = "lrtipB",
+							   buttons=list(list(
+            					extend = 'collection',
+								buttons = list(list(extend='csv',
+													filename = "LB categorical Incidence"),
+											list(extend='excel',
+													filename = "LB categorical Incidence"),
+											list(extend='pdf',
+													pageSize = 'A4',
+													orientation = 'landscape',
+													filename= "LB categorical Incidence")),
+								text = 'Download'
+							)),
+
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
@@ -1356,6 +1370,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}")))
+		tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
 	tab
 })
 
@@ -1377,6 +1392,13 @@ output$lb_findingsTable  <- DT::renderDataTable({
 
       get_table <- df %>% dplyr::group_by_at(group_by_cols) %>%
 	   dplyr::group_modify(~ create_lb_cat_agg_table_2(.x))
+
+	   get_table_col <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX","LBCAT" ,"LBTESTCD","LBTEST","LBSTRESC", "Incidence")
+	get_table <- data.table::as.data.table(get_table)
+	
+	   
+	   get_table <- get_table[, ..get_table_col]
+	   get_table <- get_table[!duplicated(get_table)]
 
 
 
@@ -1406,21 +1428,29 @@ output$lb_findingsTable  <- DT::renderDataTable({
         dplyr::mutate_if(is.character, as.factor)
       
       # Associate table header with labels
-    #   headerCallback <- tooltipCallback(tooltip_list = getTabColLabels(tableData))
+      headerCallback <- tooltipCallback_agg(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
+	  				rownames = FALSE,
+					  class = "cell-border stripe",
                            filter = list(position = 'top'),
                            options = list(
                              dom = "lfrtip",
                              scrollY = TRUE,
                              scrollX=TRUE,
                              pageLength = 25,
-                            #  headerCallback= DT::JS(headerCallback),
+                             headerCallback= DT::JS(headerCallback),
                              columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-                               "}")))
-    #   tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
+                               "}"),
+							  rowsGroup = list(0,1,2,3,4,5,6,7)))
+      tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
+	  path <- dt_extension
+    dep <- htmltools::htmlDependency(
+      "RowsGroup", "2.0.0",
+      path, script = "dataTables.rowsGroup.js")
+    tab$dependencies <- c(tab$dependencies, list(dep))
       tab
     })
 

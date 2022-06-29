@@ -446,7 +446,7 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
 
 create_lb_cat_agg_table <- function(dt) {
     dt[, result_col := character()]
-    dt[, count_col := double()]
+    dt[, Incidence := double()]
     possible_results <- unique(dt[["LBSTRESC"]])
 
     for (result in possible_results) {
@@ -470,14 +470,14 @@ create_lb_cat_agg_table <- function(dt) {
 
         # print(paste0(result, ": ", animal_count))
         dt[LBSTRESC == result, result_col := result]
-        dt[LBSTRESC == result, count_col := animal_count]
+        dt[LBSTRESC == result, Incidence := animal_count]
     }
     dt
 }
 
 # create group by table
 create_lb_cat_agg_table_2 <- function(dt) {
-    dt$observation_count <- NA
+    dt$Incidence <- NA
     possible_results <- unique(dt[["LBSTRESC"]])
 
     for (result in possible_results) {
@@ -502,7 +502,7 @@ create_lb_cat_agg_table_2 <- function(dt) {
 
 
         index_count <- which(dt$LBSTRESC == result)
-        dt[["observation_count"]][index_count] <- animal_count
+        dt[["Incidence"]][index_count] <- animal_count
     }
     dt
 }
