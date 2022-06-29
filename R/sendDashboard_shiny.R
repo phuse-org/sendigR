@@ -285,9 +285,7 @@ guide <- cicerone::Cicerone$new()$step(
     # that particular domain.
 
     shinydashboard::dashboardBody(
-		#shinyjs
-		shinyjs::useShinyjs(),
-		shinyjs::runcodeUI(),
+
 		cicerone::use_cicerone(),
 
 	#   shiny::includeCSS("www/theme.css"),
@@ -1873,7 +1871,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
         }
     )
 
-	shinyjs::runcodeServer()
+
 
     # CLose connection to database at end of execution
     shiny::onSessionEnded(function() {
