@@ -90,7 +90,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Using xptcleaner</h1>
             
-            <h4 data-toc-skip class="date">2022-06-24</h4>
+            <h4 data-toc-skip class="date">2022-06-29</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/phuse-org/sendigR/blob/HEAD/vignettes/Usingxptcleaner.Rmd" class="external-link"><code>vignettes/Usingxptcleaner.Rmd</code></a></small>
       <div class="hidden name"><code>Usingxptcleaner.Rmd</code></div>
@@ -152,11 +152,11 @@
 <h4 id="sendigr-r-package-installation">sendigR R package installation<a class="anchor" aria-label="anchor" href="#sendigr-r-package-installation"></a>
 </h4>
 <p>Install sendigR packages, refer to <a href="https://github.com/phuse-org/sendigR/blob/main/README.md" class="external-link">README</a> for more details.</p>
-<pre><code><span class="co"># Get CRAN version</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"sendigR"</span><span class="op">)</span>
-<span class="co"># Or the development version from GitHub:</span>
-<span class="co"># install.packages("devtools")</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">'phuse-org/sendigR'</span><span class="op">)</span></code></pre>
+<pre><code><span><span class="co"># Get CRAN version</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"sendigR"</span><span class="op">)</span></span>
+<span><span class="co"># Or the development version from GitHub:</span></span>
+<span><span class="co"># install.packages("devtools")</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">'phuse-org/sendigR'</span><span class="op">)</span></span></code></pre>
 </div>
 </div>
 <div class="section level3">
@@ -170,32 +170,32 @@
 <h2 id="creating-the-json-for-vocabulary-mapping">Creating the JSON for Vocabulary Mapping<a class="anchor" aria-label="anchor" href="#creating-the-json-for-vocabulary-mapping"></a>
 </h2>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/phuse-org/sendigR" class="external-link">sendigR</a></span><span class="op">)</span>
-<span class="co">#input CDISC and Extensible CT files.</span>
-<span class="va">infile1</span> <span class="op">&lt;-</span> <span class="st">"{path to CT file}/SEND_Terminology_EXTENSIBLE.txt"</span>
-<span class="va">infile2</span> <span class="op">&lt;-</span> <span class="st">"{path to CT file}/SEND Terminology_2021_12_17.txt"</span>
-<span class="co">#output JSON file</span>
-<span class="va">jsonfile</span> <span class="op">&lt;-</span> <span class="st">"{path to CT file to be created}/SENDct.json"</span>
-<span class="co">#Call the gen_vocab function with the input and output files</span>
-<span class="fu">sendigR</span><span class="fu">::</span><span class="fu"><a href="../reference/gen_vocab.html">gen_vocab</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">infile1</span>, <span class="va">infile2</span><span class="op">)</span>,<span class="va">jsonfile</span> <span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/phuse-org/sendigR" class="external-link">sendigR</a></span><span class="op">)</span></span>
+<span><span class="co">#input CDISC and Extensible CT files.</span></span>
+<span><span class="va">infile1</span> <span class="op">&lt;-</span> <span class="st">"{path to CT file}/SEND_Terminology_EXTENSIBLE.txt"</span></span>
+<span><span class="va">infile2</span> <span class="op">&lt;-</span> <span class="st">"{path to CT file}/SEND Terminology_2021_12_17.txt"</span></span>
+<span><span class="co">#output JSON file</span></span>
+<span><span class="va">jsonfile</span> <span class="op">&lt;-</span> <span class="st">"{path to CT file to be created}/SENDct.json"</span></span>
+<span><span class="co">#Call the gen_vocab function with the input and output files</span></span>
+<span><span class="fu">sendigR</span><span class="fu">::</span><span class="fu"><a href="../reference/gen_vocab.html">gen_vocab</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">infile1</span>, <span class="va">infile2</span><span class="op">)</span>,<span class="va">jsonfile</span> <span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="standardize-xpt-files-with-the-json-file-created">Standardize xpt files with the json file created<a class="anchor" aria-label="anchor" href="#standardize-xpt-files-with-the-json-file-created"></a>
 </h2>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/phuse-org/sendigR" class="external-link">sendigR</a></span><span class="op">)</span>
-
-<span class="co">#JSON file used for the xpt cleaning</span>
-<span class="va">jsonfile</span> <span class="op">&lt;-</span> <span class="st">"{path to CT file to be created}/SENDct.json"</span>
-
-<span class="co">#folder containing the source xpt files</span>
-<span class="va">rawXptFolder</span> <span class="op">&lt;-</span> <span class="st">"{path to xpt files}/96298/"</span>
-<span class="co">#folder containing the cleaned target xpt files</span>
-<span class="va">cleanXptFolder</span> <span class="op">&lt;-</span> <span class="st">"{path to cleaned xpt files}/96298/"</span>
-<span class="co">#Call the standardize_file function to clean the xpt file</span>
-<span class="fu">sendigR</span><span class="fu">::</span><span class="fu"><a href="../reference/standardize_file.html">standardize_file</a></span><span class="op">(</span><span class="va">rawXptFolder</span>, <span class="va">cleanXptFolder</span>, <span class="va">jsonfile</span> <span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/phuse-org/sendigR" class="external-link">sendigR</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#JSON file used for the xpt cleaning</span></span>
+<span><span class="va">jsonfile</span> <span class="op">&lt;-</span> <span class="st">"{path to CT file to be created}/SENDct.json"</span></span>
+<span></span>
+<span><span class="co">#folder containing the source xpt files</span></span>
+<span><span class="va">rawXptFolder</span> <span class="op">&lt;-</span> <span class="st">"{path to xpt files}/96298/"</span></span>
+<span><span class="co">#folder containing the cleaned target xpt files</span></span>
+<span><span class="va">cleanXptFolder</span> <span class="op">&lt;-</span> <span class="st">"{path to cleaned xpt files}/96298/"</span></span>
+<span><span class="co">#Call the standardize_file function to clean the xpt file</span></span>
+<span><span class="fu">sendigR</span><span class="fu">::</span><span class="fu"><a href="../reference/standardize_file.html">standardize_file</a></span><span class="op">(</span><span class="va">rawXptFolder</span>, <span class="va">cleanXptFolder</span>, <span class="va">jsonfile</span> <span class="op">)</span></span></code></pre></div>
 </div>
   </div>
 

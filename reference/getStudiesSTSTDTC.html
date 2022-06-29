@@ -76,14 +76,14 @@ If the <code>fromDTC</code> and<code>toDTC</code> are empty (null, na or empty s
 </ul></div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">getStudiesSTSTDTC</span><span class="op">(</span>
-  <span class="va">dbToken</span>,
-  studyList <span class="op">=</span> <span class="cn">NULL</span>,
-  fromDTC <span class="op">=</span> <span class="cn">NULL</span>,
-  toDTC <span class="op">=</span> <span class="cn">NULL</span>,
-  inclUncertain <span class="op">=</span> <span class="cn">FALSE</span>,
-  noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getStudiesSTSTDTC</span><span class="op">(</span></span>
+<span>  <span class="va">dbToken</span>,</span>
+<span>  studyList <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fromDTC <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  toDTC <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  inclUncertain <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -183,9 +183,9 @@ UNCERTAIN_MSG):</p><ul><li><p>TS contains now row for TSPARMCD='STSTDTC'</p></li
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="fu">GetStudyListSTSTDTC</span><span class="op">(</span><span class="va">myDbToken</span>, <span class="va">allSTudies</span>, <span class="st">'2018'</span>,<span class="st">'2020'</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="fu">GetStudyListSTSTDTC</span><span class="op">(</span><span class="va">myDbToken</span>, <span class="va">allSTudies</span>, <span class="st">'2018'</span>,<span class="st">'2020'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </div>

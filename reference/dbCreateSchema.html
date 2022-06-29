@@ -72,7 +72,7 @@ versions.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">dbCreateSchema</span><span class="op">(</span><span class="va">dbToken</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">dbCreateSchema</span><span class="op">(</span><span class="va">dbToken</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -90,13 +90,13 @@ supported by this function.</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="co"># Create an empty SQLite database and create the SEND schema</span></span>
-<span class="r-in"><span class="va">myDbToken</span> <span class="op">&lt;-</span> <span class="fu"><a href="initEnvironment.html">initEnvironment</a></span><span class="op">(</span>dbType <span class="op">=</span> <span class="st">'sqlite'</span>,</span>
-<span class="r-in">                             dbPath <span class="op">=</span><span class="st">'/mydatapath/db/send.db'</span>,</span>
-<span class="r-in">                             dbCreate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu">dbCreateSchema</span><span class="op">(</span><span class="va">myDbToken</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># Create an empty SQLite database and create the SEND schema</span></span></span>
+<span class="r-in"><span><span class="va">myDbToken</span> <span class="op">&lt;-</span> <span class="fu"><a href="initEnvironment.html">initEnvironment</a></span><span class="op">(</span>dbType <span class="op">=</span> <span class="st">'sqlite'</span>,</span></span>
+<span class="r-in"><span>                             dbPath <span class="op">=</span><span class="st">'/mydatapath/db/send.db'</span>,</span></span>
+<span class="r-in"><span>                             dbCreate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">dbCreateSchema</span><span class="op">(</span><span class="va">myDbToken</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </div>

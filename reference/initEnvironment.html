@@ -68,15 +68,15 @@ connection.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">initEnvironment</span><span class="op">(</span>
-  dbType <span class="op">=</span> <span class="cn">NULL</span>,
-  dbPath <span class="op">=</span> <span class="cn">NULL</span>,
-  dbCreate <span class="op">=</span> <span class="cn">FALSE</span>,
-  dbUser <span class="op">=</span> <span class="cn">NULL</span>,
-  dbPwd <span class="op">=</span> <span class="cn">NULL</span>,
-  dbSchema <span class="op">=</span> <span class="cn">NULL</span>,
-  ctFile <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">initEnvironment</span><span class="op">(</span></span>
+<span>  dbType <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dbPath <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dbCreate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  dbUser <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dbPwd <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dbSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ctFile <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -157,20 +157,20 @@ time of the build of the current version of the package which is included.</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
-<span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">initEnvironment</span><span class="op">(</span>dbType<span class="op">=</span><span class="st">'sqlite'</span>,</span>
-<span class="r-in">                      dbPath<span class="op">=</span><span class="st">'//servername/SendData/db/send.db'</span>,</span>
-<span class="r-in">                      ctFile<span class="op">=</span><span class="st">'//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls'</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">initEnvironment</span><span class="op">(</span>dbType<span class="op">=</span><span class="st">'oracle'</span>,</span>
-<span class="r-in">                      dbPath<span class="op">=</span><span class="st">'dbserver:1521/send_db'</span>,</span>
-<span class="r-in">                      dbUser<span class="op">=</span><span class="st">'ME'</span>,</span>
-<span class="r-in">                      dbPwd<span class="op">=</span><span class="st">'mypassword'</span>,</span>
-<span class="r-in">                      dbSchema <span class="op">=</span> <span class="st">'send'</span>,</span>
-<span class="r-in">                      ctFile<span class="op">=</span><span class="st">'//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls'</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
-<span class="r-in"></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">initEnvironment</span><span class="op">(</span>dbType<span class="op">=</span><span class="st">'sqlite'</span>,</span></span>
+<span class="r-in"><span>                      dbPath<span class="op">=</span><span class="st">'//servername/SendData/db/send.db'</span>,</span></span>
+<span class="r-in"><span>                      ctFile<span class="op">=</span><span class="st">'//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">db</span> <span class="op">&lt;-</span> <span class="fu">initEnvironment</span><span class="op">(</span>dbType<span class="op">=</span><span class="st">'oracle'</span>,</span></span>
+<span class="r-in"><span>                      dbPath<span class="op">=</span><span class="st">'dbserver:1521/send_db'</span>,</span></span>
+<span class="r-in"><span>                      dbUser<span class="op">=</span><span class="st">'ME'</span>,</span></span>
+<span class="r-in"><span>                      dbPwd<span class="op">=</span><span class="st">'mypassword'</span>,</span></span>
+<span class="r-in"><span>                      dbSchema <span class="op">=</span> <span class="st">'send'</span>,</span></span>
+<span class="r-in"><span>                      ctFile<span class="op">=</span><span class="st">'//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>
