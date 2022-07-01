@@ -445,8 +445,9 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
 #### create lb categorical aggregate table (from Kevin code)
 
 create_lb_cat_agg_table <- function(dt) {
-    dt[, result_col := character()]
-    dt[, Incidence := double()]
+    
+    dt$Incidence <- NA
+	dt$Animal_Count <- NA
     possible_results <- unique(dt[["LBSTRESC"]])
 
     for (result in possible_results) {
@@ -466,43 +467,12 @@ create_lb_cat_agg_table <- function(dt) {
             }
             animal_count <- total_count + animal_count
         }
-        animal_count <- round(animal_count / length(animal_usubj), digits = 3)
+        incidence <- round(animal_count / length(animal_usubj), digits = 3)
 
         # print(paste0(result, ": ", animal_count))
-        dt[LBSTRESC == result, result_col := result]
-        dt[LBSTRESC == result, Incidence := animal_count]
-    }
-    dt
-}
-
-# create group by table
-create_lb_cat_agg_table_2 <- function(dt) {
-    dt$Incidence <- NA
-    possible_results <- unique(dt[["LBSTRESC"]])
-
-    for (result in possible_results) {
-        total_count <- 0
-        animal_usubj <- unique(dt[["USUBJID"]])
-        animal_count <- 0
-        for (animal in animal_usubj) {
-            animal_index <- which(dt$USUBJID == animal)
-
-            animal_observations <- dt[["LBSTRESC"]][animal_index]
-
-
-            for (observation in animal_observations) {
-                if (observation == result) {
-                    animal_count <- animal_count + 1 / length(animal_observations)
-                }
-            }
-            animal_count <- total_count + animal_count
-        }
-        animal_count <- round(animal_count / length(animal_usubj), digits = 3)
-
-
-
         index_count <- which(dt$LBSTRESC == result)
-        dt[["Incidence"]][index_count] <- animal_count
+        dt[["Incidence"]][index_count] <- incidence
+		dt[["Animal_Count"]][index_count] <- animal_count
     }
     dt
 }

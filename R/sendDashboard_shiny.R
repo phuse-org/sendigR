@@ -1211,8 +1211,6 @@ select_cols <- c(
     "LBCAT"
 )
       domainData <- domainData[LBSTRESC!="", ..select_cols]
-	  print(names(domainData))
-	  print(str(domainData))
 	  domainData
 
 })
@@ -1389,10 +1387,11 @@ output$lb_findingsTable  <- DT::renderDataTable({
       df <- df[LBSTRESC!=""]
 
       get_table <- df %>% dplyr::group_by_at(group_by_cols) %>%
-	   dplyr::group_modify(~ create_lb_cat_agg_table_2(.x))
+	   dplyr::group_modify(~ create_lb_cat_agg_table(.x))
 
-	   get_table_col <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX","LBCAT" ,"LBTESTCD","LBTEST","LBSTRESC", "Incidence")
-	get_table <- data.table::as.data.table(get_table)
+	   get_table_col <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX",
+	   "LBCAT" ,"LBTESTCD","LBTEST","LBSTRESC", "Incidence", "Animal_Count")
+		get_table <- data.table::as.data.table(get_table)
 	
 	   
 	   get_table <- get_table[, ..get_table_col]
