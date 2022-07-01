@@ -375,8 +375,5 @@ getControlSubj<-function(dbToken,
 
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
-TCNTRL <- NULL
-USUBJID <- NULL
-STUDYID <- NULL
-AGE <- DM_AGEDAYStxt <- AGETXT <- AGEU <- BRTHDTC <- RFSTDTC <-NULL
-DS_AGEDAYStxt <-DSSTDTC <- DS_AGEDAYS <-NULL
+
+

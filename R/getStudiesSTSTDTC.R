@@ -233,7 +233,5 @@ getStudiesSTSTDTC <- function(dbToken,
     return(prepareFinalResults(foundStudies, '', c('STUDYID', 'STSTDTC')))
 }
 
-################################################################################
-# Avoid  'no visible binding for global variable' notes from check of package:
-STSTDTC  <- NULL
+
 

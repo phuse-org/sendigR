@@ -1884,10 +1884,3 @@ output$lb_findingsTable  <- DT::renderDataTable({
 
 }
 
-################################################################################
-#### Avoid  'no visible binding for global variable' notes from check of package:
-MISPEC <- Animals.In.MISPEC <- days <- BWSTRESN <- Mean_BWSTRESN <- Incidence <- NULL
-BWTESTCD <- SD_BWSTRESN <- LBSTRESC_TRANS.x <- LBSTRESC_TRANS.y <- SET <- Mean <- NULL
-Weighted_SD <- distribution <- ..density.. <- Incidence <- NULL
-LBSTRESN <- Animals.In.LBSPEC <- NULL
-############################## END ##################################################

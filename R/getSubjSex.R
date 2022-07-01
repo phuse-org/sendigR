@@ -166,8 +166,3 @@ getSubjSex<-function(dbToken,
                              c('SEX'))  )
 }
 
-################################################################################
-# Avoid  'no visible binding for global variable' notes from check of package:
-MSG <- NULL
-SEX <- NULL
-UNCERTAIN_MSG <- NULL

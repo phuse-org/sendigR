@@ -236,9 +236,7 @@ getStudiesSDESIGN <- function(dbToken,
     return(prepareFinalResults(foundStudies, '', c('STUDYID', 'SDESIGN')))
 }
 
-################################################################################
-# Avoid  'no visible binding for global variable' notes from check of package:
- SDESIGN <- NULL
+
 
 
 

@@ -491,10 +491,5 @@ prepareFinalResults <- function(dt, srcCols, addCols) {
   return(eval(str2expression("data.table::setcolorder(dt[,..colList], colList)")))
 }
 
-################################################################################
-# Avoid  'no visible binding for global variable' notes from check of package:
-db_type <- NULL
-CodeList <- NULL
-CodelistCode <- NULL
-LABEL <- REGEXP <- NULL
+
 

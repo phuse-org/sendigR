@@ -291,6 +291,4 @@ GetFilteredControlAnimals <- function(pFromDTC,
   return(.sendigRenv$controlAnimals)
 }
 
-################################################################################
-# Avoid  'no visible binding for global variable' notes from check of package:
-.sendigRenv <- NULL
+
