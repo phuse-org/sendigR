@@ -1769,7 +1769,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
       df_plot_f <- cbind(mean_interval_f, Age_f,sex_f)
       names(df_plot_f) <- names(df_plot_m)
       df_plot <- rbind(df_plot_m, df_plot_f)
-	  print(interval)
+	#   print(interval)
 	  title_error <- paste0("Mean Body Weight: ",  interval, " AGEDAYS Interval Selected")
 
       if (input$bw_plot_type=="Line with SD (for Selected Interval)") {
@@ -1841,9 +1841,14 @@ output$lb_findingsTable  <- DT::renderDataTable({
         Sex=input$SEX,
         Uncertain=input$INCL_UNCERTAIN
       )
-      print(filter_selected)
+      
       filter_selected
     })
+
+	shiny::observeEvent(input$refreshData, {
+		message("Following filter criteria applied")
+		print(filter_criteria())
+	})
 
 
     ##### Download all data as RData file ----
