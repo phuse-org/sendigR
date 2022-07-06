@@ -100,20 +100,23 @@ User can download current table as csv or rds format by clicking on appropriate 
 
 __Display Column:__  
 Each of the Individual table of MI, LB and BW domain have a vertical column at left side of table. Individual table shows some specific column by default. More column can be selected by checking the box in display column. This will update the table and show all the columns that selected in left display column. 
-insert display column
+![display_column](https://user-images.githubusercontent.com/31291716/177612096-2e5544fa-6a4d-4145-81d5-8e593de89848.gif)
+
 This vertical left display column can be hide by checking the show only table check box located above the display column
 
  
 ### Filter Animal Age
 
 MI, LB,  and BW tab have filter option for animal age. User can select animal age range from slider. User also need to click update button to show  other tables in that tab. 
-insert gif here
+
+![age_selection](https://user-images.githubusercontent.com/31291716/177612185-59b6d45b-436a-402e-ba35-948458ab477d.gif)
 
 ### MI (Microscopic Findings) Tab
 
 __MI Findings__  
 User can further filter control animals and find historical control incidence rate table for specific MISPEC such as Kidney.
-insert  MI findings
+![MI_findings](https://user-images.githubusercontent.com/31291716/177612213-f65a30c3-f46a-42ed-b870-606d08a3a667.gif)
+
 __Individual Records__  
 This table shows MI domain information for filtered control animals.    
 
