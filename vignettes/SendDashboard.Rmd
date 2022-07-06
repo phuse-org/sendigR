@@ -51,6 +51,8 @@ A Demo app can be found here -
 - [Shiny App Demo](https://phuse-org.shinyapps.io/sendigR/)
 ## Sidebar Menu
 
+![side_bar](https://user-images.githubusercontent.com/31291716/177619443-6bded096-f69e-44ca-b1b6-4a4c6556d404.gif)
+
 __Select Study Start Date Range:__  
 User can select date range from the calendar input.  
 __Select Study Design:__  
@@ -69,7 +71,7 @@ Whether user want to include uncertain control animal.
 __Generate/Update Data:__  
 Whenever user change any input in sidebar menu, Generate/Update Data button need to click to update the filter criteria.
 
-![side_bar](https://user-images.githubusercontent.com/31291716/177619443-6bded096-f69e-44ca-b1b6-4a4c6556d404.gif)
+
 
 
 ## Tab for ANIMALS | MI  | LB | BW | Download  
@@ -88,13 +90,6 @@ __Show entries:__
 User can choose how many entry they want to show at once from the drop down menu located upper left side of the table.  
 __Search:__  
 There is a global search button located upper right side of the table. User can search any word globally in the table. Table will show entry that match the search.  
-__Column name:__  
-If user hover the cursor on the column name, it will show the full name of the column.  
-
-
-
-![column_hover](https://user-images.githubusercontent.com/31291716/177578200-26199228-d425-4256-8719-d8f0fed92fc5.gif)
-
 
 
 __Column filter:__    
@@ -103,6 +98,12 @@ __Pagination:__
 Page number is available at bottom right of the table. User can go to specific page using the page number. Next and previous button can be use to go to next and previous page, respectively.  
 __Download Button:__  
 User can download current table as csv or rds format by clicking on appropriate download button located at bottom right of the table.  
+
+__Column name:__  
+If user hover the cursor on the column name, it will show the full name of the column.  
+
+![column_hover](https://user-images.githubusercontent.com/31291716/177578200-26199228-d425-4256-8719-d8f0fed92fc5.gif)
+
 
 __Display Column:__  
 Each of the Individual table of MI, LB and BW domain have a vertical column at left side of table. Individual table shows some specific column by default. More column can be selected by checking the box in display column. This will update the table and show all the columns that selected in left display column. 
