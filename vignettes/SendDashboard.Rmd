@@ -72,7 +72,7 @@ __Column name:__
 If user hover the cursor on the column name, it will show the full name of the column.  
 
 
-![column_hover](https://user-images.githubusercontent.com/31291716/162441956-08c7e18c-6087-4318-8bc3-df9f7166a69e.png)
+
 ![column_hover](https://user-images.githubusercontent.com/31291716/177578200-26199228-d425-4256-8719-d8f0fed92fc5.gif)
 
 
