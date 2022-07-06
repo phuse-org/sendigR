@@ -29,14 +29,26 @@ The sendigR package contains an encapsulated Shiny app - SendDashboard. The app 
 ### Example 
 
 Connect to the database and start the app.
-Remember to disconnect from database when leaving the app.
+
+
 ```R
 library(sendigR)
 dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db')
 execSendDashboard(dbToken)
-disconnectDB(dbToken)
 ```
 
+Remember to disconnect from database when leaving the app.
+
+```R
+disconnectDB(dbToken)
+```
+A test database can be found here. 
+- [database](https://github.com/phuse-org/sendigR/blob/main/tests/data/send_no_duplicates.db)
+
+Download the database in local directory and update the dbPath.
+### Demo 
+Demo of the app can be found here 
+- [Shiny App Demo](https://phuse-org.shinyapps.io/sendigR/)
 ## Sidebar Menu
 
 __Select Study Start Date Range:__  
@@ -55,7 +67,7 @@ __Include uncertain rows:__
 __Generate/Update Data:__  
 Whenever user change any input in sidebar menu, Generate/Update Data button need to click to update the filter criteria.
 
-## Tab for ANIMALS| MI| LB| BW| Download  
+## Tab for ANIMALS | MI  | LB | BW | Download  
 
 On the top middle of the page there are few tab that shows different table for different domain
 
@@ -118,6 +130,8 @@ Table shows mean and standard deviation of body weight.
 Table is grouped by AGEDAYS, SPECIES, STRAIN, ROUTE, SEX, BWORRESU columns.   
 
 __Aggregate Plot__  
+
+Plot show mean body weight over age days. 
 
 ### Download  
 User can download all the table as RDS format in one file.  
