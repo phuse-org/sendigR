@@ -69,6 +69,9 @@ Whether user want to include uncertain control animal.
 __Generate/Update Data:__  
 Whenever user change any input in sidebar menu, Generate/Update Data button need to click to update the filter criteria.
 
+![side_bar](https://user-images.githubusercontent.com/31291716/177619443-6bded096-f69e-44ca-b1b6-4a4c6556d404.gif)
+
+
 ## Tab for ANIMALS | MI  | LB | BW | Download  
 
 On the top middle of the page there are few tab that shows different table for different domain
@@ -77,6 +80,9 @@ On the top middle of the page there are few tab that shows different table for d
 When user click Generate/Update Data button, app will filter and extract a table containing control animal information specified in sidebar input fields.
 
 ## Common feature of the table
+
+![table_feature](https://user-images.githubusercontent.com/31291716/177620363-3326e301-04b8-451b-99dd-2d2bc1637db8.gif)
+
 
 __Show entries:__  
 User can choose how many entry they want to show at once from the drop down menu located upper left side of the table.  
