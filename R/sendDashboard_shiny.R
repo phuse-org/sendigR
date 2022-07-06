@@ -141,7 +141,7 @@ guide <- cicerone::Cicerone$new()$step(
 )$step(
 	el = "STSTDTC",
 	title = "Date Range", 
-	description = "Choose the date range that you want to include for control animal."
+	description = "Choose the study start date range that you want to include for control animal."
 )$step(
 	"SDESIGN-label",
 	"Study Design",
@@ -165,7 +165,7 @@ guide <- cicerone::Cicerone$new()$step(
 	depends on what species you selected in previous step."
 )$step(
 	"SEX-label",
-	"SEX",
+	"Sex",
 	"You can select animal sex from drop-down list."
 )$step(
 	"INCL_UNCERTAIN",
@@ -178,8 +178,9 @@ guide <- cicerone::Cicerone$new()$step(
 )$step(
 	"refreshData_02",
 	"same as before",
-	"This is same as previous button, two generate/update button just for your convenience \U1F604"
-)
+	paste0("This is same as previous button, two generate/update button just for your convenience \U1F604. ",
+	"If you want to learn more about the project and shiny app follow the link in Project links Menu."
+))
 
 ########### UI #######
 
@@ -204,7 +205,7 @@ guide <- cicerone::Cicerone$new()$step(
 
 ##### Date Range, Design, Route, Species, Strain, Sex, Uncertain ----
                 htmltools::br(),
-				shiny::actionButton("tour", "want a tour?"),
+				shiny::actionButton("tour", "Want a tour?"),
                 shiny::actionButton("refreshData_02", "Generate/Update Data"
                 #   style = "background-color:#FFFFFF;
                 #   color:#E31616;
