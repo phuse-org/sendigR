@@ -3,7 +3,7 @@
 on:
   workflow_dispatch:
 
-name: pkgdown
+name: build_and_deploy_githubPages
 
 jobs:
   pkgdown:
