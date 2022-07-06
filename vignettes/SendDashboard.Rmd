@@ -23,7 +23,7 @@ The sendigR package contains an encapsulated Shiny app - SendDashboard. The app 
 
 | Function | Description |
 |-|------------|
-| [execSendDashboard](../reference/execSendDashboard.html) |Starts the SendDashboard app | 
+| [execSendDashboard](../reference/execSendDashboard.html){target="_blank"} |Starts the SendDashboard app | 
 
 
 ### Example 
@@ -43,13 +43,13 @@ Remember to disconnect from database when leaving the app.
 disconnectDB(dbToken)
 ```
 A test database can be found here -  
-- [Database](https://github.com/phuse-org/sendigR/blob/main/tests/data/send_no_duplicates.db)
+- [Database](https://github.com/phuse-org/sendigR/blob/main/tests/data/send_no_duplicates.db){target="_blank"}  
 
 Download the database in local directory and update the dbPath.  
 
 ## Demo   
 A Demo app can be found here -  
-- [Shiny App Demo](https://phuse-org.shinyapps.io/sendigR/)  
+- [Shiny App Demo](https://phuse-org.shinyapps.io/sendigR/){target="_blank"}    
 
 ## sendigR Shiny App Features
 
@@ -71,7 +71,7 @@ __Select Sex:__
 User can select sex of the animals to filter from drop down menu.  
 __Include uncertain rows:__  
 Whether user want to include uncertain control animal.
-[see  what uncertain mean](../reference/getControlSubj.html)
+[see  what uncertain mean](../reference/getControlSubj.html){target="_blank"}    
 __Generate/Update Data:__  
 Whenever user change any input in sidebar menu, Generate/Update Data button need to click to update the filter criteria.
 
@@ -139,7 +139,7 @@ This table shows LB domain information for filtered control animals.
 __Numeric Aggregate Table__  
 Table shows mean and standard deviation of laboratory test results of numeric  variable.
 Table is grouped by LBSPEC, SPECIES, STRAIN, SEX, ROUTE, LBTESTCD, LBTEST and LBSTRESU columns.    
-__Categorical Aggregate Table__ 
+__Categorical Aggregate Table__   
 Aggregate table shows percentage of laboratory result for lab test which is categorical.
 
 __LB Observation__  
