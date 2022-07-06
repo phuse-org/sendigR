@@ -109,7 +109,7 @@
 <th>Description</th>
 </tr></thead>
 <tbody><tr class="odd">
-<td><a href="../reference/execSendDashboard.html">execSendDashboard</a></td>
+<td><a href="../reference/execSendDashboard.html" target="_blank">execSendDashboard</a></td>
 <td>Starts the SendDashboard app</td>
 </tr></tbody>
 </table>
@@ -124,8 +124,23 @@
 <p>Remember to disconnect from database when leaving the app.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/disconnectDB.html">disconnectDB</a></span><span class="op">(</span><span class="va">dbToken</span><span class="op">)</span></span></code></pre></div>
-<p>A test database can be found here - - <a href="https://github.com/phuse-org/sendigR/blob/main/tests/data/send_no_duplicates.db" class="external-link">Database</a></p>
-<p>Download the database in local directory and update the dbPath. ### Demo A Demo app can be found here - - <a href="https://phuse-org.shinyapps.io/sendigR/" class="external-link">Shiny App Demo</a> ## Sidebar Menu</p>
+<p>A test database can be found here -<br>
+- <a href="https://github.com/phuse-org/sendigR/blob/main/tests/data/send_no_duplicates.db" target="_blank" class="external-link">Database</a></p>
+<p>Download the database in local directory and update the dbPath.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="demo">Demo<a class="anchor" aria-label="anchor" href="#demo"></a>
+</h2>
+<p>A Demo app can be found here -<br>
+- <a href="https://phuse-org.shinyapps.io/sendigR/" target="_blank" class="external-link">Shiny App Demo</a></p>
+</div>
+<div class="section level2">
+<h2 id="sendigr-shiny-app-features">sendigR Shiny App Features<a class="anchor" aria-label="anchor" href="#sendigr-shiny-app-features"></a>
+</h2>
+<div class="section level3">
+<h3 id="sidebar-menu">Sidebar Menu<a class="anchor" aria-label="anchor" href="#sidebar-menu"></a>
+</h3>
 <div class="figure">
 <img src="https://user-images.githubusercontent.com/31291716/177619443-6bded096-f69e-44ca-b1b6-4a4c6556d404.gif" alt=""><p class="caption">side_bar</p>
 </div>
@@ -136,23 +151,22 @@ User can select one or multiple route of administration from list that extracted
 User can select one or multiple species from the suggested list. The list extracted from the current database.<br><strong>Select Strain:</strong><br>
 The suggested list of strain depends on what species selected before. User can select one or multiple strain.<br><strong>Select Sex:</strong><br>
 User can select sex of the animals to filter from drop down menu.<br><strong>Include uncertain rows:</strong><br>
-Whether user want to include uncertain control animal. <a href="../reference/getControlSubj.html">see what uncertain mean</a> <strong>Generate/Update Data:</strong><br>
+Whether user want to include uncertain control animal. <a href="../reference/getControlSubj.html" target="_blank">see what uncertain mean</a><br><strong>Generate/Update Data:</strong><br>
 Whenever user change any input in sidebar menu, Generate/Update Data button need to click to update the filter criteria.</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="tab-for-animals-mi-lb-bw-download">Tab for ANIMALS | MI | LB | BW | Download<a class="anchor" aria-label="anchor" href="#tab-for-animals-mi-lb-bw-download"></a>
-</h2>
+<div class="section level3">
+<h3 id="tab-for-animals-mi-lb-bw-download">Tab for ANIMALS | MI | LB | BW | Download<a class="anchor" aria-label="anchor" href="#tab-for-animals-mi-lb-bw-download"></a>
+</h3>
 <p>On the top middle of the page there are few tab that shows different table for different domain</p>
+</div>
 <div class="section level3">
 <h3 id="animals">ANIMALS<a class="anchor" aria-label="anchor" href="#animals"></a>
 </h3>
 <p>When user click Generate/Update Data button, app will filter and extract a table containing control animal information specified in sidebar input fields.</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="common-feature-of-the-table">Common feature of the table<a class="anchor" aria-label="anchor" href="#common-feature-of-the-table"></a>
-</h2>
+<div class="section level3">
+<h3 id="common-feature-of-the-table">Common feature of the table<a class="anchor" aria-label="anchor" href="#common-feature-of-the-table"></a>
+</h3>
 <div class="figure">
 <img src="https://user-images.githubusercontent.com/31291716/177620363-3326e301-04b8-451b-99dd-2d2bc1637db8.gif" alt=""><p class="caption">table_feature</p>
 </div>
@@ -171,13 +185,11 @@ If user hover the cursor on the column name, it will show the full name of the c
 <p><strong>Display Column:</strong><br>
 Each of the Individual table of MI, LB and BW domain have a vertical column at left side of table. Individual table shows some specific column by default. More column can be selected by checking the box in display column. This will update the table and show all the columns that selected in left display column. <img src="https://user-images.githubusercontent.com/31291716/177612096-2e5544fa-6a4d-4145-81d5-8e593de89848.gif" alt="display_column"></p>
 <p>This vertical left display column can be hide by checking the show only table check box located above the display column</p>
+</div>
 <div class="section level3">
 <h3 id="filter-animal-age">Filter Animal Age<a class="anchor" aria-label="anchor" href="#filter-animal-age"></a>
 </h3>
-<p>MI, LB, and BW tab have filter option for animal age. User can select animal age range from slider. User also need to click update button to show other tables in that tab.</p>
-<div class="figure">
-<img src="https://user-images.githubusercontent.com/31291716/177612185-59b6d45b-436a-402e-ba35-948458ab477d.gif" alt=""><p class="caption">age_selection</p>
-</div>
+<p>MI, LB, and BW tab have filter option for animal age. User can select animal age range from slider. User also need to click update button to show other tables in that tab. <img src="https://user-images.githubusercontent.com/31291716/177612185-59b6d45b-436a-402e-ba35-948458ab477d.gif" alt="age_selection"></p>
 </div>
 <div class="section level3">
 <h3 id="mi-microscopic-findings-tab">MI (Microscopic Findings) Tab<a class="anchor" aria-label="anchor" href="#mi-microscopic-findings-tab"></a>
@@ -195,7 +207,8 @@ Aggregate table shows the percentage of Microscopic Findings. User can filter sp
 <p><strong>Individual Records</strong><br>
 This table shows LB domain information for filtered control animals.</p>
 <p><strong>Numeric Aggregate Table</strong><br>
-Table shows mean and standard deviation of laboratory test results of numeric variable. Table is grouped by LBSPEC, SPECIES, STRAIN, SEX, ROUTE, LBTESTCD, LBTEST and LBSTRESU columns.<br><strong>Categorical Aggregate Table</strong> Aggregate table shows percentage of laboratory result for lab test which is categorical.</p>
+Table shows mean and standard deviation of laboratory test results of numeric variable. Table is grouped by LBSPEC, SPECIES, STRAIN, SEX, ROUTE, LBTESTCD, LBTEST and LBSTRESU columns.<br><strong>Categorical Aggregate Table</strong><br>
+Aggregate table shows percentage of laboratory result for lab test which is categorical.</p>
 <p><strong>LB Observation</strong><br>
 User can select specific lab test and find percentage of the lab result.</p>
 </div>
