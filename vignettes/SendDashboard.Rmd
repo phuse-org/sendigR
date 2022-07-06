@@ -28,7 +28,7 @@ The sendigR package contains an encapsulated Shiny app - SendDashboard. The app 
 
 ### Example 
 
-Connect to the database and start the app.
+Connect to the database and start the app.   
 
 
 ```R
@@ -37,19 +37,23 @@ dbToken <- initEnvironment(dbType='sqlite', dbPath='/path/to/db/send.db')
 execSendDashboard(dbToken)
 ```
 
-Remember to disconnect from database when leaving the app.
+Remember to disconnect from database when leaving the app.  
 
 ```R
 disconnectDB(dbToken)
 ```
-A test database can be found here -
+A test database can be found here -  
 - [Database](https://github.com/phuse-org/sendigR/blob/main/tests/data/send_no_duplicates.db)
 
-Download the database in local directory and update the dbPath.
-### Demo 
-A Demo app can be found here -
-- [Shiny App Demo](https://phuse-org.shinyapps.io/sendigR/)
-## Sidebar Menu
+Download the database in local directory and update the dbPath.  
+
+## Demo   
+A Demo app can be found here -  
+- [Shiny App Demo](https://phuse-org.shinyapps.io/sendigR/)  
+
+## sendigR Shiny App Features
+
+### Sidebar Menu  
 
 ![side_bar](https://user-images.githubusercontent.com/31291716/177619443-6bded096-f69e-44ca-b1b6-4a4c6556d404.gif)
 
@@ -74,15 +78,14 @@ Whenever user change any input in sidebar menu, Generate/Update Data button need
 
 
 
-## Tab for ANIMALS | MI  | LB | BW | Download  
+### Tab for ANIMALS | MI  | LB | BW | Download  
 
 On the top middle of the page there are few tab that shows different table for different domain
 
 ### ANIMALS  
 When user click Generate/Update Data button, app will filter and extract a table containing control animal information specified in sidebar input fields.
 
-## Common feature of the table
-
+### Common feature of the table
 ![table_feature](https://user-images.githubusercontent.com/31291716/177620363-3326e301-04b8-451b-99dd-2d2bc1637db8.gif)
 
 
@@ -104,18 +107,15 @@ If user hover the cursor on the column name, it will show the full name of the c
 
 ![column_hover](https://user-images.githubusercontent.com/31291716/177578200-26199228-d425-4256-8719-d8f0fed92fc5.gif)
 
-
 __Display Column:__  
 Each of the Individual table of MI, LB and BW domain have a vertical column at left side of table. Individual table shows some specific column by default. More column can be selected by checking the box in display column. This will update the table and show all the columns that selected in left display column. 
 ![display_column](https://user-images.githubusercontent.com/31291716/177612096-2e5544fa-6a4d-4145-81d5-8e593de89848.gif)
 
 This vertical left display column can be hide by checking the show only table check box located above the display column
 
- 
 ### Filter Animal Age
 
 MI, LB,  and BW tab have filter option for animal age. User can select animal age range from slider. User also need to click update button to show  other tables in that tab. 
-
 ![age_selection](https://user-images.githubusercontent.com/31291716/177612185-59b6d45b-436a-402e-ba35-948458ab477d.gif)
 
 ### MI (Microscopic Findings) Tab
