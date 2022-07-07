@@ -6,6 +6,7 @@ template:
     bootswatch: zephyr
     bootstrap: 5
     bslib:
+      primary: "#134486"
       pkgdown-nav-height: 100px
 
     # ganalytics: G-L797L6MQEV
@@ -40,16 +41,21 @@ navbar:
         href: https://github.com/phuse-org/sendigR/wiki/Resources
 
 reference:
-- title: All functions
-  contents:
+- title: Database
+  desc: Create database, add and delete studies
+- contents:
+  - '`initEnvironment`'
   - '`dbCreateIndexes`'
   - '`dbCreateSchema`'
   - '`dbDeleteStudies`'
   - '`dbImportOneStudy`'
   - '`dbImportStudies`'
   - '`disconnectDB`'
-  - '`execSendDashboard`'
-  - '`gen_vocab`'
+
+
+- title: Query Control Animal  
+  desc: Get control animal information
+- contents:
   - '`genericQuery`'
   - '`getControlSubj`'
   - '`getFindingsPhase`'
@@ -60,9 +66,21 @@ reference:
   - '`getSubjRoute`'
   - '`getSubjSex`'
   - '`getSubjSpeciesStrain`'
-  - '`getTabColLabels`'
-  - '`initEnvironment`'
+  
+- title: Shiny App
+  desc: Run shiny app
+- contents:
+  - '`execSendDashboard`'
+- title: xptcleaner
+  desc: Clean xpt files
+- contents:
+  - '`gen_vocab`'
   - '`standardize_file`'
+- title: Helper
+  desc: Helper functions
+- contents:
+  - '`getTabColLabels`'
+
 
 # articles:
 # - title: All vignettes
@@ -72,3 +90,18 @@ reference:
 #   - '`SendDashboard`'
 #   - '`Usingxptcleaner`'
 
+# articles:
+# - title: Introduction
+#   navbar: Introduction
+#   contents:
+#   - '`Introduction`'
+# - title: Shiny App
+#   navbar: Shiny App
+#   contents:
+#   - '`SendDashboard`'
+
+# - title: xptcleaner
+#   navbar: How to use xptcleaner
+#   contents:
+#   - '`Usingxptcleaner`'
+ 
