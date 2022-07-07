@@ -2,31 +2,13 @@ url: https://phuse-org.github.io/sendigR/
 
 destination: "docs"
 
-# template:
-#   bslib:
-#     primary: "#096B72"
-#     navbar-background: "#134486"
-# #   trailing_slash_redirect: true
-
 template:
     bootswatch: zephyr
     bootstrap: 5
     bslib:
       pkgdown-nav-height: 100px
 
-
-
-    # bootswatch: united
-    # theme: dark
-
     # ganalytics: G-L797L6MQEV
-
-# template:
-#   params:
-#     bootswatch: cosmo
-#     docsearch:
-#       api_key: 28ab84fbf0d3f58232875561b9a208cd
-#       index_name: bayesplot
 
 navbar:
   structure:
@@ -34,6 +16,7 @@ navbar:
     - intro
     - reference
     - articles
+    - resources
     right: github
   components:
     reference:
@@ -52,7 +35,8 @@ navbar:
         href: articles/SendDashboard.html
       - text: Using xptcleaner
         href: articles/Usingxptcleaner.html
-      - text: Resources
+    resources:
+        text: Resources
         href: https://github.com/phuse-org/sendigR/wiki/Resources
 
 reference:

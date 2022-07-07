@@ -1,9 +1,12 @@
-pandoc: 2.14.0.3
+pandoc: '2.18'
 pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
   Introduction: Introduction.html
   SendDashboard: SendDashboard.html
   Usingxptcleaner: Usingxptcleaner.html
-last_built: 2022-06-15T18:42Z
+last_built: 2022-07-07T14:14Z
+urls:
+  reference: https://phuse-org.github.io/sendigR/reference
+  article: https://phuse-org.github.io/sendigR/articles
 

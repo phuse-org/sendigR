@@ -29,3 +29,4 @@
 ^\.Rprofile$
 ^\.vscode$
 ^_pkgdown\.yaml$
+^index\.md$
