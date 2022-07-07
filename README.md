@@ -23,7 +23,7 @@ database to be used for cross study analysis.
 -   functions to query control data from database;
 
 -   An R Shiny application with a graphical user interface for
-    facilitating cross-study analysis.
+    facilitating cross-study analysis. [Demo App can be found here.](https://phuse-org.shinyapps.io/sendigR/)
 
 -   An optional Python package (xptclearner) to harmonize SEND datasets
     using SEND controlled terminology and extensible terminology;
