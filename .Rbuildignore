@@ -28,3 +28,4 @@
 ^app\.R$
 ^\.Rprofile$
 ^\.vscode$
+^_pkgdown\.yaml$
