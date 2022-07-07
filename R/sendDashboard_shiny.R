@@ -92,9 +92,6 @@ execSendDashboard <- function(dbToken) {
                                        list(jqueryUIDep)))
   }
 
-  #reactive value ----
-  values <- shiny::reactiveValues()
-  values$selected_routes <- NULL
 
   #order of column in MI individual records table to match with excel file or sendig
   mi_col_names <- c('STUDYID','DOMAIN','USUBJID','MISEQ','MIGRPID','MIREFID',
@@ -227,11 +224,11 @@ guide <- cicerone::Cicerone$new()$step(
                  shiny::selectInput("SDESIGN",
                              "Select Study Design:",
                              GetUniqueDesign(),
-                             selected='PARALLEL'),
+                             selected=NULL),
                  shiny::uiOutput('ROUTE'),
                  addUIDep(shiny::selectizeInput("SPECIES",label='Select Species:',
                                          choices= GetUniqueSpecies(),
-                                         selected='RAT',
+                                         selected=NULL,
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button')))),
 
@@ -241,14 +238,14 @@ guide <- cicerone::Cicerone$new()$step(
                  addUIDep(shiny::selectizeInput("STRAIN",
                              "Select Strain:",
                              '',
-                             selected='WISTAR HAN',
+                             selected=NULL,
                              multiple=TRUE,
                              options=list(plugins=list('drag_drop','remove_button')))),
 
                  shiny::selectInput("SEX",
                              "Select Sex:",
                              availableSex,
-                             selected='M'),
+                             selected=NULL),
 
                  shiny::checkboxInput('INCL_UNCERTAIN',
                                'Include uncertain rows',
@@ -595,7 +592,7 @@ guide <- cicerone::Cicerone$new()$step(
       addUIDep(shiny::selectizeInput("ROUTE",
                                      label='Select Route of Administration:',
                                      choices=GetUniqueRoutes(),
-                                     selected=values$selected_routes,
+                                     selected= NULL,
                                      multiple=TRUE,
                                      options=list(plugins=list('drag_drop','remove_button'))))
       })
