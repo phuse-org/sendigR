@@ -544,7 +544,3 @@ getFindingsPhase <-function(dbToken,
 
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
-MSG_ALL <- ARMCD <- DTC <- EPOCH <- ETCD <- NULL
-MISS_ELEM_MSG <- MISS_PHASE_MSG <- MULTI_ELEM_MSG <- NULL
-N <- NUM_ELEMENT <- N_EPOCH <- N_ETCD <- N_PHASE <- N_SEENDTC <- NULL
-N_SESTDTC <- PHASE <- SEENDTC <- SEQ <- SESTDTC <- NULL

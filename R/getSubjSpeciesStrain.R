@@ -719,11 +719,4 @@ execOneSpeciesFilter <- function(animalSpeciesStrainAll,
                      exclusively))
 }
 
-##################################################################################################################
 
-# Avoid  'no visible binding for global variable' notes from check of package:
-ALL_SPECIES_TS <- ALL_STRAIN_TS <- NULL
-NUM_ANIMALS <- NUM_SPECIES_TS <- NUM_STRAIN_TS <- NULL
-SPECIES <-  SPECIES_DM <- SPECIES_TS <- SPECIES_TX <- NULL
-STRAIN <- STRAIN_DM <- STRAIN_TS <- STRAIN_TX <- NULL
-SPECIES_UNCERTAIN_MSG <- STRAIN_UNCERTAIN_MSG <- NULL

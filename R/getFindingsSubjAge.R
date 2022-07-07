@@ -483,6 +483,4 @@ getFindingsSubjAge<-function(dbToken,
 
 ################################################################################
 # Avoid  'no visible binding for global variable' notes from check of package:
-AGEDAYS <- DM_AGEDAYS <- MAX_AGE <- MIN_AGE <- NULL
-MSG_AGEDAYS <- MSG_RFSTDTC <- NO_AGE_MSG <- NULL
-dtc <- dy <- NULL
+

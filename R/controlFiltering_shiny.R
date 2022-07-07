@@ -97,7 +97,7 @@ GetFilteredControlAnimals <- function(pFromDTC,
     # - first check if any differences since last execution
     if ((length(setdiff(thisFilterValues, .sendigRenv$lastFilterValues)) +
         length(setdiff(.sendigRenv$lastFilterValues, thisFilterValues))) == 0)  {
-      print('No changes...')
+      message('No changes...')
       # No changes in filter values - leave output data as is
       execGetStudyData <- FALSE
       execGetControlAnimals <- FALSE
@@ -147,15 +147,15 @@ GetFilteredControlAnimals <- function(pFromDTC,
   ####################################################################
 
   if (execGetStudyData) {
-    print('get study info')
+    # print('get study info')
     if (exists('studiesAll', envir = .sendigRenv)) {
       # We save the current set of selected studies...
       studiesAllPrev <- .sendigRenv$studiesAll[,c('STUDYID')]
     }
 
-    print(paste0(' - pStudyDesign: ',pStudyDesign))
-    print(paste0(' - pfromDTC: ',pFromDTC))
-    print(paste0(' - ptoDTC: ',pToDTC))
+    # print(paste0(' - pStudyDesign: ',pStudyDesign))
+    # print(paste0(' - pfromDTC: ',pFromDTC))
+    # print(paste0(' - ptoDTC: ',pToDTC))
 
     # Extract list of studies based on study-only filter parameters
     #  - save in a retained variable
@@ -173,7 +173,7 @@ GetFilteredControlAnimals <- function(pFromDTC,
                                                 = pInclUncertain),
            envir = .sendigRenv)
 
-    print(.sendigRenv$studiesAll)
+    # print(.sendigRenv$studiesAll)
 
     if (exists("studiesAllPrev")) {
       if (nrow(setdiff(.sendigRenv$studiesAll[,c('STUDYID')], studiesAllPrev)) > 0) {
@@ -201,7 +201,7 @@ GetFilteredControlAnimals <- function(pFromDTC,
   }
 
   if (execGetControlAnimals) {
-    print('GetControlAnimals')
+    # print('GetControlAnimals')
     # Get list of all control animals
     # - save as global table to be possible avoid unnecessary regeneration in a later execution
     assign('controlAnimalsAll',
@@ -211,7 +211,7 @@ GetFilteredControlAnimals <- function(pFromDTC,
            envir = .sendigRenv)
 
   }
-  print(.sendigRenv$controlAnimalsAll)
+#   print(.sendigRenv$controlAnimalsAll)
 
   if (execFilterControlAnimals) {
     # Copy to a table used as input/output in the animal filtering tables
@@ -219,9 +219,9 @@ GetFilteredControlAnimals <- function(pFromDTC,
            data.table::copy(.sendigRenv$controlAnimalsAll),
            envir = .sendigRenv)
 
-    print('filterAnimalsSex')
+    # print('filterAnimalsSex')
     if (pSex != 'All') {
-      print(paste0(' - pSex: ',pSex))
+    #   print(paste0(' - pSex: ',pSex))
 
       # Limit to set of animals to relevant sex
       assign('controlAnimals',
@@ -239,12 +239,12 @@ GetFilteredControlAnimals <- function(pFromDTC,
              envir = .sendigRenv)
 
     }
-    print(.sendigRenv$controlAnimals)
+    # print(.sendigRenv$controlAnimals)
 
-    print('FilterAnimalsSpeciesStrain')
+    # print('FilterAnimalsSpeciesStrain')
     if (!is.null(pSpecies)) {
-      print(paste0(' - pSpecies: ',pSpecies))
-      print(paste0(' - pStrain: ',pStrain))
+    #   print(paste0(' - pSpecies: ',pSpecies))
+    #   print(paste0(' - pStrain: ',pStrain))
 
       # Limit to set of animals to relevant species/strain(s)
       assign('controlAnimals',
@@ -262,11 +262,11 @@ GetFilteredControlAnimals <- function(pFromDTC,
              envir = .sendigRenv)
 
     }
-    print(.sendigRenv$controlAnimals)
+    # print(.sendigRenv$controlAnimals)
 
-    print('FilterAnimalListRoute')
+    # print('FilterAnimalListRoute')
     if (!is.null(pRoute)) {
-      print(paste0(' - pRoute: ',pRoute))
+    #   print(paste0(' - pRoute: ',pRoute))
 
       # Limit to set of animals to relevant route(s) of administration
       assign('controlAnimals',
@@ -282,15 +282,13 @@ GetFilteredControlAnimals <- function(pFromDTC,
                                    inclUncertain = pInclUncertain),
              envir = .sendigRenv)
     }
-    print(.sendigRenv$controlAnimals)
+    # print(.sendigRenv$controlAnimals)
 
-    print('Animal filtering done!')
+    message('Animal filtering done!')
 
   }
 
   return(.sendigRenv$controlAnimals)
 }
 
-################################################################################
-# Avoid  'no visible binding for global variable' notes from check of package:
-.sendigRenv <- NULL
+

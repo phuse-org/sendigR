@@ -184,7 +184,4 @@ getSubjData<-function(dbToken,
     return()
 }
 
-################################################################################
-# Avoid  'no visible binding for global variable' notes from check of package:
-. <- POOLID <- COLUMN_NAME <- TABLE_NAME <- NULL
 

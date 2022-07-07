@@ -363,8 +363,3 @@ getSubjRoute <- function(dbToken,
                              c('ROUTE'))  )
 }
 
-################################################################################
-# Avoid  'no visible binding for global variable' notes from check of package:
-ALL_ROUTE_EX <- ALL_ROUTE_TS <- ROUTE <- NULL
-NUM_ROUTE <- NUM_ROUTE_EX <- NUM_ROUTE_TS <- NULL
-NOT_VALID_MSG <- NULL
