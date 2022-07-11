@@ -68,9 +68,9 @@ GetFilteredControlAnimals <- function(pFromDTC,
     l1 <- length(p1)
     l2 <- length(p2)
     if (l1 != l2)
-      return(FALSE)
+      FALSE
     else
-      return (isTRUE(unique(p1 == p2)))
+      isTRUE(unique(p1 == p2))
   }
 
   # Save current filter values
@@ -288,7 +288,7 @@ GetFilteredControlAnimals <- function(pFromDTC,
 
   }
 
-  return(.sendigRenv$controlAnimals)
+  .sendigRenv$controlAnimals
 }
 
 

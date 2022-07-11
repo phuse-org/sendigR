@@ -160,7 +160,7 @@ getSubjRoute <- function(dbToken,
         msgArr<-c(msgArr, 'Mismatch in values of TS parameter ROUTE and EXROUTE')
     }
     msg<-paste(msgArr, collapse = ' & ')
-    return(ifelse(msg=="", as.character(NA), paste0('ROUTE: ', msg)))
+    ifelse(msg=="", as.character(NA), paste0('ROUTE: ', msg))
   }
   ##################################################################################################################
 
@@ -358,8 +358,8 @@ getSubjRoute <- function(dbToken,
                                                by=c('STUDYID', 'USUBJID'))
 
   # Do final preparation of set of found animals and return
-  return(prepareFinalResults(foundAnimals,
+  prepareFinalResults(foundAnimals,
                              names(animalList),
-                             c('ROUTE'))  )
+                             c('ROUTE'))
 }
 

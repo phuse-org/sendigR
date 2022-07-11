@@ -228,12 +228,12 @@ getStudiesSDESIGN <- function(dbToken,
     foundStudies<-data.table::merge.data.table(studyList, foundStudies, by='STUDYID')
 
     # Do final preparation of set of found studies and return
-    return(prepareFinalResults(foundStudies, names(studyList), c('SDESIGN')))
+    prepareFinalResults(foundStudies, names(studyList), c('SDESIGN'))
   }
   else
     # Initial list if extracted studies
     # Do final preparation of set of found studies and return
-    return(prepareFinalResults(foundStudies, '', c('STUDYID', 'SDESIGN')))
+    prepareFinalResults(foundStudies, '', c('STUDYID', 'SDESIGN'))
 }
 
 

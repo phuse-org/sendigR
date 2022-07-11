@@ -537,9 +537,9 @@ getFindingsPhase <-function(dbToken,
   }
 
   # Do final preparation of set of found animals and return
-  return(prepareFinalResults(foundFindings,
+  prepareFinalResults(foundFindings,
                              names(findings),
-                             c('PHASE')) )
+                             c('PHASE'))
 }
 
 ################################################################################

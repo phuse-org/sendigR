@@ -476,9 +476,9 @@ getFindingsSubjAge<-function(dbToken,
       findingsFound[,`:=` (NO_AGE_MSG = NULL)]
   }
 
-  return(prepareFinalResults(findingsFound,
+  prepareFinalResults(findingsFound,
                              names(findings),
-                             c('AGEDAYS')) )
+                             c('AGEDAYS'))
 }
 
 ################################################################################

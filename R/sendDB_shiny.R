@@ -30,7 +30,7 @@ GetAnimalList <- function(design, species) {
 
   controls <- sendigR::getControlSubj(.sendigRenv$dbToken, studyList = studies)
   animals <- merge(studies, controls, by='STUDYID')
-  return(animals)
+  animals
 }
 
 
@@ -38,7 +38,7 @@ MiFindings_table <- function(animalList, mispec) {
   # given a set of USUBJIDs and and target organ
   # will return the frequency counts of counts
   # of the findings
-  
+
   # query MI and remove findings not in
   # our target animals. Convert
   # all findings to uppercase for
@@ -51,7 +51,7 @@ MiFindings_table <- function(animalList, mispec) {
                          by=c('STUDYID', 'USUBJID'))
   finalFindings <- finalFindings %>% dplyr::filter(MISTRESC!="")
   finalFindings$MISTRESC <- toupper(finalFindings$MISTRESC)
-  return(finalFindings)
+  finalFindings
 }
 
 
@@ -85,7 +85,7 @@ MiFindings <- function(animalList, mispec) {
   findingsCount$Incidence <- (findingsCount$n / length(unique(finalFindings$USUBJID))) * 100
   findingsCount$Incidence <- paste0(round(findingsCount$Incidence, 2), '%')
   findingsCount <- dplyr::select(findingsCount, -n)
-  return(findingsCount)
+  findingsCount
 }
 
 
@@ -150,7 +150,7 @@ LiverFindings <- function(animalList, lbtestcd, how='max') {
     dplyr::group_by(STUDYID, USUBJID) %>%
     dplyr::mutate(LBSTRESC_TRANS = fx(as.numeric(LBSTRESC))) %>%
     unique()
-  return(finalResults)
+  finalResults
 
 }
 
@@ -172,7 +172,7 @@ BodyWeight <- function(animalList) {
   results <- results %>%
     dplyr::group_by(STUDYID, USUBJID) %>%
     dplyr::mutate(days = 1:dplyr::n() / dplyr::n())
-  return(results)
+  results
 
 }
 
@@ -193,12 +193,12 @@ GetUniqueDesign <- function() {
                                                  'SELECT DISTINCT TSVAL
                                                   FROM TS
                                                   WHERE upper(TSPARMCD) = "SDESIGN"')$TSVAL)
-  return(unique(uniqueDesigns))
+  unique(uniqueDesigns)
 }
 
 
 GetUniqueSpecies <- function() {
-  return(sendigR::genericQuery(.sendigRenv$dbToken,
+  sendigR::genericQuery(.sendigRenv$dbToken,
                        "select SPECIES
                           from (select upper(tsval) as SPECIES
                           from ts
@@ -212,7 +212,7 @@ GetUniqueSpecies <- function() {
                                  from dm)
                          where SPECIES is  not null
                            and SPECIES != ''
-                         order by SPECIES")$SPECIES)
+                         order by SPECIES")$SPECIES
 }
 
 GetUniqueStrains <- function(species) {
@@ -231,7 +231,7 @@ GetUniqueStrains <- function(species) {
     selectStrDM <- "species || ': ' || strain"
   }
 
-  return(sort(
+  sort(
     sendigR::genericQuery(.sendigRenv$dbToken, sprintf("select  upper(%s) as STRAIN
                             from ts ts1
                             join ts ts2
@@ -262,7 +262,7 @@ GetUniqueStrains <- function(species) {
                          selectStrTS,
                          selectStrTX,
                          selectStrDM),
-                 species)$STRAIN))
+                 species)$STRAIN)
 }
 
 
@@ -279,7 +279,7 @@ GetUniqueRoutes <- function() {
 GetUniqueOrgans <- function() {
   uniqueOrgans <- toupper(sendigR::genericQuery(.sendigRenv$dbToken, 'SELECT DISTINCT MISPEC
                                                           FROM MI')$MISPEC)
-  return(unique(uniqueOrgans))
+  unique(uniqueOrgans)
 }
 
 GetUniqueLBTESTCD <- function(cat) {
@@ -287,14 +287,14 @@ GetUniqueLBTESTCD <- function(cat) {
                                                   'SELECT DISTINCT LBTESTCD
                                                    FROM LB
                                                    WHERE LBCAT = ?', c(cat))$LBTESTCD)
-  return(unique(uniqueLBTESTCD))
+  unique(uniqueLBTESTCD)
 }
 
 GetAvailableStudies <- function() {
   uniqueStudies <- sendigR::genericQuery(.sendigRenv$dbToken,
                                          'SELECT DISTINCT STUDYID
                                           FROM TS')$STUDYID
-  return(uniqueStudies)
+  uniqueStudies
 }
 
 GetStudyTS <- function(studyid) {
@@ -302,7 +302,7 @@ GetStudyTS <- function(studyid) {
                                      'SELECT *
                                       FROM TS
                                       WHERE STUDYID = :1', c(studyid))
-  return(studyInfo)
+  studyInfo
 }
 
 GetAnimalGroupsStudy <- function(studyid) {
@@ -313,14 +313,14 @@ GetAnimalGroupsStudy <- function(studyid) {
                                             on DM.SETCD = TX.SETCD
                                            AND DM.STUDYID = TX.STUDYID
                                          WHERE DM.STUDYID = ?', c(studyid))
-  return(studyAnimals)
+  studyAnimals
 }
 
 GetUniqueSex <- function() {
   uniqueSex <- sendigR::genericQuery(.sendigRenv$dbToken,
                                      'SELECT DISTINCT SEX FROM DM')
-  
-  return(uniqueSex)
+
+  uniqueSex
 }
 
 aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
@@ -375,7 +375,7 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
   # }
   df <- data.table::as.data.table(df)
 
-  return(df)
+  df
 
 }
 
@@ -383,69 +383,69 @@ aggDomain <- function(domainData, grpByCols, includeUncertain=TRUE) {
 # control animal list and domain subject data merged to create doaminData
 #domain should be "lb" or "bw"
 aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
-  
+
   domain <- tolower(domain)
-  
+
   if (domain=='bw') {
     grpByCols <- c("AGEDAYS","SPECIES","STRAIN","ROUTE","SEX","BWORRESU")
     result <- 'BWSTRESN'
     result_unit <- 'BWORRESU'
-    
+
   } else if (domain=='lb') {
     grpByCols <- c( "LBSPEC","SPECIES","STRAIN","SEX","ROUTE","LBTESTCD", "LBTEST","LBSTRESU")
     result <- 'LBSTRESN'
     result_unit <- 'LBSTRESU'
-    
+
   }
   mean_result <- paste0('Mean_',result)
   sd_result <- paste0('SD_',result)
-  
+
   if (includeUncertain==F) {
-    
+
     agg_tb_certain <- domainData%>%
-      dplyr::group_by_at(grpByCols) %>% 
+      dplyr::group_by_at(grpByCols) %>%
       dplyr::summarize(!!mean_result := mean(get(result)),
                        !!sd_result := stats::sd(get(result)),
                        N = dplyr::n())
     agg_tb_certain <- dplyr::relocate(agg_tb_certain,{{result_unit}}, .after = (!!sd_result))
     agg_tb_certain <- data.table::as.data.table(agg_tb_certain)
-    
-    return(agg_tb_certain)
+
+    agg_tb_certain
   } else if (includeUncertain==T) {
-    
+
     agg_tb_uncer <- domainData%>%
-      dplyr::group_by_at(grpByCols) %>% 
+      dplyr::group_by_at(grpByCols) %>%
       dplyr::summarize(!!mean_result := mean(get(result)),
                        !!sd_result := stats::sd(get(result)),
                        N = dplyr::n())
-    
-    aggDataNonConf <- domainData%>% 
-      dplyr::filter(!is.na(UNCERTAIN_MSG)) %>% 
+
+    aggDataNonConf <- domainData%>%
+      dplyr::filter(!is.na(UNCERTAIN_MSG)) %>%
       dplyr::group_by_at(grpByCols) %>%
       dplyr::summarize(Uncertain.Matches = dplyr::n())
-    
-    aggDataConf <- domainData%>% 
+
+    aggDataConf <- domainData%>%
       dplyr::filter(is.na(UNCERTAIN_MSG)) %>%
       dplyr::group_by_at(grpByCols) %>%
-      dplyr::summarize(Certain.Matches = dplyr::n()) 
-    
+      dplyr::summarize(Certain.Matches = dplyr::n())
+
     df <- merge(agg_tb_uncer, aggDataConf, by=grpByCols, all=TRUE)
     df <- merge(df, aggDataNonConf, by=grpByCols, all=TRUE)
     df <- dplyr::relocate(df,{{result_unit}}, .after = {{sd_result}})
-    
+
     # for(j in seq_along(df)){
     #   data.table::set(df, i = which(is.na(df[[j]]) & is.numeric(df[[j]])), j = j, value = 0)
     # }
     df <- data.table::as.data.table(df)
-    return(df)
-    
+    df
+
   }
 }
 
 #### create lb categorical aggregate table (from Kevin code)
 
 create_lb_cat_agg_table <- function(dt) {
-    
+
     dt$Incidence <- NA
 	dt$Animal_Count <- NA
     possible_results <- unique(dt[["LBSTRESC"]])
@@ -479,23 +479,23 @@ create_lb_cat_agg_table <- function(dt) {
 
 
 
-# calculate mean for interval 
+# calculate mean for interval
 # x is vector, column from dataset
 # n is interval, should be a non negative whole number
 # showsamples TRUE will show the mean of index of x
 meanEveryNth <- function(mean_column, sd_column, incidence_count,interval=3, showsamples=TRUE) {
-  
+
   if (length(mean_column) <1 | is.null(length(mean_column))) {
     mean_return <- NA
     index_return <- NA
     weighted_sd_return <- NA
-    
+
   } else {
-    
+
     if(interval==1) {index_return <- seq(1:length(mean_column)); mean_return <- mean_column ; weighted_sd_return <- sd_column}
-    
+
     if (interval>1)
-    {    
+    {
       newLen <- length(mean_column) - length(mean_column)%%interval
       mean_column <- mean_column[1:newLen]
       sd_column <- sd_column[1:newLen]
@@ -513,8 +513,8 @@ meanEveryNth <- function(mean_column, sd_column, incidence_count,interval=3, sho
       # sd_return <- apply(matrix_mean_column, 2, sd)
       index_return <- apply(matrix_index, 2, mean)
     } }
-  if(showsamples==FALSE) 
-  { 
+  if(showsamples==FALSE)
+  {
     zz<-mean_return
   }
   else if(showsamples==TRUE)
@@ -523,25 +523,25 @@ meanEveryNth <- function(mean_column, sd_column, incidence_count,interval=3, sho
     colnames(zz) <- c("Index","Mean", "Weighted_SD")
   }
   zz <- data.table::as.data.table(zz)
-  return(zz)
+  zz
 }
 
 
 
 
 # meanEveryNth <- function(x, n=3, showsamples=TRUE) {
-#   
+#
 #   if (length(x) <1 | is.null(length(x))) {
 #     z <- NA
 #     y <- NA
 #     z_sd <- NA
-#     
+#
 #   } else {
-#   
+#
 #   if(n==1) y <- seq(1:length(x)); z <- x ; z_sd <- NA
-#   
+#
 #   if (n>1)
-#   {    
+#   {
 #     xlen <- length(x)
 #     newLen <- length(x) - length(x)%%n
 #     x <- x[1:newLen]
@@ -552,8 +552,8 @@ meanEveryNth <- function(mean_column, sd_column, incidence_count,interval=3, sho
 #     z_sd <- apply(matrix_x, 2, sd)
 #     y <- apply(matrix_index, 2, mean)
 #   } }
-#   if(showsamples==FALSE) 
-#   { 
+#   if(showsamples==FALSE)
+#   {
 #     zz<-z
 #   }
 #   else if(showsamples==TRUE)
@@ -565,15 +565,15 @@ meanEveryNth <- function(mean_column, sd_column, incidence_count,interval=3, sho
 #   return(zz)
 # }
 
-## 
+##
 # x is the vector or column of dataset
 # bin is the interval number
 make_interval <- function(x,bin) {
   if (bin ==1) {
-    return(x)
+    x
   } else
   new_x <- (as.integer(x/bin)*bin) - (0.5*bin)
-  return(new_x)
+  new_x
 }
 
 #function to create tooltip for column in the table
@@ -588,7 +588,7 @@ make_interval <- function(x,bin) {
       "  }",
       "}"
     )
-    return(headerCallback)
+    headerCallback
   }
 
   # fixed for aggregate table
@@ -601,7 +601,7 @@ make_interval <- function(x,bin) {
       "  }",
       "}"
     )
-    return(headerCallback)
+    headerCallback
   }
 
 

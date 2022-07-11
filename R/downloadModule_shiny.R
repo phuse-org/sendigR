@@ -1,14 +1,14 @@
 ################################################################################
 ## Shiny Module for downloading data
-## 
+##
 ##
 ## History:
 ## -----------------------------------------------------------------------------
 ## Date         Programmer            Note
 ## ----------   --------------------  ------------------------------------------
 ## 2021-05-20   Yousuf Ali,           Initial version
-## 
-##             
+##
+##
 ################################################################################
 
 
@@ -33,7 +33,7 @@ download_csv <- function(input, output, session, data, filename) {
         },
         content = function(file) {
             data <- data()
-            utils::write.csv(data, file) 
+            utils::write.csv(data, file)
         }
     )
 }
@@ -51,7 +51,7 @@ download_rds_UI <- function(id) {
 
 # server function
 download_rds <- function(input, output, session, data, filename) {
-    
+
     output$data_download <- shiny::downloadHandler(
         filename = function() {
             paste0(filename, "_", Sys.Date(), ".rds")
@@ -81,26 +81,26 @@ age_unit_input <- function(id) {
 #     ns <- shiny::NS(id)
 #     shiny::uiOutput(ns("age_filter"))
 # }
-# 
+#
 # age_filter_server <- function(input, output, session, data, domain,age_range) {
-#     
-# 
+#
+#
 #     output$age_filter <- shiny::renderUI({
 #         ns <- session$ns
-#        
-#         
+#
+#
 #         age_range <- age_range()
-# 
-# 
-# 
+#
+#
+#
 # shiny::column(width = 4,
 #               shiny::sliderInput(ns("mi_age_filter_range"), label = "Select Age Range",
 #                                  min = age_range[1], max=age_range[2], value = age_range, step = 1))
-# 
+#
 #       }
 #     )
-#     return(reactive(input$mi_age_filter_range))
-#     
+#     reactive(input$mi_age_filter_range)
+#
 # }
 
 ####################################################################################

@@ -201,7 +201,7 @@ initEnvironment<-function(dbType=NULL,
   #   - Pointers to function specific for the database type:
   #     - execution of a generic SQL query
   #     - disconnect from database
-  return (list(ctDataFile = ctDataFile,
+  list(ctDataFile = ctDataFile,
                dbType = dbType,
                dbHandle = dbHandle,
                dbSchema = dbSchema,
@@ -209,7 +209,7 @@ initEnvironment<-function(dbType=NULL,
                disconnectDB = get(disconnectDBName),
                dbExistsTable = get(dbExistsTableName),
                dbListFieldsTable = get(dbListFieldsName)
-  ))
+  )
 }
 
 ################################################################################
@@ -265,10 +265,10 @@ genericQuery <- function(dbToken, queryString, queryParams=NULL) {
   #  to all tables and execute the genericQuery function specific for the
   #  actual db type
   #  ## ADD POSIBILITY FOR MULTIPLE QUERY PARAMS
-  return(dbToken$genericQuery(dbToken$dbHandle,
+  dbToken$genericQuery(dbToken$dbHandle,
                               selectStmtAddSchema(dbToken$dbSchema,
                                                   queryString),
-                              queryParams))
+                              queryParams)
 }
 
 ################################################################################
@@ -322,7 +322,7 @@ getTabColLabels <- function(table) {
   }
 
 
-  return(stats::setNames(dt$LABEL, dt$COLUMN_NAME))
+  stats::setNames(dt$LABEL, dt$COLUMN_NAME)
 }
 
 
@@ -335,18 +335,18 @@ getTabColLabels <- function(table) {
 #  Returns boolean
 dbExistsTable <- function(dbToken, table) {
   if (dbToken$dbSchema == '')
-    return(dbToken$dbExistsTable(dbToken$dbHandle, table))
+    dbToken$dbExistsTable(dbToken$dbHandle, table)
   else
-    return(dbToken$dbExistsTable(dbToken$dbHandle, dbToken$dbSchema ,table))
+    dbToken$dbExistsTable(dbToken$dbHandle, dbToken$dbSchema ,table)
 }
 
 ################################################################################
 ##  Return list of columns in specified database table
 dbListFields<- function(dbToken, table) {
   if (dbToken$dbSchema == '')
-    return(dbToken$dbListFields(dbToken$dbHandle, table))
+    dbToken$dbListFields(dbToken$dbHandle, table)
   else
-    return(dbToken$dbListFields(dbToken$dbHandle, dbToken$dbSchema, table))
+    dbToken$dbListFields(dbToken$dbHandle, dbToken$dbSchema, table)
 }
 
 ################################################################################
@@ -390,7 +390,7 @@ prepareCtMetadata<-function(ctFile) {
   save(CDISCctCodeLists, CDISCctCodeValues, file = CDISCctFile)
 
   # Return file name with saved data
-  return(CDISCctFile)
+  CDISCctFile
 }
 
 ################################################################################
@@ -409,9 +409,9 @@ getCTCodListValues<-function(dbToken, pCodeList=NULL) {
   }
 
   # Extract and return a character vector with all value for the requested code list
-  return(data.table::merge.data.table(CDISCctCodeLists[CodeList==toupper(pCodeList), c('CodelistCode')],
+  data.table::merge.data.table(CDISCctCodeLists[CodeList==toupper(pCodeList), c('CodelistCode')],
                                       CDISCctCodeValues[!is.na(CodelistCode)],
-                                      by = 'CodelistCode')$CDISCSubmissionValue);
+                                      by = 'CodelistCode')$CDISCSubmissionValue;
 }
 
 ################################################################################
@@ -426,14 +426,13 @@ getCTCodListValues<-function(dbToken, pCodeList=NULL) {
 #       subqueries (starting with '(')
 selectStmtAddSchema <- function(dbSchema, stmt) {
   vSchema <- ifelse(dbSchema=='','',paste0(dbSchema,'.'))
-  return(
     stmt %>%
       stringr::str_replace_all('\n', ' ') %>%
       stringr::str_replace_all(' +', ' ') %>%
       stringr::str_replace_all('=+', '=') %>%
       stringr::str_replace_all(stringr::regex('(from |join )([^(])', ignore_case = TRUE),
                                paste0('\\1', vSchema, '\\2'))
-  )
+
 }
 
 ################################################################################
@@ -488,7 +487,7 @@ prepareFinalResults <- function(dt, srcCols, addCols) {
     colList <- append(colList, msgColList)
 
   # Include specified columns in correct order and return
-  return(eval(str2expression("data.table::setcolorder(dt[,..colList], colList)")))
+  eval(str2expression("data.table::setcolorder(dt[,..colList], colList)"))
 }
 
 

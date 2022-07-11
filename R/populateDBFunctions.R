@@ -293,7 +293,7 @@ dbImportStudies <- function(dbToken,
   }
   if (!is.null(logFilePath))
     logr::log_close()
-  return(statusAll)
+  statusAll
 }
 
 #' Delete one or more studies in SEND database
@@ -432,11 +432,11 @@ dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
 ##############################################################################
 # Extract and return list of tables in the database
 getDbTables <- function(dbToken) {
-  return(genericQuery(dbToken,
+  genericQuery(dbToken,
                      "select name
                         from sqlite_master
                        where type ='table'
-                         and name not like 'sqlite_%'")$name);
+                         and name not like 'sqlite_%'")$name;
 }
 
 ##############################################################################
@@ -482,8 +482,7 @@ loadStudyData <- function(dbToken,
     #                file, names(xptContent), domain))
 
     # Convert to data.table and return
-    return(
-      data.table::as.data.table(sjlabelled::remove_all_labels(xptContent)))
+     data.table::as.data.table(sjlabelled::remove_all_labels(xptContent))
   }
   ### End of importXptFile
 
@@ -505,10 +504,10 @@ loadStudyData <- function(dbToken,
     }
 
     if (length(rdomainsInvalid) != 0)
-      return(paste0('Domain SUPPQUAL contains RDOMAIN references to not-existing domains: ',
-                    paste(rdomainsInvalid, collapse = ',')))
+      paste0('Domain SUPPQUAL contains RDOMAIN references to not-existing domains: ',
+                    paste(rdomainsInvalid, collapse = ','))
     else
-      return(c())
+      c()
   }
   ### End of loadSuppData
 
@@ -593,7 +592,7 @@ loadStudyData <- function(dbToken,
                             name = domain,
                             value = dtDomain,
                             append = TRUE)
-    return(warnTxt)
+    warnTxt
   }
   ### End of loadDomainData
 

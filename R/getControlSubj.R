@@ -364,12 +364,12 @@ getControlSubj<-function(dbToken,
   }
 
   # Do final preparation of set of found animals and return
-  return(prepareFinalResults(dmCtrlSet, names(studyList), c('TCNTRL',
+  prepareFinalResults(dmCtrlSet, names(studyList), c('TCNTRL',
                                                      'USUBJID',
                                                      'RFSTDTC',
                                                      'DM_AGEDAYS',
                                                      'DSDECOD',
-                                                     'DS_AGEDAYS')))
+                                                     'DS_AGEDAYS'))
 
 }
 

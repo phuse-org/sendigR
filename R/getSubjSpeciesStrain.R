@@ -529,9 +529,9 @@ getSubjSpeciesStrain <- function(dbToken,
                                                by=c('STUDYID', 'USUBJID'))
 
   # Do final preparation of set of found animals and return
-  return(prepareFinalResults(foundAnimals,
+  prepareFinalResults(foundAnimals,
                              names(animalList),
-                             c('SPECIES', 'STRAIN')))
+                             c('SPECIES', 'STRAIN'))
 }
 
 
@@ -581,7 +581,6 @@ identifyUncertainSPECIESAll <- function(dbToken,
   # Get values of code lists SPECIES from CDISC CT
   ctSPECIES<-getCTCodListValues(dbToken, "SPECIES")
   # Identify uncertain animals - add variable SPECIES_UNCERTAIN_MSG
-  return (
     animalSpeciesAll[,`:=` (SPECIES_UNCERTAIN_MSG=mapply(identifyUncertainSPECIES,
                                                          SPECIES,
                                                          SPECIES_TS,
@@ -589,7 +588,7 @@ identifyUncertainSPECIESAll <- function(dbToken,
                                                          SPECIES_DM,
                                                          ALL_SPECIES_TS,
                                                          NUM_SPECIES_TS,
-                                                         NUM_ANIMALS ))])
+                                                         NUM_ANIMALS ))]
 }
 
 
@@ -631,21 +630,21 @@ identifyUncertainSTRAINAll <- function(dbToken,
       }
     }
     msg<-paste(msgArr, collapse = ' & ')
-    return(ifelse(msg=="", as.character(NA), msg))
+    ifelse(msg=="", as.character(NA), msg)
   }
 
   # Get values of code lists STRAINS from CDISC CT
   ctSTRAIN<-getCTCodListValues(dbToken, "STRAIN")
   # Identify uncertain animals - add variable STRAIN_UNCERTAIN_MSG
-  return (
-    animalStrainAll[,`:=` (STRAIN_UNCERTAIN_MSG=mapply(identifyUncertainSTRAIN,
+
+  animalStrainAll[,`:=` (STRAIN_UNCERTAIN_MSG=mapply(identifyUncertainSTRAIN,
                                                        STRAIN,
                                                        STRAIN_TS,
                                                        STRAIN_TX,
                                                        STRAIN_DM,
                                                        ALL_STRAIN_TS,
                                                        NUM_STRAIN_TS,
-                                                       NUM_ANIMALS ))])
+                                                       NUM_ANIMALS ))]
 }
 
 ##################################################################################################################
@@ -692,7 +691,7 @@ doFiltering <- function(animalSpeciesStrainAll,
     # Exclude species/strain level message columns
     foundAnimals[,`:=` (SPECIES_UNCERTAIN_MSG = NULL,
                         STRAIN_UNCERTAIN_MSG = NULL)]
-  return(foundAnimals)
+  foundAnimals
 }
 
 ##################################################################################################################
@@ -712,11 +711,11 @@ execOneSpeciesFilter <- function(animalSpeciesStrainAll,
   if (length(strainList) == 0) strainList <- NULL
 
   # Execute species/strain filtering for current species/strain(s)
-  return(doFiltering(animalSpeciesStrainAll,
+  doFiltering(animalSpeciesStrainAll,
                      species,
                      strainList,
                      inclUncertain,
-                     exclusively))
+                     exclusively)
 }
 
 

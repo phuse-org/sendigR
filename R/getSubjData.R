@@ -180,8 +180,7 @@ getSubjData<-function(dbToken,
   data.table::setorderv(sendIGcolumns[TABLE_NAME == domain &
                                         COLUMN_NAME %in% names(foundData)],
                         "SEQ")$COLUMN_NAME %>%
-    data.table::setcolorder(foundData, .) %>%
-    return()
+    data.table::setcolorder(foundData, .)
 }
 
 

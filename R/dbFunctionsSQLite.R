@@ -11,12 +11,12 @@
 
 ## Connect function
 connectDB_sqlite<-function(dbPath) {
-  return(RSQLite::dbConnect(RSQLite::SQLite(), dbPath))
+  RSQLite::dbConnect(RSQLite::SQLite(), dbPath)
 }
 
 ## Disconnect function
 disconnectDB_sqlite<-function(dbHandle) {
-  return(RSQLite::dbDisconnect(dbHandle))
+  RSQLite::dbDisconnect(dbHandle)
 }
 
 ## Execute a generic query
@@ -26,12 +26,12 @@ disconnectDB_sqlite<-function(dbHandle) {
 #  ## ADD POSIBILITY FOR MULTIPLE QUERY PARAMS
 genericQuery_sqlite<-function(dbHandle, queryString, queryParams) {
   if (is.null(queryParams)){
-    return(data.table::as.data.table(RSQLite::dbGetQuery(dbHandle, queryString)))
+    data.table::as.data.table(RSQLite::dbGetQuery(dbHandle, queryString))
   } else {
     # Input query parameters are converted to a unnamed list used as bind variable
     # regardless of the type of input
-    return(data.table::as.data.table(RSQLite::dbGetQuery(dbHandle, queryString,
-                                                         list(unname(unlist(list(list(queryParams))))))))
+    data.table::as.data.table(RSQLite::dbGetQuery(dbHandle, queryString,
+                                list(unname(unlist(list(list(queryParams)))))))
   }
 }
 
@@ -45,5 +45,5 @@ dbExistsTable_sqlite <- function(dbHandle, table) {
 ################################################################################
 ##  Return list of columns in specified database table
 dbListFields_sqlite <- function(dbHandle, table) {
-  return(RSQLite::dbListFields(dbHandle, table))
+  RSQLite::dbListFields(dbHandle, table)
 }

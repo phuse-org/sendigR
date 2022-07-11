@@ -161,8 +161,8 @@ getSubjSex<-function(dbToken,
                                  by=c('STUDYID', 'USUBJID'))
 
   # Do final preparation of set of found animals and return
-  return(prepareFinalResults(foundAnimals,
+  prepareFinalResults(foundAnimals,
                              names(animalList),
-                             c('SEX'))  )
+                             c('SEX'))
 }
 

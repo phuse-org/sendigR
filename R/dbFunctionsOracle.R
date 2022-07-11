@@ -11,12 +11,12 @@
 
 ## Connect function
 connectDB_oracle<-function(dbPath, dbUser, dbPwd) {
-  return(ROracle::dbConnect(DBI::dbDriver("Oracle"), username=dbUser, password=dbPwd, dbname=dbPath))
+  ROracle::dbConnect(DBI::dbDriver("Oracle"), username=dbUser, password=dbPwd, dbname=dbPath)
 }
 
 ## Disconnect function
 disconnectDB_oracle<-function(dbHandle) {
-  return(ROracle::dbDisconnect(dbHandle))
+  ROracle::dbDisconnect(dbHandle)
 }
 
 ## Execute a generic query
@@ -76,7 +76,7 @@ genericQuery_oracle<-function(dbHandle, queryString, queryParams=NULL) {
   queryResult<-data.table::as.data.table(ROracle::fetch(cur))
   ROracle::dbClearResult(cur)
 
-  return(queryResult)
+  queryResult
 }
 
 
@@ -84,11 +84,11 @@ genericQuery_oracle<-function(dbHandle, queryString, queryParams=NULL) {
 ## Check if specified table exists in database
 #  Returns boolean
 dbExistsTable_oracle <- function(dbHandle, dbSchema, table) {
-  return(ROracle::dbExistsTable(dbHandle, table, schema = dbSchema))
+  ROracle::dbExistsTable(dbHandle, table, schema = dbSchema)
 }
 
 ################################################################################
 ##  Return list of columns in specified database table
 dbListFields_oracle <- function(dbHandle, dbSchema, table) {
-  return(ROracle::dbListFields(dbHandle, table, schema = dbSchema))
+  ROracle::dbListFields(dbHandle, table, schema = dbSchema)
 }
