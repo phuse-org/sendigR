@@ -250,16 +250,7 @@ guide <- cicerone::Cicerone$new()$step(
                  shiny::checkboxInput('INCL_UNCERTAIN',
                                'Include uncertain rows',
                                value = FALSE),
-                shiny::actionButton("refreshData", "Generate/Update Data"
-                                    # style = "background-color:#FFFFFF;
-                                    #         color:#E31616;
-                                    #         border-color:#BEBEBE;
-                                    #         border-style:solid;
-                                    #         border-width:1px;
-                                    #         border-radius:5%;
-                                    #         font-weight:bold;
-                                    #         font-size:18px;"
-											),
+                shiny::actionButton("refreshData", "Generate/Update Data"),
                                             htmltools::br()),
 											shinydashboard::menuItem("Project links",
 											shinydashboard::menuSubItem(text = "GitHub Link", href = "https://github.com/phuse-org/sendigR"),
@@ -286,12 +277,10 @@ guide <- cicerone::Cicerone$new()$step(
 
 		cicerone::use_cicerone(),
 
-	#   shiny::includeCSS("www/theme.css"),
 	  shiny::includeCSS(paste0(www_path, "/www/from_sass_theme.css")),
 	  htmltools::htmlDependency(
       "animate.css", "4.1.1",
 	  animate_css_path, stylesheet = "animate.min.css"),
-	#   shiny::includeCSS("https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"),
       htmltools::tags$head(shiny::tags$script(shiny::HTML(click_jscode))),
       shiny::tabsetPanel(type = 'tab',
                  shiny::tabPanel('ANIMALS', ##### Animal Tab ----
@@ -316,17 +305,7 @@ guide <- cicerone::Cicerone$new()$step(
 
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
-                                                 shiny::actionButton("submit_mi_age", "Update"
-
-											# 						 style="background-color:#FFFFFF;
-                                            # color:#E31616;
-                                            #                                     border-color:#BEBEBE;
-                                            #                                     border-style:solid;
-                                            #                                     border-width:1px;
-                                            #                                     border-radius:5%;
-                                            #                                     font-weight:bold;
-                                            #                                     font-size:14px;"
-																				))),
+                                                 shiny::actionButton("submit_mi_age", "Update"))),
                                  htmltools::br(style="line-height: 10px"),
                           shiny::tabsetPanel(
                             shiny::tabPanel("MI Findings",
@@ -338,17 +317,7 @@ guide <- cicerone::Cicerone$new()$step(
                                                                                availableOrgans,
                                                                                selected='KIDNEY'),
                                                             shiny::uiOutput('mi_findings_filter'),
-                                                            shiny::actionButton('mi_finding_update', 'Generate/Update Table'
-
-											# 									style = "background-color:#FFFFFF;
-                                            # color:#E31616;
-                                            #                                     border-color:#BEBEBE;
-                                            #                                     border-style:solid;
-                                            #                                     border-width:1px;
-                                            #                                     border-radius:5%;
-                                            #                                     font-weight:bold;
-                                            #                                     font-size:14px;"
-																				)),
+                                                            shiny::actionButton('mi_finding_update', 'Generate/Update Table')),
                                        shiny::column(width = 6, offset = 1,
                                               DT::dataTableOutput("findingsTable"),
                                               htmltools::br(),htmltools::br(),
@@ -384,33 +353,9 @@ guide <- cicerone::Cicerone$new()$step(
 
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
-                                   shiny::actionButton("submit_lb_age", "Update"
-
-											# 		   style="background-color:#FFFFFF;
-                                            # color:#E31616;
-                                            #                                     border-color:#BEBEBE;
-                                            #                                     border-style:solid;
-                                            #                                     border-width:1px;
-                                            #                                     border-radius:5%;
-                                            #                                     font-weight:bold;
-                                            #                                     font-size:14px;"
-																				))),
+                                   shiny::actionButton("submit_lb_age", "Update"))),
                                  htmltools::br(style="line-height: 10px"),
                           shiny::tabsetPanel(
-                            # shiny::tabPanel("LB Findings",
-                            #          shiny::fluidRow(
-                            #            htmltools::br(),
-                            #            shiny::column(width = 2,
-                            #                          shiny::selectInput("LBTESTCD",
-                            #                               "Select LBTESTCD:",
-                            #                               availableLBTESTCD)),
-                            #            shiny::column(width = 2,
-                            #                          shiny::radioButtons("dist", "Distribution type:",
-                            #                                c("Normal" = "norm",
-                            #                                  "Log-normal" = "lnorm"))),
-                            #            shiny::column(width = 7,offset = 1,
-                            #                          shiny::plotOutput("labTestHist")))
-                            #          ),
                             shiny::tabPanel("Individual Records",
                                             shiny::checkboxInput('lb_hide_check_column',
                                                                  label = 'Show Only Table',
@@ -443,28 +388,11 @@ guide <- cicerone::Cicerone$new()$step(
 						shiny::column(width = 3, offset = 1,
 									
 									shiny::uiOutput('lb_findings_filter'),
-									shiny::actionButton('lb_finding_update', 'Generate/Update Table'
-
-					# 									style = "background-color:#FFFFFF;
-					# color:#E31616;
-					#                                     border-color:#BEBEBE;
-					#                                     border-style:solid;
-					#                                     border-width:1px;
-					#                                     border-radius:5%;
-					#                                     font-weight:bold;
-					#                                     font-size:14px;"
-														)),
+									shiny::actionButton('lb_finding_update', 'Generate/Update Table')),
 				shiny::column(width = 6, offset = 1,
 						DT::dataTableOutput("lb_findingsTable"),
 						htmltools::br(),htmltools::br(),
-						htmltools::br(),htmltools::br())))
-							# shiny::tabPanel("LB Observation Rate",
-							# shiny::uiOutput("lb_obs_rate_filter",
-							# htmltools::br(),
-							# DT::dataTableOutput("")))
-
-                          )
-                          ),
+						htmltools::br(),htmltools::br()))))),
                  shiny::tabPanel("BW",
 				  ##### BW ----
                                  shiny::fluidRow(
@@ -475,17 +403,7 @@ guide <- cicerone::Cicerone$new()$step(
 
                                  shiny::fluidRow(
                                    shiny::column(width = 2,
-                                                 shiny::actionButton("submit_bw_age", "Update"
-
-											# 						 style="background-color:#FFFFFF;
-                                            # color:#E31616;
-                                            #                                     border-color:#BEBEBE;
-                                            #                                     border-style:solid;
-                                            #                                     border-width:1px;
-                                            #                                     border-radius:5%;
-                                            #                                     font-weight:bold;
-                                            #                                     font-size:14px;"
-																				))),
+                                                 shiny::actionButton("submit_bw_age", "Update"))),
                                  htmltools::br(style="line-height: 10px"),
 
 
@@ -511,17 +429,7 @@ guide <- cicerone::Cicerone$new()$step(
                             shiny::tabPanel("Aggregate Plot",
                                             shiny::fluidRow(shiny::column(width = 4,offset = 1,
                                             shiny::uiOutput("bw_table_filter"),
-                                            shiny::actionButton("bw_plot_update", "Generate/Update Plot"
-
-											# 					style = "background-color:#FFFFFF;
-                                            # color:#E31616;
-                                            # border-color:#BEBEBE;
-                                            # border-style:solid;
-                                            # border-width:1px;
-                                            # border-radius:5%;
-                                            # font-weight:bold;
-                                            # font-size:14px;"
-                                            )),
+                                            shiny::actionButton("bw_plot_update", "Generate/Update Plot")),
 
                                               shiny::column(width = 4,
                                             shiny::sliderInput("age_interval", "Choose Interval",
@@ -1227,24 +1135,13 @@ output$lb_findings_filter  <- shiny::renderUI({
       shiny::fluidRow(
 		  		  	shiny::selectInput("lb_spec",
                                          "Select Organ Specimen:",
-                                         choices=df_lbspec
-                                        #  selected="",
-                                        #  multiple=FALSE
-                                        #  options=list(plugins=list('drag_drop','remove_button')
-                                        #  )
-										 ),
+                                         choices=df_lbspec),
 					shiny::selectInput("lb_lbtestcd",
                                          "Select Test Code:",
-                                         choices=df_lbtestcd
-                                        #  selected=df_lbtestcd
-                                        #  multiple=TRUE,
-                                        #  options=list(plugins=list('drag_drop','remove_button')
-                                        #  )
-										 ),
+                                         choices=df_lbtestcd),
 		  			addUIDep(shiny::selectizeInput("lb_route",
                                          "Select Route:",
                                          choices=df_route,
-                                        #  selected=df_route,
                                          multiple=TRUE,
                                          options=list(plugins=list('drag_drop','remove_button')
                                          ))),
@@ -1373,13 +1270,8 @@ output$lb_findingsTable  <- DT::renderDataTable({
 
     ####### LB categorical agg table #####
 
-
-
-
     LB_cat_agg_table <- shiny::reactive({
       df <- lb_domain_data()
-
-    #   grpByCols <- c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST', 'LBSTRESC')
 	  group_by_cols <- c("SPECIES", "STRAIN", "SEX", "ROUTE", "LBSPEC",'LBCAT', "LBTESTCD")
 
       df <- df[LBSTRESC!=""]
@@ -1395,22 +1287,6 @@ output$lb_findingsTable  <- DT::renderDataTable({
 	   get_table <- get_table[, ..get_table_col]
 	   get_table <- get_table[!duplicated(get_table)]
 
-
-
-      # apply aggDomain function from sendDB_shiny.R file, this count Incidence
-    #   shiny::isolate(tableData <- aggDomain(domainData, grpByCols,
-    #                                         includeUncertain=input$INCL_UNCERTAIN))
-
-     
-    #   tissueCounts <- domainData[, list(Animals.In.LBSPEC=length(unique(USUBJID))),
-    #                              by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST')]
-
-   
-    #   tableData <- merge(tableData, tissueCounts,
-    #                      by=c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST'))
-     
-    #   tableData[, Incidence:=round(((N/Animals.In.LBSPEC)*100),2)]
-    #   tableData[, Animals.In.LBSPEC:=NULL]
       get_table
     })
 
