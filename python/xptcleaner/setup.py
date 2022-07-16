@@ -24,7 +24,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="xptcleaner",
-    version="0.0.3",
+    version="1.0.0",
     description="CDISC SEND xpt (SAS v5 Transport format) files cleaner",
     long_description=read('README.md'),
     long_description_content_type="text/markdown",
