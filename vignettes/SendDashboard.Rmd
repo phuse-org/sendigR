@@ -87,8 +87,6 @@ When user click Generate/Update Data button, app will filter and extract a table
 
 ### Common feature of the table
 
-![table_feature_2](https://user-images.githubusercontent.com/31291716/179551186-beb24253-90e3-426b-ae4e-3602760489e2.gif)
-
 __Show entries:__  
 User can choose how many entry they want to show at once from the drop down menu located upper left side of the table.  
 __Search:__  
