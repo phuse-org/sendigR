@@ -86,8 +86,7 @@ On the top middle of the page there are few tab that shows different table for d
 When user click Generate/Update Data button, app will filter and extract a table containing control animal information specified in sidebar input fields.
 
 ### Common feature of the table
-![table_feature](https://user-images.githubusercontent.com/31291716/177620363-3326e301-04b8-451b-99dd-2d2bc1637db8.gif)
-
+![table_feature_2](https://user-images.githubusercontent.com/31291716/179539326-548bd35d-c06a-41ad-9b4d-79f4dbe5e649.gif)
 
 __Show entries:__  
 User can choose how many entry they want to show at once from the drop down menu located upper left side of the table.  
@@ -109,14 +108,16 @@ If user hover the cursor on the column name, it will show the full name of the c
 
 __Display Column:__  
 Each of the Individual table of MI, LB and BW domain have a vertical column at left side of table. Individual table shows some specific column by default. More column can be selected by checking the box in display column. This will update the table and show all the columns that selected in left display column. 
-![display_column](https://user-images.githubusercontent.com/31291716/177612096-2e5544fa-6a4d-4145-81d5-8e593de89848.gif)
+![display_column2](https://user-images.githubusercontent.com/31291716/179539488-da1d0d9d-f35f-44ad-b134-7b040a349130.gif)
+
 
 This vertical left display column can be hide by checking the show only table check box located above the display column
 
 ### Filter Animal Age
 
 MI, LB,  and BW tab have filter option for animal age. User can select animal age range from slider. User also need to click update button to show  other tables in that tab. 
-![age_selection](https://user-images.githubusercontent.com/31291716/177612185-59b6d45b-436a-402e-ba35-948458ab477d.gif)
+![age_selection2](https://user-images.githubusercontent.com/31291716/179539659-fa0c1192-635b-417e-a8e6-354cee13bf61.gif)
+
 
 ### MI (Microscopic Findings) Tab
 
