@@ -30,3 +30,4 @@
 ^\.vscode$
 ^_pkgdown\.yaml$
 ^index\.md$
+^vignettes/SendDashboard\.Rmd$
