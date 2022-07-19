@@ -205,7 +205,30 @@ and TX parameter SPECIES/STRAIN and DM.SPECIES/STRAIN are unequal.</p></li>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># Extract rats and mice plus uncertain animals</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span></span>
+<span class="r-in"><span>                     speciesFilter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RAT'</span>, <span class="st">'MOUSE'</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                     inclUncertain <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Extract Spargue-Dawley rats plus uncertain animals.</span></span></span>
+<span class="r-in"><span><span class="co"># Include only animals from studies which do not contain other species or</span></span></span>
+<span class="r-in"><span><span class="co"># strains</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span></span>
+<span class="r-in"><span>                     speciesFilter <span class="op">=</span> <span class="st">'RAT'</span>,</span></span>
+<span class="r-in"><span>                     strainFilter <span class="op">=</span> <span class="st">'SPRAGUE-DAWLEY'</span>,</span></span>
+<span class="r-in"><span>                     inclUncertain <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>                     exclusively <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>                     noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Extract Wistar rats and and Beagle dogs - and no uncertain animals</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span></span>
+<span class="r-in"><span>                     speciesFilter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RAT'</span>, <span class="st">'DOG'</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                     strainFilter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RAT: WISTAR'</span>, <span class="st">'DOG: BEAGLE'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># No filtering, just add SPECIES and STRAIN - do not include messages when</span></span></span>
+<span class="r-in"><span><span class="co"># these values cannot be confidently found</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span></span>
+<span class="r-in"><span>                     noFilterReportUncertain <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+</code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>

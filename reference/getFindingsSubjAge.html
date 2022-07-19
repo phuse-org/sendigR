@@ -241,7 +241,22 @@ animals in a pool.</p></li>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># Extract LB rows for the animals at age between 8 and 12 weeks at finding</span></span></span>
+<span class="r-in"><span><span class="co"># time - include uncertain rows</span></span></span>
+<span class="r-in"><span><span class="fu">getFindingsSubjAge</span><span class="op">(</span>dbToken <span class="op">=</span> <span class="va">db</span>,</span></span>
+<span class="r-in"><span>                   findings <span class="op">=</span> <span class="va">lb</span>,</span></span>
+<span class="r-in"><span>                   animalList <span class="op">=</span> <span class="va">animals</span>,</span></span>
+<span class="r-in"><span>                   fromAge <span class="op">=</span> <span class="st">'8w'</span>,</span></span>
+<span class="r-in"><span>                   toAge <span class="op">=</span> <span class="st">'12w'</span>,</span></span>
+<span class="r-in"><span>                   inclUncertain <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># No filtering, just add AGEDAYS to FW rows - do not include messages when</span></span></span>
+<span class="r-in"><span><span class="co"># the AGEDAYS cannot be confidently identified</span></span></span>
+<span class="r-in"><span><span class="fu">getFindingsSubjAge</span><span class="op">(</span>dbToken <span class="op">=</span> <span class="va">db</span>, findings <span class="op">=</span> <span class="va">fw</span>,  animalList <span class="op">=</span> <span class="va">animals</span>,</span></span>
+<span class="r-in"><span>                   noFilterReportUncertain <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
