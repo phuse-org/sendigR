@@ -192,14 +192,14 @@ The same checks are performed and reported in column \code{NOT_VALID_MSG} if
 # Extract LB rows for the animals at age between 8 and 12 weeks at finding
 # time - include uncertain rows
 getFindingsSubjAge(dbToken = db,
-                   findings = lb
+                   findings = lb,
                    animalList = animals,
                    fromAge = '8w',
-                   toAge = '12w'
+                   toAge = '12w',
                    inclUncertain = TRUE)
 # No filtering, just add AGEDAYS to FW rows - do not include messages when
 # the AGEDAYS cannot be confidently identified
-getFindingsSubjAge(db, fw, animals,
+getFindingsSubjAge(dbToken = db, findings = fw,  animalList = animals,
                    noFilterReportUncertain = FALSE)
 }
 

@@ -39,7 +39,7 @@
     
     <a class="navbar-brand me-2" href="index.html">sendigR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,44 +88,30 @@
 </h1>
 </div>
 <!-- <a href="https://github.com/phuse-org/sendigR"><img src="man/figures/logo.png" alt="sendigR logo" align="right" /></a> -->
-<p>The purpose of the <code>sendigR</code> package is to extract control
-data from a set of nonclinical studies stored in <a href="https://www.cdisc.org/standards/foundational/send" class="external-link">CDISC SEND</a>
-format in a database to be used for cross study analysis.</p>
+<p>The purpose of the <code>sendigR</code> package is to extract control data from a set of nonclinical studies stored in <a href="https://www.cdisc.org/standards/foundational/send" class="external-link">CDISC SEND</a> format in a database to be used for cross study analysis.</p>
 <p><code>sendigR</code> includes:</p>
 <ul>
-<li><p>Functions to construct a relational database from any collection
-of SEND datasets;</p></li>
+<li><p>Functions to construct a relational database from any collection of SEND datasets;</p></li>
 <li><p>functions to query control data from database;</p></li>
-<li><p>An R Shiny application with a graphical user interface for
-facilitating cross-study analysis.</p></li>
-<li><p>An optional Python package (xptclearner) to harmonize SEND
-datasets using SEND controlled terminology and extensible
-terminology;</p></li>
+<li><p>An R Shiny application with a graphical user interface for facilitating cross-study analysis. <a href="https://phuse-org.shinyapps.io/sendigR/" class="external-link">Demo App can be found here.</a></p></li>
+<li><p>An optional Python package (xptclearner) to harmonize SEND datasets using SEND controlled terminology and extensible terminology;</p></li>
 </ul>
-<p>Familiarity with the CDISC SEND data model and at least basic
-knowledge about animal studies is necessary to use the package.</p>
+<p>Familiarity with the CDISC SEND data model and at least basic knowledge about animal studies is necessary to use the package.</p>
 <div class="section level2">
 <h2 id="step-by-step-installation">Step by Step Installation<a class="anchor" aria-label="anchor" href="#step-by-step-installation"></a>
 </h2>
 <div class="section level4">
 <h4 id="installation-of-r-and-rstudio">Installation of R and RStudio<a class="anchor" aria-label="anchor" href="#installation-of-r-and-rstudio"></a>
 </h4>
-<p>R version 4.1.2 and above are used in developing and testing the
-<code>sendigR</code>.</p>
-<p><a href="https://rstudio-education.github.io/hopr/starting.html" class="external-link">R
-and RStudio Installation</a></p>
+<p>R version 4.1.2 and above are used in developing and testing the <code>sendigR</code>.</p>
+<p><a href="https://rstudio-education.github.io/hopr/starting.html" class="external-link">R and RStudio Installation</a></p>
 </div>
 <div class="section level4">
 <h4 id="installation-of-python-and-xptcleaner-optional">Installation of Python and xptcleaner (optional)<a class="anchor" aria-label="anchor" href="#installation-of-python-and-xptcleaner-optional"></a>
 </h4>
-<p>Python version 3.9.6 and above are used in developing and testing the
-xptcleaner of <code>sendigR</code>. This is an optional component, you
-can skip this step if you will not use the xptcleaner to clean the xpt
-files.</p>
-<p><a href="https://docs.python.org/3/using/index.html" class="external-link">Python
-installation</a></p>
-<p><a href="https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html">xptcleaner
-Python package installation</a></p>
+<p>Python version 3.9.6 and above are used in developing and testing the xptcleaner of <code>sendigR</code>. This is an optional component, you can skip this step if you will not use the xptcleaner to clean the xpt files.</p>
+<p><a href="https://docs.python.org/3/using/index.html" class="external-link">Python installation</a></p>
+<p><a href="https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html">xptcleaner Python package installation</a></p>
 </div>
 <div class="section level4">
 <h4 id="installation-of-sendigr-package">Installation of sendigR package<a class="anchor" aria-label="anchor" href="#installation-of-sendigr-package"></a>
@@ -145,20 +131,17 @@ Python package installation</a></p>
 </h2>
 <div class="section level4">
 <h4 id="sendigr-overview">
-<a href="https://phuse-org.github.io/sendigR/articles/Introduction.html">sendigR
-Overview</a><a class="anchor" aria-label="anchor" href="#sendigr-overview"></a>
+<a href="https://phuse-org.github.io/sendigR/articles/Introduction.html">sendigR Overview</a><a class="anchor" aria-label="anchor" href="#sendigr-overview"></a>
 </h4>
 </div>
 <div class="section level4">
 <h4 id="sendigr-r-shiny-application">
-<a href="https://phuse-org.github.io/sendigR/articles/SendDashboard.html">sendigR
-R Shiny Application</a><a class="anchor" aria-label="anchor" href="#sendigr-r-shiny-application"></a>
+<a href="https://phuse-org.github.io/sendigR/articles/SendDashboard.html">sendigR R Shiny Application</a><a class="anchor" aria-label="anchor" href="#sendigr-r-shiny-application"></a>
 </h4>
 </div>
 <div class="section level4">
 <h4 id="using-the-sendigr-xptcleaner">
-<a href="https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html">Using
-the sendigR xptcleaner</a><a class="anchor" aria-label="anchor" href="#using-the-sendigr-xptcleaner"></a>
+<a href="https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html">Using the sendigR xptcleaner</a><a class="anchor" aria-label="anchor" href="#using-the-sendigr-xptcleaner"></a>
 </h4>
 <!-- badges: start -->
 
@@ -167,26 +150,12 @@ the sendigR xptcleaner</a><a class="anchor" aria-label="anchor" href="#using-the
 <div class="section level2">
 <h2 id="sendigr-license">sendigR License<a class="anchor" aria-label="anchor" href="#sendigr-license"></a>
 </h2>
-<p>The <code>sendigR</code> package including the optional Python
-xptcleaner is subject to the MIT Open Source License:</p>
+<p>The <code>sendigR</code> package including the optional Python xptcleaner is subject to the MIT Open Source License:</p>
 <p>MIT License</p>
 <p>Copyright (c) 2022 PHUSE and BioCelerate</p>
-<p>Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-“Software”), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:</p>
-<p>The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.</p>
-<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 </div>
 </div>
 
@@ -244,15 +213,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser,
-Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter,
-Michael Denieu, Wenxian Wang.</p>
+<p>Developed by Bo Larsen, Yousuf Ali, Kevin Snyder, William Houser, Brianna Paisley, Cmsabbir Ahmed, Susan Butler, Michael Rosentreter, Michael Denieu, Wenxian Wang.</p>
 </div>
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
 </div>
 
     </footer>
