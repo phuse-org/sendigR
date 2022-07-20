@@ -101,6 +101,10 @@
     utils::globalVariables("LBSPEC")
     utils::globalVariables("LBTESTCD")
     utils::globalVariables("..get_table_col")
+    utils::globalVariables("LBCAT")
+    utils::globalVariables("Animal_Count")
+    utils::globalVariables("Uncertain.Matches")
+    utils::globalVariables("..arrange_column")
     utils::globalVariables("XPTCleaner")
     utils::globalVariables("XPTClean")
 
