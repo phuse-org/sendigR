@@ -122,13 +122,13 @@
 #' \dontrun{
 #' # Extract rats and mice plus uncertain animals
 #' getSubjSpeciesStrain(dbToken, controlAnimals,
-#'                      speciesFilter = c('RAT', 'MOUSE')
+#'                      speciesFilter = c('RAT', 'MOUSE'),
 #'                      inclUncertain = TRUE)
 #' # Extract Spargue-Dawley rats plus uncertain animals.
 #' # Include only animals from studies which do not contain other species or
 #' # strains
 #' getSubjSpeciesStrain(dbToken, controlAnimals,
-#'                      speciesFilter = 'RAT'
+#'                      speciesFilter = 'RAT',
 #'                      strainFilter = 'SPRAGUE-DAWLEY',
 #'                      inclUncertain = TRUE,
 #'                      exclusively = TRUE,

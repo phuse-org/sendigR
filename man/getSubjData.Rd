@@ -65,13 +65,13 @@ of subjects included in \code{animalList}.\cr
 \examples{
 \dontrun{
 # Extract all columns from DM:
-getSUbjData(myDbToken, myControlAnimals, 'dm')
+getSubjData(myDbToken, myControlAnimals, 'dm')
 
 # Extract selected columns from LB:
-getSUbjData(myDbToken, myControlAnimals, 'LB',
+getSubjData(myDbToken, myControlAnimals, 'LB',
             list('LBTESTCD', 'LBCAT',
                  'LBSTRESC', 'LBSTRESN', 'LBSTRESU',
-                 'LBSTAT', 'LBREASND'
+                 'LBSTAT', 'LBREASND',
                  'LBTPT'))
 }
 

@@ -139,7 +139,7 @@
 #' getFindingsPhase(dbToken, lb,
 #'                  phaseFilter = 'Treatment',
 #'                  inclUncertain = TRUE)
-#'  No filtering, just add PHASE to FW rows - do not include messages when
+#' # No filtering, just add PHASE to FW rows - do not include messages when
 #' # the phase cannot be confidently identified
 #' getFindingsPhase(dbToken, fw,
 #'                  noFilterReportUncertain = FALSE)

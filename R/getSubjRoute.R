@@ -107,12 +107,12 @@
 #' \dontrun{
 #' # Extract animals administered oral or oral gavage plus uncertain animals
 #' getSubjRoute(dbToken, controlAnimals,
-#'              routeFilter = c('ORAL', 'ORAL GAVAGE')
+#'              routeFilter = c('ORAL', 'ORAL GAVAGE'),
 #'              inclUncertain = TRUE)
 #' # Extract animals administered oral or oral gavage.
 #' # Do only include studies which include both route values
 #' getSubjRoute(dbToken, controlAnimals,
-#'              routeFilter = c('ORAL', 'ORAL GAVAGE')
+#'              routeFilter = c('ORAL', 'ORAL GAVAGE'),
 #'              matchAll = TRUE)
 #' # Extract animals administered subcutaneous.
 #' # Include only animals from studies which do not contain other route values
