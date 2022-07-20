@@ -1116,6 +1116,9 @@ select_cols <- c(
     "LBSTRESC",
     "LBCAT"
 )
+if(input$INCL_UNCERTAIN){
+	select_cols <- c(select_cols, "UNCERTAIN_MSG")
+}
       domainData <- domainData[LBSTRESC!="", ..select_cols]
 	  domainData
 
@@ -1132,10 +1135,15 @@ output$lb_findings_filter  <- shiny::renderUI({
       df_species <- unique(df[['SPECIES']])
       df_strain <- unique(df[['STRAIN']])
       df_sex <- unique(df[['SEX']])
+	  df_lbcat <- unique(df[["LBCAT"]])
       shiny::fluidRow(
 		  		  	shiny::selectInput("lb_spec",
                                          "Select Organ Specimen:",
                                          choices=df_lbspec),
+					shiny::selectInput("lb_cat",
+                                         "Select Category for Lab Test",
+                                         choices=df_lbcat),
+
 					shiny::selectInput("lb_lbtestcd",
                                          "Select Test Code:",
                                          choices=df_lbtestcd),
@@ -1169,9 +1177,19 @@ output$lb_findings_filter  <- shiny::renderUI({
 
 })
 
-	shiny::observeEvent(input$lb_spec, {
+
+shiny::observeEvent(input$lb_spec, {
 		df <- lb_domain_data()
 		df <- df[LBSPEC %in% input$lb_spec,]
+		df_cat <- unique(df[["LBCAT"]])
+		shiny::updateSelectInput(session = session,
+		inputId = "lb_cat",
+		choices = df_cat)
+
+	})
+	shiny::observeEvent(input$lb_cat, {
+		df <- lb_domain_data()
+		df <- df[LBCAT %in% input$lb_cat,]
 		df_lbtestcd <- unique(df[["LBTESTCD"]])
 		shiny::updateSelectInput(session = session,
 		inputId = "lb_lbtestcd",
@@ -1218,7 +1236,7 @@ output$lb_findings_filter  <- shiny::renderUI({
     ## MI finding table after filter
     lb_finding_table_after_filter <- shiny::eventReactive(input$lb_finding_update, {
       df <- lb_domain_data()
-	  df <- df[LBSPEC %in% input$lb_spec & LBTESTCD %in% input$lb_lbtestcd]
+	  df <- df[LBSPEC %in% input$lb_spec & LBCAT %in% input$lb_cat & LBTESTCD %in% input$lb_lbtestcd]
       df <- df[ROUTE %in% input$lb_route & STRAIN %in% input$lb_strain & SPECIES %in% input$lb_species & SEX %in% input$lb_sex,]
       df
     })
@@ -1275,19 +1293,46 @@ output$lb_findingsTable  <- DT::renderDataTable({
 	  group_by_cols <- c("SPECIES", "STRAIN", "SEX", "ROUTE", "LBSPEC",'LBCAT', "LBTESTCD")
 
       df <- df[LBSTRESC!=""]
-
+	  
       get_table <- df %>% dplyr::group_by_at(group_by_cols) %>%
 	   dplyr::group_modify(~ create_lb_cat_agg_table(.x))
 
 	   get_table_col <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX",
 	   "LBCAT" ,"LBTESTCD","LBTEST","LBSTRESC", "Incidence", "Animal_Count")
-		get_table <- data.table::as.data.table(get_table)
-	
-	   
+	   get_table <- data.table::as.data.table(get_table)
 	   get_table <- get_table[, ..get_table_col]
 	   get_table <- get_table[!duplicated(get_table)]
+	   get_table <- get_table[, `:=`(N = Animal_Count, Animal_Count=NULL)]
 
-      get_table
+      
+    if (input$INCL_UNCERTAIN) {
+      
+
+		uncertain_table <- df[!is.na(UNCERTAIN_MSG)]
+		uncertain_table <- uncertain_table %>% dplyr::group_by_at(group_by_cols) %>% 
+		dplyr::group_modify(~ create_lb_cat_agg_table(.x))
+		uncertain_table <- data.table::as.data.table(uncertain_table)
+		uncertain_table <- uncertain_table[, ..get_table_col]
+		uncertain_table <- uncertain_table[, `:=`(Uncertain.Matches = Animal_Count, Incidence= NULL, Animal_Count=NULL)]
+		uncertain_table <- uncertain_table[!duplicated(uncertain_table)]
+		
+		get_table_uncertain <- data.table::merge.data.table(get_table, uncertain_table,
+		 all=TRUE, by= c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX","LBCAT" ,"LBTESTCD","LBTEST","LBSTRESC"))
+		 arrange_column <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX","LBCAT" ,"LBTESTCD","LBTEST","LBSTRESC", "N", 
+		 "Certain.Matches", "Uncertain.Matches","Incidence")
+		 get_table_uncertain <- get_table_uncertain[, `:=`(Certain.Matches= N-Uncertain.Matches)]
+		 get_table_uncertain <- get_table_uncertain[, ..arrange_column]
+
+    }
+
+	if(input$INCL_UNCERTAIN){
+		table <- get_table_uncertain
+	} else{
+		table <- get_table
+	}
+
+	table
+	   
     })
 
 
@@ -1316,7 +1361,11 @@ output$lb_findingsTable  <- DT::renderDataTable({
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}"),
 							  rowsGroup = list(0,1,2,3,4,5,6,7)))
-      tab <- DT::formatPercentage(table = tab, columns = "Incidence", digits = 2)
+      tab <- DT::formatPercentage(table = tab, columns = c("Incidence"), digits = 2)
+	  tab <- DT::formatRound(table = tab, columns = c("N"), digits = 2)
+	  if(input$INCL_UNCERTAIN){
+		  tab <-  DT::formatRound(table = tab, columns = c("Certain.Matches", "Uncertain.Matches"), digits = 2)
+	  }
 	  path <- dt_extension
     dep <- htmltools::htmlDependency(
       "RowsGroup", "2.0.0",
