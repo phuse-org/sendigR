@@ -1094,7 +1094,7 @@ lb_domain_data <- shiny::reactive({
                           by = c('STUDYID', 'USUBJID'), allow.cartesian=TRUE)
       domainData <- domainData[is.na(LBSTRESN), ]
 
-      grpByCols <- c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST', 'LBSTRESC')
+    #   grpByCols <- c('LBSPEC', 'SPECIES', 'STRAIN',  'SEX','ROUTE','LBCAT', 'LBTEST', 'LBSTRESC')
 select_cols <- c(
     "STUDYID",
     "USUBJID",
@@ -1113,8 +1113,7 @@ select_cols <- c(
     "LBSPEC",
     "LBTESTCD",
     "LBTEST",
-    "LBSTRESC",
-    "LBCAT"
+    "LBSTRESC"
 )
 if(input$INCL_UNCERTAIN){
 	select_cols <- c(select_cols, "UNCERTAIN_MSG")
@@ -1275,7 +1274,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
 
     LB_cat_agg_table <- shiny::reactive({
       df <- lb_domain_data()
-	  group_by_cols <- c("SPECIES", "STRAIN", "SEX", "ROUTE", "LBSPEC",'LBCAT', "LBTESTCD")
+	  group_by_cols <- c("SPECIES", "STRAIN", "SEX", "ROUTE", "LBSPEC", "LBTESTCD")
 
       df <- df[LBSTRESC!=""]
 	  
@@ -1283,7 +1282,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
 	   dplyr::group_modify(~ create_lb_cat_agg_table(.x))
 
 	   get_table_col <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX",
-	   "LBCAT" ,"LBTESTCD","LBTEST","LBSTRESC", "Incidence", "Animal_Count")
+	   "LBTESTCD","LBTEST","LBSTRESC", "Incidence", "Animal_Count")
 	   get_table <- data.table::as.data.table(get_table)
 	   get_table <- get_table[, ..get_table_col]
 	   get_table <- get_table[!duplicated(get_table)]
@@ -1302,8 +1301,8 @@ output$lb_findingsTable  <- DT::renderDataTable({
 		uncertain_table <- uncertain_table[!duplicated(uncertain_table)]
 		
 		get_table_uncertain <- data.table::merge.data.table(get_table, uncertain_table,
-		 all=TRUE, by= c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX","LBCAT" ,"LBTESTCD","LBTEST","LBSTRESC"))
-		 arrange_column <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX","LBCAT" ,"LBTESTCD","LBTEST","LBSTRESC", "N", 
+		 all=TRUE, by= c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX","LBTESTCD","LBTEST","LBSTRESC"))
+		 arrange_column <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX" ,"LBTESTCD","LBTEST","LBSTRESC", "N", 
 		 "Certain.Matches", "Uncertain.Matches","Incidence")
 		 get_table_uncertain <- get_table_uncertain[, `:=`(Certain.Matches= N-Uncertain.Matches)]
 		 get_table_uncertain <- get_table_uncertain[, ..arrange_column]
@@ -1345,7 +1344,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
                                "}"),
-							  rowsGroup = list(0,1,2,3,4,5,6,7)))
+							  rowsGroup = list(0,1,2,3,4,5,6)))
       tab <- DT::formatPercentage(table = tab, columns = c("Incidence"), digits = 2)
 	  tab <- DT::formatRound(table = tab, columns = c("N"), digits = 2)
 	  if(input$INCL_UNCERTAIN){
