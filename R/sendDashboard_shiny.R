@@ -1135,15 +1135,10 @@ output$lb_findings_filter  <- shiny::renderUI({
       df_species <- unique(df[['SPECIES']])
       df_strain <- unique(df[['STRAIN']])
       df_sex <- unique(df[['SEX']])
-	  df_lbcat <- unique(df[["LBCAT"]])
       shiny::fluidRow(
 		  		  	shiny::selectInput("lb_spec",
                                          "Select Organ Specimen:",
                                          choices=df_lbspec),
-					shiny::selectInput("lb_cat",
-                                         "Select Category for Lab Test",
-                                         choices=df_lbcat),
-
 					shiny::selectInput("lb_lbtestcd",
                                          "Select Test Code:",
                                          choices=df_lbtestcd),
@@ -1177,19 +1172,9 @@ output$lb_findings_filter  <- shiny::renderUI({
 
 })
 
-
-shiny::observeEvent(input$lb_spec, {
+	shiny::observeEvent(input$lb_spec, {
 		df <- lb_domain_data()
 		df <- df[LBSPEC %in% input$lb_spec,]
-		df_cat <- unique(df[["LBCAT"]])
-		shiny::updateSelectInput(session = session,
-		inputId = "lb_cat",
-		choices = df_cat)
-
-	})
-	shiny::observeEvent(input$lb_cat, {
-		df <- lb_domain_data()
-		df <- df[LBCAT %in% input$lb_cat,]
 		df_lbtestcd <- unique(df[["LBTESTCD"]])
 		shiny::updateSelectInput(session = session,
 		inputId = "lb_lbtestcd",
@@ -1236,7 +1221,7 @@ shiny::observeEvent(input$lb_spec, {
     ## MI finding table after filter
     lb_finding_table_after_filter <- shiny::eventReactive(input$lb_finding_update, {
       df <- lb_domain_data()
-	  df <- df[LBSPEC %in% input$lb_spec & LBCAT %in% input$lb_cat & LBTESTCD %in% input$lb_lbtestcd]
+	  df <- df[LBSPEC %in% input$lb_spec & LBTESTCD %in% input$lb_lbtestcd]
       df <- df[ROUTE %in% input$lb_route & STRAIN %in% input$lb_strain & SPECIES %in% input$lb_species & SEX %in% input$lb_sex,]
       df
     })
