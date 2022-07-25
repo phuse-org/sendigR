@@ -1771,12 +1771,13 @@ output$lb_findingsTable  <- DT::renderDataTable({
             MI_Aggregate <- MI_agg_table()
             LB_Individual <- lb_table_to_show()
             LB_Aggregate <- LB_agg_table()
+            LB_cat_Aggregate <- LB_cat_agg_table()
             BW_Individual <- bw_table_to_show()
             BW_Aggregate <- BW_agg_table()
             Filtered_option <- filter_criteria()
 
             save(Control_Animal, MI_Findings, MI_Individual, MI_Aggregate,
-                LB_Individual, LB_Aggregate,
+                LB_Individual, LB_Aggregate,LB_cat_Aggregate,
                 BW_Individual, BW_Aggregate, Filtered_option,
                 file = file
             )
