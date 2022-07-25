@@ -1498,6 +1498,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
                              scrollX=TRUE,
                              pageLength = 25,
                              headerCallback= DT::JS(headerCallback),
+							 columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
