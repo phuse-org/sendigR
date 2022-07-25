@@ -526,6 +526,7 @@ guide <- cicerone::Cicerone$new()$step(
           scrollX=TRUE,
           pageLength = 10,
           headerCallback= DT::JS(headerCallback),
+		  columnDefs = list(list(className = "dt-center", targets = "_all")),
           initComplete = DT::JS(
             "function(settings, json) {",
             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
@@ -800,6 +801,7 @@ guide <- cicerone::Cicerone$new()$step(
                              scrollX=TRUE,
                              pageLength = 25,
                              headerCallback= DT::JS(headerCallback),
+							 columnDefs = list(list(className = "dt-center", targets = "_all")),
                              initComplete = DT::JS(
                                "function(settings, json) {",
                                "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});","}")))
@@ -1018,6 +1020,7 @@ guide <- cicerone::Cicerone$new()$step(
           scrollX = TRUE,
           pageLength = 25,
          headerCallback= DT::JS(LB_headerCallback),
+		 columnDefs = list(list(className = "dt-center", targets = "_all")),
           initComplete = DT::JS(
             "function(settings, json) {",
             "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
