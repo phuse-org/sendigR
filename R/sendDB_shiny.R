@@ -447,7 +447,7 @@ aggDomain_bw_lb <- function(domainData, domain, includeUncertain=F) {
 create_lb_cat_agg_table <- function(dt) {
 
     dt$Incidence <- NA
-	dt$Animal_Count <- NA
+	dt$Animal_Count <- NA_real_
     possible_results <- unique(dt[["LBSTRESC"]])
 
     for (result in possible_results) {
