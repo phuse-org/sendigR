@@ -1033,7 +1033,7 @@ guide <- cicerone::Cicerone$new()$step(
                       data=lb_table_to_show, filename="LB_Individual_Table")
 
 
-    ###### LB Numerical aggregate table ----
+#### LB Numerical aggregate table ----  
 
     LB_agg_table <- shiny::reactive({
       animal_list <- animalList()
@@ -1304,6 +1304,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
 		 all=TRUE, by= c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX","LBTESTCD","LBTEST","LBSTRESC"))
 		 arrange_column <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX" ,"LBTESTCD","LBTEST","LBSTRESC", "N", 
 		 "Certain.Matches", "Uncertain.Matches","Incidence")
+		 get_table_uncertain <- get_table_uncertain[is.na(Uncertain.Matches), `:=`(Uncertain.Matches=0)]
 		 get_table_uncertain <- get_table_uncertain[, `:=`(Certain.Matches= N-Uncertain.Matches)]
 		 get_table_uncertain <- get_table_uncertain[, ..arrange_column]
 
