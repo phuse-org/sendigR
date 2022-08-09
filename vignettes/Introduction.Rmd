@@ -302,8 +302,6 @@ The sendigR package contains an encapsulated Shiny app - SendDashboard. The app 
 |-|------------|
 | [execSendDashboard](../reference/execSendDashboard.html) |Starts the SendDashboard app | 
 
-The [SendDashboard](SendDashboard.html)
-
 ### Example 
 
 Connect to the database, start the app.

@@ -77,15 +77,15 @@ populated SPECIES and STRAIN columns.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span>
-  <span class="va">dbToken</span>,
-  <span class="va">animalList</span>,
-  speciesFilter <span class="op">=</span> <span class="cn">NULL</span>,
-  strainFilter <span class="op">=</span> <span class="cn">NULL</span>,
-  inclUncertain <span class="op">=</span> <span class="cn">FALSE</span>,
-  exclusively <span class="op">=</span> <span class="cn">FALSE</span>,
-  noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span></span>
+<span>  <span class="va">dbToken</span>,</span>
+<span>  <span class="va">animalList</span>,</span>
+<span>  speciesFilter <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  strainFilter <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  inclUncertain <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  exclusively <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -93,15 +93,21 @@ populated SPECIES and STRAIN columns.</p>
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
+
+
 <dt>animalList</dt>
 <dd><p>Mandatory, data.table.<br>
 A table with the list of animals to process.<br>
 The table must include at least columns named 'STUDYID' and 'USUBJID'.</p></dd>
+
+
 <dt>speciesFilter</dt>
 <dd><p>Optional, character.<br>
 The species value(s) to use as criterion for filtering of the input data
 table.<br>
 It can be a single string, a vector or a list of multiple strings.</p></dd>
+
+
 <dt>strainFilter</dt>
 <dd><p>Optional, character.<br>
 The strain value(s) to use as criterion for filtering of the input data
@@ -113,10 +119,14 @@ When multiple values are specified for <code>speciesFilter</code>, each strain
 value must be prefixed by species and ':' , e.g.
 <code>c('RAT:WISTAR','DOG: BEAGLE')</code>.<br>
 There may be included any number of blanks after ':'</p></dd>
+
+
 <dt>inclUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Indicates whether animals for which the species or strain cannot be
 confidently identified shall be included or not in the output data table.</p></dd>
+
+
 <dt>exclusively</dt>
 <dd><p>Mandatory, boolean.</p><ul><li><p>TRUE: Include animals only for studies with no other species and
 optional strains then included in <code>speciesFilter</code> and
@@ -124,16 +134,21 @@ optional strains then included in <code>speciesFilter</code> and
 <li><p>FALSE: Include animals for all studies with species and strain
 matching <code>speciesFilter</code> and <code>strainFilter</code> respectively.</p></li>
 </ul></dd>
+
+
 <dt>noFilterReportUncertain</dt>
 <dd><p>Optional, boolean.<br>
 Only relevant if the <code>speciesFilter</code> and  <code>strainFilter</code> are
 empty.<br>
 Indicates if the reason should be included if the species or strain cannot
 be confidently decided for an animal.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The function returns a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
+    
+
+<p>The function returns a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
 <li><p>Additional columns contained in the <code>animalList</code> table</p></li>
 <li><p>SPECIES       (character)
 The value is always returned in uppercase and trimmed for leading/trailing
@@ -190,29 +205,29 @@ and TX parameter SPECIES/STRAIN and DM.SPECIES/STRAIN are unequal.</p></li>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="co"># Extract rats and mice plus uncertain animals</span></span>
-<span class="r-in"><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span>
-<span class="r-in">                     speciesFilter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RAT'</span>, <span class="st">'MOUSE'</span><span class="op">)</span>,</span>
-<span class="r-in">                     inclUncertain <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-in"><span class="co"># Extract Spargue-Dawley rats plus uncertain animals.</span></span>
-<span class="r-in"><span class="co"># Include only animals from studies which do not contain other species or</span></span>
-<span class="r-in"><span class="co"># strains</span></span>
-<span class="r-in"><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span>
-<span class="r-in">                     speciesFilter <span class="op">=</span> <span class="st">'RAT'</span>,</span>
-<span class="r-in">                     strainFilter <span class="op">=</span> <span class="st">'SPRAGUE-DAWLEY'</span>,</span>
-<span class="r-in">                     inclUncertain <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span class="r-in">                     exclusively <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span class="r-in">                     noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-in"><span class="co"># Extract Wistar rats and and Beagle dogs - and no uncertain animals</span></span>
-<span class="r-in"><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span>
-<span class="r-in">                     speciesFilter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RAT'</span>, <span class="st">'DOG'</span><span class="op">)</span>,</span>
-<span class="r-in">                     strainFilter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RAT: WISTAR'</span>, <span class="st">'DOG: BEAGLE'</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="co"># No filtering, just add SPECIES and STRAIN - do not include messages when</span></span>
-<span class="r-in"><span class="co"># these values cannot be confidently found</span></span>
-<span class="r-in"><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span>
-<span class="r-in">                     noFilterReportUncertain <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># Extract rats and mice plus uncertain animals</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span></span>
+<span class="r-in"><span>                     speciesFilter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RAT'</span>, <span class="st">'MOUSE'</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                     inclUncertain <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Extract Spargue-Dawley rats plus uncertain animals.</span></span></span>
+<span class="r-in"><span><span class="co"># Include only animals from studies which do not contain other species or</span></span></span>
+<span class="r-in"><span><span class="co"># strains</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span></span>
+<span class="r-in"><span>                     speciesFilter <span class="op">=</span> <span class="st">'RAT'</span>,</span></span>
+<span class="r-in"><span>                     strainFilter <span class="op">=</span> <span class="st">'SPRAGUE-DAWLEY'</span>,</span></span>
+<span class="r-in"><span>                     inclUncertain <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>                     exclusively <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>                     noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Extract Wistar rats and and Beagle dogs - and no uncertain animals</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span></span>
+<span class="r-in"><span>                     speciesFilter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RAT'</span>, <span class="st">'DOG'</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                     strainFilter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'RAT: WISTAR'</span>, <span class="st">'DOG: BEAGLE'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># No filtering, just add SPECIES and STRAIN - do not include messages when</span></span></span>
+<span class="r-in"><span><span class="co"># these values cannot be confidently found</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjSpeciesStrain</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">controlAnimals</span>,</span></span>
+<span class="r-in"><span>                     noFilterReportUncertain <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -224,7 +239,7 @@ and TX parameter SPECIES/STRAIN and DM.SPECIES/STRAIN are unequal.</p></li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer></div>

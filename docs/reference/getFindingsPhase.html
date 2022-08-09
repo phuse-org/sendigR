@@ -71,13 +71,13 @@ If the <code>phaseFilter</code> is empty (null, na or empty string), all rows fr
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">getFindingsPhase</span><span class="op">(</span>
-  <span class="va">dbToken</span>,
-  <span class="va">findings</span>,
-  phaseFilter <span class="op">=</span> <span class="cn">NULL</span>,
-  inclUncertain <span class="op">=</span> <span class="cn">FALSE</span>,
-  noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getFindingsPhase</span><span class="op">(</span></span>
+<span>  <span class="va">dbToken</span>,</span>
+<span>  <span class="va">findings</span>,</span>
+<span>  phaseFilter <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  inclUncertain <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -85,6 +85,8 @@ If the <code>phaseFilter</code> is empty (null, na or empty string), all rows fr
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
+
+
 <dt>findings</dt>
 <dd><p>Mandatory, data.table.<br>
 A data.table with the set of finding rows to process.<br>
@@ -95,24 +97,33 @@ The table must include at least columns named</p><ul><li><p>STUDYID</p></li>
 <li><p>domainDTC</p></li>
 </ul><p>where domain is the name of the actual findings domain - e.g. LBSEQ and
 LBDTC</p></dd>
+
+
 <dt>phaseFilter</dt>
 <dd><p>Optional, character.<br>
 The phase value criterion to be used for filtering of the list of animals.<br>
 It can be a single string, a vector or a list of multiple strings.</p></dd>
+
+
 <dt>inclUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Only relevant if the <code>phaseFilter</code> is not empty.<br>
 Indicates whether finding rows for which the phase cannot be confidently
 identified shall be included or not in the output data table.</p></dd>
+
+
 <dt>noFilterReportUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Only relevant if the <code>phaseFilter</code> is empty.<br>
 Indicates if the reason should be included if the phase cannot be
 confidently decided for an animal.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The function returns a data.table with columns in this order:</p><ul><li><p>All columns contained in the <code>findings</code> input table (original
+    
+
+<p>The function returns a data.table with columns in this order:</p><ul><li><p>All columns contained in the <code>findings</code> input table (original
 order except optional UNCERTAIN_MSG and NOT_VALID_MSG)</p></li>
 <li><p>PHASE          (character)</p></li>
 <li><p>UNCERTAIN_MSG  (character)<br>
@@ -186,16 +197,16 @@ pool for a given finding</p></li>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="co"># Extract LB rows for the Treatment phase - include uncertain rows</span></span>
-<span class="r-in"><span class="fu">getFindingsPhase</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">lb</span>,</span>
-<span class="r-in">                 phaseFilter <span class="op">=</span> <span class="st">'Treatment'</span>,</span>
-<span class="r-in">                 inclUncertain <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span class="r-in"><span class="co"># No filtering, just add PHASE to FW rows - do not include messages when</span></span>
-<span class="r-in"><span class="co"># the phase cannot be confidently identified</span></span>
-<span class="r-in"><span class="fu">getFindingsPhase</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">fw</span>,</span>
-<span class="r-in">                 noFilterReportUncertain <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># Extract LB rows for the Treatment phase - include uncertain rows</span></span></span>
+<span class="r-in"><span><span class="fu">getFindingsPhase</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">lb</span>,</span></span>
+<span class="r-in"><span>                 phaseFilter <span class="op">=</span> <span class="st">'Treatment'</span>,</span></span>
+<span class="r-in"><span>                 inclUncertain <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># No filtering, just add PHASE to FW rows - do not include messages when</span></span></span>
+<span class="r-in"><span><span class="co"># the phase cannot be confidently identified</span></span></span>
+<span class="r-in"><span><span class="fu">getFindingsPhase</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">fw</span>,</span></span>
+<span class="r-in"><span>                 noFilterReportUncertain <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -207,7 +218,7 @@ pool for a given finding</p></li>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer></div>

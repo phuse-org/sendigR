@@ -4,10 +4,7 @@
     <loc>https://phuse-org.github.io/sendigR/404.html</loc>
   </url>
   <url>
-    <loc>https://phuse-org.github.io/sendigR/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/LICENSE.html</loc>
+    <loc>https://phuse-org.github.io/sendigR/articles/index.html</loc>
   </url>
   <url>
     <loc>https://phuse-org.github.io/sendigR/articles/Introduction.html</loc>
@@ -19,13 +16,16 @@
     <loc>https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html</loc>
   </url>
   <url>
-    <loc>https://phuse-org.github.io/sendigR/articles/index.html</loc>
-  </url>
-  <url>
     <loc>https://phuse-org.github.io/sendigR/authors.html</loc>
   </url>
   <url>
     <loc>https://phuse-org.github.io/sendigR/index.html</loc>
+  </url>
+  <url>
+    <loc>https://phuse-org.github.io/sendigR/LICENSE-text.html</loc>
+  </url>
+  <url>
+    <loc>https://phuse-org.github.io/sendigR/LICENSE.html</loc>
   </url>
   <url>
     <loc>https://phuse-org.github.io/sendigR/reference/dbCreateIndexes.html</loc>
@@ -49,10 +49,10 @@
     <loc>https://phuse-org.github.io/sendigR/reference/execSendDashboard.html</loc>
   </url>
   <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/gen_vocab.html</loc>
+    <loc>https://phuse-org.github.io/sendigR/reference/genericQuery.html</loc>
   </url>
   <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/genericQuery.html</loc>
+    <loc>https://phuse-org.github.io/sendigR/reference/gen_vocab.html</loc>
   </url>
   <url>
     <loc>https://phuse-org.github.io/sendigR/reference/getControlSubj-CDL0208461.html</loc>

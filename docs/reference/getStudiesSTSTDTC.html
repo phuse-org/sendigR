@@ -74,14 +74,14 @@ If the <code>fromDTC</code> and<code>toDTC</code> are empty (null, na or empty s
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">getStudiesSTSTDTC</span><span class="op">(</span>
-  <span class="va">dbToken</span>,
-  studyList <span class="op">=</span> <span class="cn">NULL</span>,
-  fromDTC <span class="op">=</span> <span class="cn">NULL</span>,
-  toDTC <span class="op">=</span> <span class="cn">NULL</span>,
-  inclUncertain <span class="op">=</span> <span class="cn">FALSE</span>,
-  noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getStudiesSTSTDTC</span><span class="op">(</span></span>
+<span>  <span class="va">dbToken</span>,</span>
+<span>  studyList <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fromDTC <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  toDTC <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  inclUncertain <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  noFilterReportUncertain <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -89,31 +89,44 @@ If the <code>fromDTC</code> and<code>toDTC</code> are empty (null, na or empty s
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory.<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
+
+
 <dt>studyList</dt>
 <dd><p>Optional.<br>
 A data.table with the list of studies to process. If empty, all studies in
 the data base are processed <br>
 The table must include at least a column named 'STUDYID'.</p></dd>
+
+
 <dt>fromDTC</dt>
 <dd><p>Optional (either or both of <code>fromDTC</code> and <code>toDTC</code>
 must be filled).<br>
 The start of the date interval to extract - must be in ISO8601 date format.</p></dd>
+
+
 <dt>toDTC</dt>
 <dd><p>Optional (either or both of <code>fromDTC</code> and <code>toDTC</code> must be filled).<br>
 The end of the date interval to extract - must be in ISO8601 date format.</p></dd>
+
+
 <dt>inclUncertain</dt>
 <dd><p>Mandatory, boolean.<br>
 Indicates whether study ids with STSTDTC which are are missing or wrong
 shall be included or not in the output data table.</p></dd>
+
+
 <dt>noFilterReportUncertain</dt>
 <dd><p>Mandatory, boolean<br>
 Only relevant if the <code>fromDTC</code> and<code>toDTC</code> are empty.<br>
 Indicates if the reason should be included if the STSTDTC cannot be
 confidently decided for an animal.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The function return a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
+    
+
+<p>The function return a data.table with columns:</p><ul><li><p>STUDYID       (character)</p></li>
 <li><p>Additional columns contained in the <code>studyList</code> table (if such an input
 table is given)</p></li>
 <li><p>STSTDTC       (character - ISO8601 format)</p></li>
@@ -168,9 +181,9 @@ UNCERTAIN_MSG):</p><ul><li><p>TS contains now row for TSPARMCD='STSTDTC'</p></li
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="fu">GetStudyListSTSTDTC</span><span class="op">(</span><span class="va">myDbToken</span>, <span class="va">allSTudies</span>, <span class="st">'2018'</span>,<span class="st">'2020'</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="fu">GetStudyListSTSTDTC</span><span class="op">(</span><span class="va">myDbToken</span>, <span class="va">allSTudies</span>, <span class="st">'2018'</span>,<span class="st">'2020'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -182,7 +195,7 @@ UNCERTAIN_MSG):</p><ul><li><p>TS contains now row for TSPARMCD='STSTDTC'</p></li
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer></div>

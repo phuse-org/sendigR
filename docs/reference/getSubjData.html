@@ -62,7 +62,7 @@ of subjects included in <code>animalList</code>.<br></p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">getSubjData</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">animalList</span>, <span class="va">domain</span>, colList <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">getSubjData</span><span class="op">(</span><span class="va">dbToken</span>, <span class="va">animalList</span>, <span class="va">domain</span>, colList <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -70,25 +70,40 @@ of subjects included in <code>animalList</code>.<br></p>
     <dl><dt>dbToken</dt>
 <dd><p>Mandatory<br>
 Token for the open database connection (see <code><a href="initEnvironment.html">initEnvironment</a></code>).</p></dd>
+
+
 <dt>animalList</dt>
 <dd><p>Mandatory, data.table.<br>
 A table with the list of animals to be included in the output data.<br>
 The table must include at least columns named 'STUDYID' and 'USUBJID'.</p></dd>
+
+
 <dt>domain</dt>
 <dd><p>Mandatory, character, not case sensitive.<br>
 The name of the domain table to extract data from.<br>
 The name must be a subject level domain - i.e. a table including a 'USUBJID'
 column.</p></dd>
+
+
 <dt>colList</dt>
 <dd><p>Optional, character, not case sensitive.<br>
 The list of columns to be extracted from the specified domain table.<br>
 It can be a single string, a vector or a list of multiple strings.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The function returns a data.table with all the rows for the animals
-included in <code>animalList</code>.<br>If no columns have been specified in <code>colList</code>, all the columns in
-the table <code>colList</code> are included.<br>If a list of columns have been specified in <code>colList</code>, these are
+    
+
+<p>The function returns a data.table with all the rows for the animals
+included in <code>animalList</code>.<br></p>
+
+
+<p>If no columns have been specified in <code>colList</code>, all the columns in
+the table <code>colList</code> are included.<br></p>
+
+
+<p>If a list of columns have been specified in <code>colList</code>, these are
 included. In addition, a set of columns are always included, whether they
 are included in <code>colList</code> or not:</p><ul><li><p>To ensure each row can be uniquely identified:</p><ul><li><p>DOMAIN</p></li>
 <li><p>STUDYID</p></li>
@@ -101,7 +116,10 @@ study phase:</p><ul><li><p>domainDTC</p></li>
 <li><p>domainDY</p></li>
 </ul></li>
 </ul><p>The order of the columns are as they are defined for the domain in the
-SEND IG.<br>The data table contains both</p><ul><li><p>subject level data - i.e. rows where USUBJID is not empty</p></li>
+SEND IG.<br></p>
+
+
+<p>The data table contains both</p><ul><li><p>subject level data - i.e. rows where USUBJID is not empty</p></li>
 <li><p>if applicable for the <code>domain</code>, pool level data - i.e. rows
 where POOLID is not empty.<br>
 In this case, all pools, which includes any of the subjects included in
@@ -110,18 +128,18 @@ In this case, all pools, which includes any of the subjects included in
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="co"># Extract all columns from DM:</span></span>
-<span class="r-in"><span class="fu">getSubjData</span><span class="op">(</span><span class="va">myDbToken</span>, <span class="va">myControlAnimals</span>, <span class="st">'dm'</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Extract selected columns from LB:</span></span>
-<span class="r-in"><span class="fu">getSubjData</span><span class="op">(</span><span class="va">myDbToken</span>, <span class="va">myControlAnimals</span>, <span class="st">'LB'</span>,</span>
-<span class="r-in">            <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">'LBTESTCD'</span>, <span class="st">'LBCAT'</span>,</span>
-<span class="r-in">                 <span class="st">'LBSTRESC'</span>, <span class="st">'LBSTRESN'</span>, <span class="st">'LBSTRESU'</span>,</span>
-<span class="r-in">                 <span class="st">'LBSTAT'</span>, <span class="st">'LBREASND'</span>,</span>
-<span class="r-in">                 <span class="st">'LBTPT'</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># Extract all columns from DM:</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjData</span><span class="op">(</span><span class="va">myDbToken</span>, <span class="va">myControlAnimals</span>, <span class="st">'dm'</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Extract selected columns from LB:</span></span></span>
+<span class="r-in"><span><span class="fu">getSubjData</span><span class="op">(</span><span class="va">myDbToken</span>, <span class="va">myControlAnimals</span>, <span class="st">'LB'</span>,</span></span>
+<span class="r-in"><span>            <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">'LBTESTCD'</span>, <span class="st">'LBCAT'</span>,</span></span>
+<span class="r-in"><span>                 <span class="st">'LBSTRESC'</span>, <span class="st">'LBSTRESN'</span>, <span class="st">'LBSTRESU'</span>,</span></span>
+<span class="r-in"><span>                 <span class="st">'LBSTAT'</span>, <span class="st">'LBREASND'</span>,</span></span>
+<span class="r-in"><span>                 <span class="st">'LBTPT'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -133,7 +151,7 @@ In this case, all pools, which includes any of the subjects included in
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer></div>
