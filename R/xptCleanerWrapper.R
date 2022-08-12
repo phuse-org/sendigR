@@ -8,7 +8,8 @@ library(reticulate)
 #'   List of tab-delimited files with synonyms and preferred terms.
 #' @param out_path Mandatory.\cr
 #'  output json filename. \cr
-
+#'
+#' @return No return value, called for side effects\cr
 #' @export
 #' @examples
 #' \dontrun{
@@ -24,6 +25,8 @@ gen_vocab <- function(in_file, out_path) {
 #'  output folder name for writing the cleaned xpt files. \cr
 #' @param json_file Mandatory.\cr
 #'  json filename used for mapping. \cr
+#'
+#' @return No return value, called for side effects\cr
 #' @export
 standardize_file <- function(input_xpt_dir, output_xpt_dir, json_file) {
   XPTClean$standardize_file(input_xpt_dir, output_xpt_dir, json_file)

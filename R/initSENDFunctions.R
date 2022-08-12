@@ -220,6 +220,7 @@ initEnvironment<-function(dbType=NULL,
 #'
 #' @param dbToken Mandatory\cr
 #'   Token for the open database connection (see \code{\link{initEnvironment}}).
+#' @return No return value, called for side effects\cr
 #'
 #' @export
 #'

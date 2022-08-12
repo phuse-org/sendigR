@@ -23,7 +23,7 @@
 #'
 #' @param dbToken Mandatory - token for the open database connection
 #'
-#' @return The function dores not return anything, but it is possible to extract
+#' @return The function does not return anything, but it is possible to extract
 #' data from the app in different formats to use for further processing
 #'
 #' @export
@@ -117,7 +117,7 @@ execSendDashboard <- function(dbToken) {
   click_jscode <- '
 Shiny.addCustomMessageHandler("mymessage", function(message) {
   document.getElementById(message).click();
-}); 
+});
 '
   # shortcut for find not in
   '%ni%' <- Negate('%in%')
@@ -137,7 +137,7 @@ guide <- cicerone::Cicerone$new()$step(
 	is_id = FALSE
 )$step(
 	el = "STSTDTC",
-	title = "Date Range", 
+	title = "Date Range",
 	description = "Choose the study start date range that you want to include for control animal."
 )$step(
 	"SDESIGN-label",
@@ -147,7 +147,7 @@ guide <- cicerone::Cicerone$new()$step(
 )$step(
 	"ROUTE",
 	"Route of Administration",
-	"You can select multiple route of administration from drop-down list. 
+	"You can select multiple route of administration from drop-down list.
 	All availbale route of administraion will be included if kept blank."
 )$step(
 	"SPECIES-label",
@@ -386,7 +386,7 @@ guide <- cicerone::Cicerone$new()$step(
 					shiny::fluidRow(
 						htmltools::br(),
 						shiny::column(width = 3, offset = 1,
-									
+
 									shiny::uiOutput('lb_findings_filter'),
 									shiny::actionButton('lb_finding_update', 'Generate/Update Table')),
 				shiny::column(width = 6, offset = 1,
@@ -462,7 +462,7 @@ guide <- cicerone::Cicerone$new()$step(
 		  guide$init()$start()
 
 	  })
-	  
+
     # This is the logic for changing
     # the STRAIN based ON changes SPECIES
     shiny::observeEvent(input$SPECIES, {
@@ -1036,7 +1036,7 @@ guide <- cicerone::Cicerone$new()$step(
                       data=lb_table_to_show, filename="LB_Individual_Table")
 
 
-#### LB Numerical aggregate table ----  
+#### LB Numerical aggregate table ----
 
     LB_agg_table <- shiny::reactive({
       animal_list <- animalList()
@@ -1126,7 +1126,7 @@ if(input$INCL_UNCERTAIN){
 
 })
 
-############## LB observation ----- 
+############## LB observation -----
 
 
 output$lb_findings_filter  <- shiny::renderUI({
@@ -1238,7 +1238,7 @@ get_lb_observation_count <- shiny::eventReactive(input$lb_finding_update,{
 })
 
 output$lb_findingsTable  <- DT::renderDataTable({
-	df <- get_lb_observation_count()  
+	df <- get_lb_observation_count()
 	 tab <- DT::datatable(df,
 	 						extensions = list("Buttons" = NULL),
                         #    filter = list(position = 'top'),
@@ -1280,7 +1280,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
 	  group_by_cols <- c("SPECIES", "STRAIN", "SEX", "ROUTE", "LBSPEC", "LBTESTCD")
 
       df <- df[LBSTRESC!=""]
-	  
+
       get_table <- df %>% dplyr::group_by_at(group_by_cols) %>%
 	   dplyr::group_modify(~ create_lb_cat_agg_table(.x))
 
@@ -1291,21 +1291,21 @@ output$lb_findingsTable  <- DT::renderDataTable({
 	   get_table <- get_table[!duplicated(get_table)]
 	   get_table <- get_table[, `:=`(N = Animal_Count, Animal_Count=NULL)]
 
-      
+
     if (input$INCL_UNCERTAIN) {
-      
+
 
 		uncertain_table <- df[!is.na(UNCERTAIN_MSG)]
-		uncertain_table <- uncertain_table %>% dplyr::group_by_at(group_by_cols) %>% 
+		uncertain_table <- uncertain_table %>% dplyr::group_by_at(group_by_cols) %>%
 		dplyr::group_modify(~ create_lb_cat_agg_table(.x))
 		uncertain_table <- data.table::as.data.table(uncertain_table)
 		uncertain_table <- uncertain_table[, ..get_table_col]
 		uncertain_table <- uncertain_table[, `:=`(Uncertain.Matches = Animal_Count, Incidence= NULL, Animal_Count=NULL)]
 		uncertain_table <- uncertain_table[!duplicated(uncertain_table)]
-		
+
 		get_table_uncertain <- data.table::merge.data.table(get_table, uncertain_table,
 		 all=TRUE, by= c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX","LBTESTCD","LBTEST","LBSTRESC"))
-		 arrange_column <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX" ,"LBTESTCD","LBTEST","LBSTRESC", "N", 
+		 arrange_column <- c("LBSPEC", "SPECIES", "STRAIN", "ROUTE", "SEX" ,"LBTESTCD","LBTEST","LBSTRESC", "N",
 		 "Certain.Matches", "Uncertain.Matches","Incidence")
 		 get_table_uncertain <- get_table_uncertain[is.na(Uncertain.Matches), `:=`(Uncertain.Matches=0)]
 		 get_table_uncertain <- get_table_uncertain[, `:=`(Certain.Matches= N-Uncertain.Matches)]
@@ -1320,7 +1320,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
 	}
 
 	table
-	   
+
     })
 
 
@@ -1330,7 +1330,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
       tableData <- LB_cat_agg_table()
       tableData <- tableData %>%
         dplyr::mutate_if(is.character, as.factor)
-      
+
       # Associate table header with labels
       headerCallback <- tooltipCallback_agg(tooltip_list = getTabColLabels(tableData))
       tab <- DT::datatable(tableData,
@@ -1753,7 +1753,7 @@ output$lb_findingsTable  <- DT::renderDataTable({
         Sex=input$SEX,
         Uncertain=input$INCL_UNCERTAIN
       )
-      
+
       filter_selected
     })
 

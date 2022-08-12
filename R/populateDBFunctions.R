@@ -23,6 +23,7 @@
 #' @param dbToken Mandatory\cr
 #'   Token for the open database connection (see \code{\link{initEnvironment}}).
 #'
+#' @return No return value, called for side effects\cr
 #' @export
 #'
 #' @examples
@@ -141,6 +142,7 @@ dbCreateSchema <- function(dbToken) {
 #' @param checkRequiredVars Mandatory, boolean\cr
 #'  Whether not-required domains are checked for existence and content of
 #'  required variables
+#' @return No return value, called for side effects\cr
 #'
 #' @export
 #'
@@ -173,7 +175,7 @@ dbImportOneStudy <- function(dbToken,
 #' import a set of SAS xpt files into the opened SQLlite database described
 #' for function [dbImportOneStudy].
 #'
-#' The status for the processing of each sub folder is catched and returned as
+#' The status for the processing of each sub folder is caught and returned as
 #' described below.\cr
 #' If parameter \code{verbose = TRUE}, the status for each processed sub folder
 #' is also printed to the console each time a sub folder has been processed -
@@ -188,8 +190,8 @@ dbImportOneStudy <- function(dbToken,
 #' @param dbToken Mandatory\cr
 #'   Token for the open database connection (see \code{\link{initEnvironment}}).
 #' @param xptPathRoot Mandatory, character\cr
-#'  Root location of a set of sub folders - each sub folder with a if SAS xport
-#'  files per study to import.\cr
+#'  Root location of a set of sub folders - each sub folder with a set of SAS xport
+#'  files for one study to import.\cr
 #'  The folder tree is traversed recursively - i.e. a multilevel folder
 #'  hierarchy is allowed.
 #' @param overWrite Mandatory, boolean\cr
@@ -208,7 +210,7 @@ dbImportOneStudy <- function(dbToken,
 #'   time>.log} where \code{<date & time>} is the actual date and time in format
 #'   \code{YYYYmmdd_HH24MISS} - e.g. \code{dbImportStudies_20210323_084150.log}
 #'   if the function was called 23. March 2021 at 8:41:50
-#' @return A list containing a named element with the the import status for each
+#' @return A list containing a named element with the import status for each
 #'   of the processed sub folders.\cr
 #'   Each of the statuses are one of three variants:
 #'   \itemize{
@@ -309,6 +311,7 @@ dbImportStudies <- function(dbToken,
 #' @param studyIdList Mandatory, character\cr
 #'  A list or vector of study id values
 #'
+#' @return No return value, called for side effects\cr
 #' @export
 #'
 #' @examples
@@ -353,6 +356,7 @@ dbDeleteStudies <- function(dbToken,
 #' @param replaceExisting Mandatory, character\cr
 #'   Whether an already existing set of indexes in the database may be replaced
 #'   by a new set of indexes.
+#' @return No return value, called for side effects\cr
 #'
 #' @export
 #'
