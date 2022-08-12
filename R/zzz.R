@@ -109,8 +109,8 @@
     utils::globalVariables("XPTClean")
 
     # delay load module (will only be loaded when accessed via $)
-    XPTCleaner <<- reticulate::import("xptcleaner", delay_load = TRUE)
-    XPTClean <<- reticulate::import("xptcleaner.xptclean", delay_load = TRUE)
+    XPTCleaner <- reticulate::import("xptcleaner", delay_load = TRUE)
+    XPTClean <- reticulate::import("xptcleaner.xptclean", delay_load = TRUE)
 
     invisible()
 }
