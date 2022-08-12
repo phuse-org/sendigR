@@ -1,7 +1,6 @@
 Package: sendigR
-Title: Extract Control Data from a CDISC SEND Study Data Repository for Cross Studies Analysis
+Title: Enable Cross Study Analysis from a 'CDISC' 'SEND' Study Repository 
 Version: 1.0.0
-Date: 2022-07-16
 Authors@R:
  c(
     person("Bo", "Larsen", email = "bolr@novonordisk.com", role = "aut"),
@@ -15,16 +14,16 @@ Authors@R:
     person("Michael", "Denieu", email = "michael.denieu@labcorp.com", role = "aut"),
     person("Wenxian", "Wang", email = "wenxian.wang@bms.com", role = c("cre", "aut")),
 	person(given = "BioCelerate", role = "cph"))
-Description: A set of functions to extract and filter study data for control animals 
-    from a database containing CDISC SEND data for a set of non-clinical 
-    studies. These data types are supported: Body Weights, Laboratory test results 
-    and Microscopic findings. These database types are supported: SQLite and Oracle.
+Description: A system enables cross study Analysis by extracting and filtering study data for 
+    control animals from  'CDISC' 'SEND' Study Repository. 
+    These data types are supported: Body Weights, Laboratory test results and Microscopic findings. 
+    These database types are supported: 'SQLite' and 'Oracle'.
 License: MIT + file LICENSE
 URL: https://github.com/phuse-org/sendigR
 BugReports: https://github.com/phuse-org/sendigR/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.1.2
 Imports: 
     RSQLite,
     data.table,
