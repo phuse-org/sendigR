@@ -63,10 +63,10 @@ dbCreateSchema <- function(dbToken) {
                                         SEQ)[,SEQ := NULL],
                    paste0),
             collapse = ' ,')
-    print(cols)
+    # print(cols)
     # Generate and execute create table stmt
     sqlStmt <- paste0("create table '", tab, "' (", cols, ")" )
-    print(sqlStmt)
+    # print(sqlStmt)
     res <- RSQLite::dbSendStatement(dbToken$dbHandle, sqlStmt)
     RSQLite::dbClearResult(res)
   }
