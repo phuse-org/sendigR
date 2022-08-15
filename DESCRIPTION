@@ -1,5 +1,5 @@
 Package: sendigR
-Title: Enable Cross Study Analysis from a 'CDISC' 'SEND' Study Repository 
+Title: Enable Cross-Study Analysis of 'CDISC' 'SEND' Datasets 
 Version: 1.0.0
 Authors@R:
  c(
