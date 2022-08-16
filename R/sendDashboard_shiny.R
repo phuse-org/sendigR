@@ -1757,10 +1757,10 @@ output$lb_findingsTable  <- DT::renderDataTable({
       filter_selected
     })
 
-	shiny::observeEvent(input$refreshData, {
-		message("Following filter criteria applied")
-		print(filter_criteria())
-	})
+	# shiny::observeEvent(input$refreshData, {
+	# 	message("Following filter criteria applied")
+	# 	print(filter_criteria())
+	# })
 
 
     ##### Download all data as RData file ----

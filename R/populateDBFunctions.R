@@ -257,7 +257,7 @@ dbImportStudies <- function(dbToken,
     else {
       logFileName <- paste0(logFilePath, '/', 'dbImportStudies_', format(Sys.time(), '%Y%m%d_%H%M%S'), '.log')
       logr::log_open(logFileName, logdir = FALSE, show_notes = FALSE)
-      print(paste0('Writing status to log file: ', logFileName))
+    #   print(paste0('Writing status to log file: ', logFileName))
     }
 
   # initiate list to hold status for load of each study folder
