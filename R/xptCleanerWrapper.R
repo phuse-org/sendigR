@@ -1,5 +1,6 @@
 library(reticulate)
 # python 'XPTCleaner' module wrapped in the package
+XPTClean <- reticulate::import("xptcleaner.xptclean", delay_load = TRUE)
 
 #' Create json file for vocabulary mappings.
 #' Keys are synonyms and values are the CDISC Controlled Terminology Submission values.
