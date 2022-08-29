@@ -78,6 +78,10 @@ devtools::install_github('phuse-org/sendigR')
 [![R-CMD-check](https://github.com/phuse-org/sendigR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/phuse-org/sendigR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
+[![](https://cranlogs.r-pkg.org/badges/sendigR)](https://cran.r-project.org/package=sendigR)
+
+[![](https://cranlogs.r-pkg.org/badges/grand-total/sendigR)](https://cran.r-project.org/package=sendigR)
+
 ## sendigR License
 
 The `sendigR` package including the optional Python xptcleaner is
