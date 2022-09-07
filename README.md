@@ -56,7 +56,7 @@ installation](https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html)
 
 ``` r
 
-# Get CRAN version, this will be available soon
+# Get CRAN version
 install.packages("sendigR")
 
 # Or the development version from GitHub:
