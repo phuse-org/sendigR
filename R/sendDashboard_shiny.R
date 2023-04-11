@@ -250,6 +250,10 @@ guide <- cicerone::Cicerone$new()$step(
                  shiny::checkboxInput('INCL_UNCERTAIN',
                                'Include uncertain rows',
                                value = FALSE),
+
+                shiny::textOutput("active_filters"),
+
+
                 shiny::actionButton("refreshData", "Generate/Update Data"),
                                             htmltools::br()),
 											shinydashboard::menuItem("Project links",
@@ -493,6 +497,11 @@ guide <- cicerone::Cicerone$new()$step(
     # when click on upper left (generate) button, this will click bottom left button
     shiny::observeEvent(input$refreshData_02, {
       session$sendCustomMessage("mymessage", "refreshData")
+    })
+    
+    # when click on upper left (generate) button, this will update the active filter text output
+    shiny::observeEvent(input$refreshData_02, {
+      session$active_filters <- shiny::renderText(paste("Active filters: ", active_filters()))
     })
 
     # ROUTE render
