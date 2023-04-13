@@ -493,7 +493,61 @@ guide <- cicerone::Cicerone$new()$step(
                                 input$SEX,
                                 input$INCL_UNCERTAIN)
     })
+    
+    #Make list of active filters
+    active_filters <- reactive({
+      filters <- list()
+      
+      #check each filter
+      if(!is.null(input$STSTDTC[1])) {
+        filters$StartDate <- as.character(input$STSTDTC[1])
+      }
+      
+      if(!is.null(input$STSTDTC[2])) {
+        filters$EndDate <- as.character(input$STSTDTC[2])
+      }
+      
+      if(!is.null(input$STSTDTC[2])) {
+        filters$StudyDesign <- as.character(input$STSTDTC[2])
+      }
+      
+      if(!is.null(input$SDESIGN)) {
+        filters$StudyDesign <- input$SDESIGN
+      }
+      
+      if(!is.null(input$ROUTE)) {
+        filters$Route <- input$ROUTE
+      }
 
+      if(!is.null(input$SPECIES)) {
+        filters$Species <- input$SPECIES
+      }
+
+      if(!is.null(input$STRAIN)) {
+        filters$Strain <- input$STRAIN
+      }
+
+      if(!is.null(input$SEX)) {
+        filters$Sex <- input$SEX
+      }
+       
+      if(input$INCL_UNCERTAIN) {
+        filters$Incl_uncertain <- "Selected"
+      } else {
+        filters$Incl_uncertain <- "Unselected"
+      }
+      
+      if(length(filters) ==0){
+        "No filters activated" {
+          else {
+            paste(names(filters), ": ", unlist(filters), collapse = "; ")
+          }
+        }
+      }
+      })
+    
+    
+    
     # when click on upper left (generate) button, this will click bottom left button
     shiny::observeEvent(input$refreshData_02, {
       session$sendCustomMessage("mymessage", "refreshData")
@@ -501,6 +555,11 @@ guide <- cicerone::Cicerone$new()$step(
     
     # when click on upper left (generate) button, this will update the active filter text output
     shiny::observeEvent(input$refreshData_02, {
+      session$active_filters <- shiny::renderText(paste("Active filters: ", active_filters()))
+    })
+    
+    # when click on upper left (generate) button, this will update the active filter text output
+    shiny::observeEvent(input$refreshData, {
       session$active_filters <- shiny::renderText(paste("Active filters: ", active_filters()))
     })
 
