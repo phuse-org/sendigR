@@ -500,7 +500,10 @@ guide <- cicerone::Cicerone$new()$step(
     })
     
     #Make list of active filters
-    active_filters <- shiny::reactive({
+    active_filters <- shiny::reactiveValues(filters_text = "No filters activated")
+    
+    # when click on upper left (generate) button, this will update the active filter text output
+    shiny::observeEvent(input$refreshData_02, {
       filters <- list()
       
       #check each filter
@@ -547,18 +550,14 @@ guide <- cicerone::Cicerone$new()$step(
       
       if(length(filters)==0){
         
-        "No filters activated"
+        active_filters$filters_text <- "No filters activated"
         
       } else {
         
-        paste(names(filters), ": ", unlist(filters), collapse = "; ")
+        active_filters$filters_text <- paste(names(filters), ": ", unlist(filters), collapse = "; ")
       }
     })
-    
-    # when click on upper left (generate) button, this will update the active filter text output
-    shiny::observeEvent(input$refreshData_02, {
-      output$active_filters <- shiny::renderText(paste("Active filters: ", active_filters()))
-    
+
     # when click on upper left (generate) button, this will update the active filter text output
     #shiny::observeEvent(input$refreshData, {
     #  session$active_filters <- shiny::renderText(paste("Active filters: ", active_filters()))
