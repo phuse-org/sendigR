@@ -537,12 +537,10 @@ guide <- cicerone::Cicerone$new()$step(
         filters$Incl_uncertain <- "Unselected"
       }
       
-      if(length(filters) ==0){
-        "No filters activated" {
-          else {
-            paste(names(filters), ": ", unlist(filters), collapse = "; ")
-          }
-        }
+      if(length(filters)==0){
+        "No filters activated"
+      } else {
+        paste(names(filters), ": ", unlist(filters), collapse = "; ")
       }
     })
     
