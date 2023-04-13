@@ -544,9 +544,7 @@ guide <- cicerone::Cicerone$new()$step(
           }
         }
       }
-      })
-    
-    
+    })
     
     # when click on upper left (generate) button, this will click bottom left button
     shiny::observeEvent(input$refreshData_02, {
@@ -554,7 +552,7 @@ guide <- cicerone::Cicerone$new()$step(
     })
     
     # when click on upper left (generate) button, this will update the active filter text output
-    shiny::observeEvent(input$refreshData_02, {
+    shiny::observeEvent(input$refreshData, {
       session$active_filters <- shiny::renderText(paste("Active filters: ", active_filters()))
     })
     
