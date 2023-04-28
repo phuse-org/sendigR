@@ -16,7 +16,7 @@
 # Overlapping subject element periods
 
 #### Prepare for test execution
-rootPath <-  '../data/'
+rootPath <- '../data/'
 
 getExpected <- function(sheetName) {
   data.table::setkeyv(data.table::as.data.table(
