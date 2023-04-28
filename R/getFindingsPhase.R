@@ -302,8 +302,8 @@ getFindingsPhase <-function(dbToken,
                                  all.x = TRUE,
                                  allow.cartesian=TRUE)
 
-  # Evaluate each of all finding rows to find the assaiciated element.
-  # Check if the finding --DTC is within the data interval in one or twoelements start/end dates
+  # Evaluate each of all finding rows to find the associated element.
+  # Check if the finding --DTC is within the data interval in one or two elements start/end dates
   # There may be more than one element associated with a finding if the --DTC is within the interval of the end date in
   # one element and start date in another element(i.e. a time part is missing in one or more of the --DTC, SESTDTC, SEENDTC).
   # All ISO date/time variables are converted to numerical datetime before the comparison
