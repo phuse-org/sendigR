@@ -14,7 +14,7 @@ test_that('DB token',
               dbUser = 'sendigr_read',
               dbPwd = rstudioapi::askForPassword("Database password:")
             )
-            
+
             expect_equal(db$dbType, 'postgresql')
             expect_equal(class(db$dbHandle)[1], 'PqConnection')
             expect_equal(db$dbSchema, '')
@@ -41,7 +41,7 @@ test_that('Error handling',
                 dbPwd = rstudioapi::askForPassword("Database password:")),
               regexp = 'FATAL:  database .+ does not exist'
             )
-            
+
             expect_error(
               initEnvironment(
                 dbType = 'postgresql',

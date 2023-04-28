@@ -196,7 +196,7 @@ initEnvironment <- function(dbType = NULL,
   if (dbType == 'postgresql') {
     dbExists <- canConnectDB_postgresql(dbPath, dbHost, dbUser, dbPwd, dbPort = 5432)
     if (dbExists == FALSE)
-      stop(print(attr(dbExists, "reason")))
+      stop(attr(dbExists, "reason"))
   }
 
   ## Connect to the database
