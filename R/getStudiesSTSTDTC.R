@@ -151,14 +151,6 @@ getStudiesSTSTDTC <- function(dbToken,
                                on ts0.studyid = ts1.studyid
                               and ts1.tsparmcd = 'STSTDTC'")
   
-  genericQuery(dbToken,
-               select "TS0"."STUDYID",
-               case when "TS1"."TSVAL" = ''
-               then null
-               else "TS1"."TSVAL"
-               end as "STSTDTC"
-               from)
-
   if (studyListIncl) {
     # Limit to the set of studies given as input
     tsSTSTDTC <- data.table::merge.data.table(
