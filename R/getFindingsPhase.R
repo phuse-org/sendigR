@@ -227,7 +227,7 @@ getFindingsPhase <-function(dbToken,
       studyAnimalList <-
         (genericQuery(dbToken,
                      "select * from pooldef
-                       where studyid in (:1)",
+                       where studyid in (?)",
                      studyList) %>%
         data.table::merge.data.table(poolList,
                                     by = c('STUDYID', 'POOLID'))) %>%
@@ -278,8 +278,8 @@ getFindingsPhase <-function(dbToken,
                                               'SEENDTC')]
   # Get related TA rows
   TA <- genericQuery(dbToken,
-                     "select * from ta
-                      where studyid in (:1)",
+                     'select * from "TA"
+                      where "STUDYID" in (?)',
                      studyList)
 
 

@@ -261,7 +261,7 @@ getControlSubj<-function(dbToken,
     stop("Parameter inclUncertain must be either TRUE or FALSE")
   }
 
-  # Extract  TX parameter 'TCNTRL' for the studies included in studyList
+  # Extract TX parameter 'TCNTRL' for the studies included in studyList
   # - include a row for each for study which may miss a 'TCNTRL' parameter
   # - include the animals from DM belonging to the identified trial sets
   txDmCtrlSet <- genericQuery(dbToken,
@@ -292,7 +292,36 @@ getControlSubj<-function(dbToken,
                                on ts.studyid = ds.studyid
                                and dm.usubjid = ds.usubjid",
                             studyList[,c('STUDYID')])
-
+  
+  txDmCtrlSet <- genericQuery(dbToken,
+                              "select ts.studyid
+                                   ,tx.txval as TCNTRL
+                                   ,tx.setcd
+                                   ,dm.usubjid
+                                   ,dm.rfstdtc
+                                   ,dm.brthdtc
+                                   ,dm.agetxt
+                                   ,dm.age
+                                   ,dm.ageu
+                                   ,ds.dsdecod
+                                   ,ds.dsstdtc
+                             from (select distinct STUDYID
+                                   from ts
+                                   where studyid in (:1)) ts
+                             left join tx
+                               on ts.studyid = tx.studyid
+                              and tx.txparmcd = 'TCNTRL'
+                             left join dm
+                               on dm.studyid = ts.studyid
+                              and ((tx.setcd is not null
+                                    and dm.setcd = tx.setcd)
+                                  or
+                                   (tx.setcd is null))
+                              left join ds
+                               on ts.studyid = ds.studyid
+                               and dm.usubjid = ds.usubjid",
+                             studyList[,c('STUDYID')])
+  
   # Extract the unique set of trial sets
   txCtrlSet <- unique(txDmCtrlSet[!is.na(TCNTRL),c('TCNTRL')])
 
