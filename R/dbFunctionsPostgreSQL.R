@@ -49,7 +49,6 @@ genericQuery_postgresql <- function(dbHandle, queryString, queryParams = NULL) {
     data.table::as.data.table(RPostgres::dbGetQuery(dbHandle, queryString))
   } else {
     formatQuery <- DBI::sqlInterpolate(dbHandle, queryString, paste(queryParams))
-    print(formatQuery)
     data.table::as.data.table(RPostgres::dbGetQuery(dbHandle, formatQuery))
   }
 }
