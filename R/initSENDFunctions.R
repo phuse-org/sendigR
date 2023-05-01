@@ -11,6 +11,7 @@
 ## Date         Programmer            Note
 ## ----------   --------------------  ------------------------------------------
 ## 2020-12-04   Bo Larsen             Initial version
+## 2023-17-03   Cecily Abraham        Added PostgreSQL support
 ################################################################################
 
 
@@ -32,7 +33,7 @@
 #'
 #' If the function is executed with parameter \code{dbCreate=TRUE}, an empty
 #' database is created and opened. This is only supported for a SQLite database,
-#' i.e. parameter \code{dbType='sqlite'}. The SEND domain tables may then be
+#' i.e., parameter \code{dbType='sqlite'}. The SEND domain tables may then be
 #' created by execution of the function \code{\link{dbCreateSchema}}.
 #'
 #' Besides the open database connection, a set of CDISC SEND controlled
@@ -49,6 +50,7 @@
 #'   \itemize{
 #'     \item 'sqlite'
 #'     \item 'oracle'
+#'     \item 'postgresql'
 #'   }
 #' @param dbPath Mandatory, character\cr
 #'   The path to the database (path to file or another kind of db reference)
@@ -64,11 +66,24 @@
 #' @param dbSchema Optional, character\cr
 #'   The table owner of the SEND table in the specific database.\cr
 #'   This parameter is only relevant to specify if it is necessary to prefix
-#'   table names with schema in SQL statements i the database.
+#'   table names with schema in SQL statements in the database.
 #' @param ctFile Optional, character.\cr
-#'   Name (full path) of CDISC CT file in Excel xls format to be imported.
+#'   Name (full path) of CDISC CT file in Excel xlsx format to be imported.
 #'   Only relevant to use if another CDISC CT version than the version
 #'   included in packages is wanted.\cr
+#'
+#' Add param for host/server
+#' @param dbHost Optional, character\cr
+#'   Name of PostgreSQL host/server.
+#'   This parameter is only relevant to specify if a server or host name
+#'   is necessary to connect to the database. Only necessary for a PostgreSQL
+#'   database connection.
+#'
+#' Add param for port number
+#' @param dbPort Optional, character?\cr
+#'   Port number for connecting to database. This parameter is only necessary if
+#'   the database type requires a port number for connection (e.g., PostgreSQL
+#'   uses port number 5432).
 #'
 #' @return The function returns a token which is a data structure describing
 #'   the open database connection. This token must be given as input parameter
@@ -82,12 +97,22 @@
 #' db <- initEnvironment(dbType='sqlite',
 #'                       dbPath='//servername/SendData/db/send.db',
 #'                       ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
+#'
 #' db <- initEnvironment(dbType='oracle',
 #'                       dbPath='dbserver:1521/send_db',
 #'                       dbUser='ME',
 #'                       dbPwd='mypassword',
 #'                       dbSchema = 'send',
 #'                       ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
+#'
+#' db <- initEnvironment(dbType='postgresql',
+#'                       dbPath='send_db_name',
+#'                       dbHost='dbserver',
+#'                       dbUser='ME',
+#'                       dbPwd='mypassword',
+#'                       dbPort='5432',
+#'                       ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
+#'
 #' }
 #'
 #'
@@ -101,38 +126,42 @@
 #' @importFrom stats na.omit
 #' @importFrom magrittr %>%
 #'
-initEnvironment<-function(dbType=NULL,
-                          dbPath=NULL,
-                          dbCreate=FALSE,
-                          dbUser=NULL,
-                          dbPwd=NULL,
-                          dbSchema=NULL,
-                          ctFile=NULL) {
+initEnvironment <- function(dbType = NULL,
+                            dbPath = NULL,
+                            dbHost = NULL,
+                            dbCreate = FALSE,
+                            dbUser = NULL,
+                            dbPwd = NULL,
+                            dbPort = NULL,
+                            dbSchema = NULL,
+                            ctFile = NULL) {
+
 
   ## Evaluate database specification parameters
 
   # dbType
-  errMsg<-paste0('Parameter dbType must be one of: ', paste(sapply(validDbTypes[,c('db_type')], paste0), collapse=','))
-  if (is.null(dbType) | isTRUE(is.na(dbType)) | isTRUE(dbType==''))
+  errMsg <- paste0('Parameter dbType must be one of: ',
+                   paste(sapply(validDbTypes[, c('db_type')], paste0), collapse = ', '))
+  if (is.null(dbType) | isTRUE(is.na(dbType)) | isTRUE(dbType == ''))
     stop(errMsg)
-  else if (nrow(dbProperties<-validDbTypes[db_type==tolower(dbType)]) == 0)
+  if (nrow(dbProperties <- validDbTypes[db_type == tolower(dbType)]) == 0)
     stop(errMsg)
-  dbType<-tolower(dbType)
+  dbType <- tolower(dbType)
 
-  errMsg<-'Parameter %s must be a non-empty string'
+  errMsg <- 'Parameter %s must be a non-empty string'
   # dbPath
-  if (is.null(dbPath) | isTRUE(is.na(dbPath)) | isTRUE(dbPath==''))
+  if (is.null(dbPath) | isTRUE(is.na(dbPath)) | isTRUE(dbPath == ''))
     stop(sprintf(errMsg, 'dbPath'))
 
-  # dbUSer and dbPwd
-  if (as.logical(dbProperties[,c('req_credentials')])) {
-    if (is.null(dbUser) | isTRUE(is.na(dbUser)) | isTRUE(dbUser==''))
+  # dbUser and dbPwd
+  if (as.logical(dbProperties[, c('req_credentials')])) {
+    if (is.null(dbUser) | isTRUE(is.na(dbUser)) | isTRUE(dbUser == ''))
       stop(sprintf(errMsg, 'dbUser'))
-    if (is.null(dbPwd) | isTRUE(is.na(dbPwd)) | isTRUE(dbPwd==''))
-      stop(sprintf(errMsg,'dbPwd'))
+    if (is.null(dbPwd) | isTRUE(is.na(dbPwd)) | isTRUE(dbPwd == ''))
+      stop(sprintf(errMsg, 'dbPwd'))
   }
 
-  # dbSchema - set to "" if no value are specified
+  # dbSchema - set to "" if no value is specified
   if (is.null(dbSchema) | isTRUE(is.na(dbSchema)) | isTRUE(dbSchema==''))
     dbSchema<-""
 
@@ -143,53 +172,61 @@ initEnvironment<-function(dbType=NULL,
   if (isTRUE(is.na(dbCreate)) | isFALSE(typeof(dbCreate) == 'logical'))
     stop('Parameter dbCreate must be TRUE or FALSE')
   if (dbCreate & dbType != 'sqlite')
-    stop('Parameter dbCreate=TRUE only allowed for SQLite database')
+    stop('Parameter dbCreate = TRUE only allowed for SQLite database')
 
   ## Check for existence of package for the specified db type
-  ##
-  if (!requireNamespace(as.character(dbProperties[,c('package_name')]), quietly = TRUE))
-      stop(sprintf('Package "%s" needed for access to a(n) %s database. Please install it.',
-                   as.character(dbProperties[,c('package_name')]),
-                   as.character(dbProperties[,c('db_type')])),
-          call. = FALSE)
+  if (!requireNamespace(as.character(dbProperties[, c('package_name')]), quietly = TRUE))
+    stop(sprintf('Package "%s" needed for access to a(n) %s database. Please install it.',
+                 as.character(dbProperties[, c('package_name')]),
+                 as.character(dbProperties[, c('db_type')])),
+         call. = FALSE)
+
 
   ## if file based db type - check for existence of db file
   if (dbType == 'sqlite') {
     dbFileExists <-file.exists(dbPath)
     if (!dbFileExists & !dbCreate)
-      stop(paste0('The database file ' , dbPath, ' could not be found'))
+      stop(paste0('The database file ', dbPath, ' could not be found'))
     if (dbCreate & dbFileExists)
-      stop(paste0('Cannot create a new database because the database file ' , dbPath, ' exists.'))
+      stop(paste0('Cannot create a new database because the database file ', dbPath, ' exists.'))
+  }
+
+
+  ## if PostgreSQL db type - check for existence of PostgreSQL db
+  if (dbType == 'postgresql') {
+    dbExists <- canConnectDB_postgresql(dbPath, dbHost, dbUser, dbPwd, dbPort = 5432)
+    if (dbExists == FALSE)
+      stop(attr(dbExists, "reason"))
   }
 
   ## Connect to the database
   #  - execute the function specific for the db type to create the connections
-  if (as.logical(dbProperties[,c('req_credentials')]))
-    dbInputParams<-paste0('(dbPath, dbUser, dbPwd)')
+  if (as.logical(dbProperties[, c('req_credentials')]))
+    dbInputParams <- paste0('(dbPath, dbHost, dbUser, dbPwd, dbPort)')
   else
-    dbInputParams<-paste0('(dbPath)')
-  dbHandle<-eval(parse(text=paste0('connectDB_',dbProperties[,c('db_type')],dbInputParams)))
+    dbInputParams <- paste0('(dbPath)')
+  dbHandle <- eval(parse(text = paste0('connectDB_', dbProperties[, c('db_type')], dbInputParams)))
 
   ## Verify existence of function specific for db type to execute a generic query
-  genericQueryName <- paste0('genericQuery_', dbProperties[,c('db_type')])
+  genericQueryName <- paste0('genericQuery_', dbProperties[, c('db_type')])
   if (!exists(genericQueryName))
     stop(sprintf('A function named %s is missing', genericQueryName))
 
   ## Verify existence of function specific for db type to execute disconnect
   #  from database
-  disconnectDBName <- paste0('disconnectDB_', dbProperties[,c('db_type')])
+  disconnectDBName <- paste0('disconnectDB_', dbProperties[, c('db_type')])
   if (!exists(disconnectDBName))
     stop(sprintf('A function named %s is missing', disconnectDBName))
 
   ## Verify existence of function specific for db type to verify existence of
   #  specific table in database
-  dbExistsTableName <- paste0('dbExistsTable_', dbProperties[,c('db_type')])
+  dbExistsTableName <- paste0('dbExistsTable_', dbProperties[, c('db_type')])
   if (!exists(dbExistsTableName))
     stop(sprintf('A function named %s is missing', dbExistsTableName))
 
   ## Verify existence of function specific for db type to list columns in a
   #  specific table in database
-  dbListFieldsName <- paste0('dbListFields_', dbProperties[,c('db_type')])
+  dbListFieldsName <- paste0('dbListFields_', dbProperties[, c('db_type')])
   if (!exists(dbListFieldsName))
     stop(sprintf('A function named %s is missing', dbListFieldsName))
 
@@ -202,13 +239,13 @@ initEnvironment<-function(dbType=NULL,
   #     - execution of a generic SQL query
   #     - disconnect from database
   list(ctDataFile = ctDataFile,
-               dbType = dbType,
-               dbHandle = dbHandle,
-               dbSchema = dbSchema,
-               genericQuery = get(genericQueryName),
-               disconnectDB = get(disconnectDBName),
-               dbExistsTable = get(dbExistsTableName),
-               dbListFieldsTable = get(dbListFieldsName)
+       dbType = dbType,
+       dbHandle = dbHandle,
+       dbSchema = dbSchema,
+       genericQuery = get(genericQueryName),
+       disconnectDB = get(disconnectDBName),
+       dbExistsTable = get(dbExistsTableName),
+       dbListFieldsTable = get(dbListFieldsName)
   )
 }
 
@@ -258,7 +295,7 @@ disconnectDB <- function(dbToken) {
 #' genericQuery(dbToken,
 #'              'select studyid, tsseq, tsgrpid, tsparmcd, tsval from ts')
 #' genericQuery(dbToken,
-#'              'select studyid, tsval from ts where tsprmcd = "SDESIGN" and studyid in (:1)',
+#'              'select studyid, tsval from ts where tsparmcd = "SDESIGN" and studyid in (:1)',
 #'              list("1234546","222333","444555"))
 #' }
 genericQuery <- function(dbToken, queryString, queryParams=NULL) {
@@ -267,9 +304,9 @@ genericQuery <- function(dbToken, queryString, queryParams=NULL) {
   #  actual db type
   #  ## ADD POSIBILITY FOR MULTIPLE QUERY PARAMS
   dbToken$genericQuery(dbToken$dbHandle,
-                              selectStmtAddSchema(dbToken$dbSchema,
-                                                  queryString),
-                              queryParams)
+                       selectStmtAddSchema(dbToken$dbSchema,
+                                           queryString),
+                       queryParams)
 }
 
 ################################################################################
@@ -338,7 +375,7 @@ dbExistsTable <- function(dbToken, table) {
   if (dbToken$dbSchema == '')
     dbToken$dbExistsTable(dbToken$dbHandle, table)
   else
-    dbToken$dbExistsTable(dbToken$dbHandle, dbToken$dbSchema ,table)
+    dbToken$dbExistsTable(dbToken$dbHandle, dbToken$dbSchema, table)
 }
 
 ################################################################################
@@ -372,16 +409,17 @@ prepareCtMetadata<-function(ctFile) {
     # Import content from worksheet named SEND<sep>Terminology<something>
     # - include relevant columns and all rows
     ctSheets<-readxl::excel_sheets(ctFile)
-    ctAll<-data.table::as.data.table(readxl::read_xls(ctFile,
-                                                      sheet=ctSheets[grepl('send[_ ]terminology',
-                                                                           tolower(ctSheets) )]))[,c("Code", "Codelist Code", "CDISC Submission Value")]
+    ctAll<-data.table::as.data.table(
+      readxl::read_xls(ctFile,
+                       sheet=ctSheets[grepl('send[_ ]terminology',
+                                            tolower(ctSheets) )]))[,c("Code", "Codelist Code", "CDISC Submission Value")]
     data.table::setnames(ctAll, c("Codelist Code","CDISC Submission Value"),
                          c("CodelistCode","CDISCSubmissionValue"))
 
     # Extract all code list names
     CDISCctCodeLists = ctAll[is.na(CodelistCode), c('Code', 'CDISCSubmissionValue')]
     data.table::setnames(CDISCctCodeLists, c("Code","CDISCSubmissionValue"),
-                                           c("CodelistCode","CodeList"))
+                         c("CodelistCode","CodeList"))
     # Extract all code list values
     CDISCctCodeValues = ctAll[!is.na(CodelistCode), c('CodelistCode','CDISCSubmissionValue')]
   }
@@ -411,8 +449,8 @@ getCTCodListValues<-function(dbToken, pCodeList=NULL) {
 
   # Extract and return a character vector with all value for the requested code list
   data.table::merge.data.table(CDISCctCodeLists[CodeList==toupper(pCodeList), c('CodelistCode')],
-                                      CDISCctCodeValues[!is.na(CodelistCode)],
-                                      by = 'CodelistCode')$CDISCSubmissionValue;
+                               CDISCctCodeValues[!is.na(CodelistCode)],
+                               by = 'CodelistCode')$CDISCSubmissionValue;
 }
 
 ################################################################################
@@ -421,18 +459,18 @@ getCTCodListValues<-function(dbToken, pCodeList=NULL) {
 #   - substitute line shifts (\n) with space
 #   - substitute multiple consecutive spaces with one space
 #   - substitute '==' with '='
-#   - if the global defined db schame names is not empty -
-#     - add the schema plus '.' in front of all table names ,
-#       i.e. names following a 'from ' or 'join ' except
+#   - if the global defined db schema names is not empty -
+#     - add the schema plus '.' in front of all table names,
+#       i.e., names following a 'from ' or 'join ' except
 #       subqueries (starting with '(')
 selectStmtAddSchema <- function(dbSchema, stmt) {
-  vSchema <- ifelse(dbSchema=='','',paste0(dbSchema,'.'))
-    stmt %>%
-      stringr::str_replace_all('\n', ' ') %>%
-      stringr::str_replace_all(' +', ' ') %>%
-      stringr::str_replace_all('=+', '=') %>%
-      stringr::str_replace_all(stringr::regex('(from |join )([^(])', ignore_case = TRUE),
-                               paste0('\\1', vSchema, '\\2'))
+  vSchema <- ifelse(dbSchema == '', '', paste0(dbSchema, '.'))
+  stmt %>%
+    stringr::str_replace_all('\n', ' ') %>%
+    stringr::str_replace_all(' +', ' ') %>%
+    stringr::str_replace_all('=+', '=') %>%
+    stringr::str_replace_all(stringr::regex('(from |join )([^(])', ignore_case = TRUE),
+                             paste0('\\1', vSchema, '\\2'))
 
 }
 
@@ -470,7 +508,7 @@ prepareFinalResults <- function(dt, srcCols, addCols) {
   # Execute merge for each of message column included from two tables
   # - remove the last '.x' from message column name
   for (msgCol in mergedMsgColList)
-      eval(str2expression(gsub('msgCol', gsub('.x$','',msgCol), mergeMsgColStmt)))
+    eval(str2expression(gsub('msgCol', gsub('.x$','',msgCol), mergeMsgColStmt)))
 
   if (length(srcCols) == 1 & srcCols[1] == '')
     # Only columns added by calling function included
@@ -490,6 +528,3 @@ prepareFinalResults <- function(dt, srcCols, addCols) {
   # Include specified columns in correct order and return
   eval(str2expression("data.table::setcolorder(dt[,..colList], colList)"))
 }
-
-
-

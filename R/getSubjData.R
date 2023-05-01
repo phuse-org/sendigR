@@ -126,8 +126,9 @@ getSubjData <- function(dbToken,
     # Limit set of extracted columns to the specified list
     # - ensure they are listed in the same order as defined in the table
     # - collapse list into a comma seperated string
-    colListSelect <- paste(colListAll[colListAll %in% colList],
-                           collapse = ',')
+    colListSelect <- paste0('"', colListAll[colListAll %in% colList],
+                           collapse = ',',
+                           '"')
   }
   else
     # Include all columns from data table
@@ -138,7 +139,7 @@ getSubjData <- function(dbToken,
 
   # Extract subset of findings rows from db for relevant studies
   allData <- genericQuery(dbToken,
-                          sprintf("select %s from %s where studyid in (:1)",
+                          sprintf('select %s from "%s" where "STUDYID" in (?)',
                                   colListSelect, domain),
                           studyList)
 
@@ -161,7 +162,7 @@ getSubjData <- function(dbToken,
                           ,poolid   as POOLID
                           ,usubjid  as USUBJID
                       from pooldef
-                     where studyid in (:1)",
+                     where studyid in (?)",
                   studyList) %>%
       # input list of animals is joined to POOLDEF to get the related POOLID values
       # - delete col USUBJID after join

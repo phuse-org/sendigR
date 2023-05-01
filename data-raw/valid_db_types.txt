@@ -1,3 +1,3 @@
-db_type	req_credentials	package_name
-sqlite	FALSE	RSQLite
-oracle	TRUE	ROracle
+db_type req_credentials package_name
+sqlite      FALSE RSQLite
+postgresql  TRUE  RPostgres
