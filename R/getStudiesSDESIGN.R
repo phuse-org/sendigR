@@ -116,6 +116,12 @@ getStudiesSDESIGN <- function(dbToken,
     studyListIncl<-TRUE
   }
 
+  # TODO: The order of the output of the following SQL query is inconsistent
+  # based on database engine (e,g., SQLite vs PostgreSQL). Different databases
+  # return things in different orders. Might want to consider adding an
+  # ORDER BY clause to the SQL query to ensure the output is consistent
+  # across database engines.
+
   # Extract TS parameter 'SDESIGN'
   # - include a row for each for study which may miss a SDESIGN parameter
   tsSDESIGN <-

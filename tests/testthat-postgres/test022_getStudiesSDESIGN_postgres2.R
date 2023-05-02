@@ -1,5 +1,5 @@
 ################################################################################
-## Test cases for the function getStudiesSDESIGN with SQLite database
+## Test cases for the function getStudiesSDESIGN with PostgreSQL database
 ##
 ## Expected data are located in: 021_expected_getStudiesSDESIGN.xls
 ################################################################################
@@ -9,12 +9,17 @@ rootPath <- '../data/'
 
 getExpected <- function(sheetName) {
   data.table::setkey(data.table::as.data.table(readxl::read_xls(normalizePath(
-    paste0(rootPath, '022_expected_getStudiesSDESIGN.xls')),
+    paste0(rootPath, '022_expected_getStudiesSDESIGN_postgres2.xls')),
     sheet = sheetName)), STUDYID)
 }
 
-db <- initEnvironment(dbType = 'sqlite',
-                      dbPath = normalizePath(paste0(rootPath, 'test_db.db')))
+db <- initEnvironment(
+  dbType = 'postgresql',
+  dbPath = 'sendigr_test',
+  dbHost = 'cder-rapid-prod-datahub.cfb51geqvgd5.us-gov-west-1.rds.amazonaws.com',
+  dbUser = 'sendigr_read',
+  dbPwd = rstudioapi::askForPassword("Database password:")
+)
 
 #### Test cases 0x - execution without any input set of studies
 
