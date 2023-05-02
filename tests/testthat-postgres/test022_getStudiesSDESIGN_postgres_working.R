@@ -9,7 +9,7 @@ rootPath <- '../data/'
 
 getExpected <- function(sheetName) {
   data.table::setkey(data.table::as.data.table(readxl::read_xls(normalizePath(
-    paste0(rootPath, '022_expected_getStudiesSDESIGN_postgres2.xls')),
+    paste0(rootPath, '022_expected_getStudiesSDESIGN_postgres_working.xls')),
     sheet = sheetName)), STUDYID)
 }
 
