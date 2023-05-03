@@ -38,7 +38,7 @@ dbCreateSchema <- function(dbToken) {
   # Check if dbType is valid
   if (dbToken$dbType != 'sqlite')
     stop('Function is only supported for SQLite databases')
-  
+
   # Check if any tables already exist
   nTab <- genericQuery(dbToken,
                        "select count(0)  n
@@ -47,7 +47,7 @@ dbCreateSchema <- function(dbToken) {
                           and name not like 'sqlite_%'")$n
   if (nTab != 0)
     stop('One or more tables exist in the database - it must be empty to create a new SEND db schema.')
-  
+
   # Create each domain with all variables described in the SEND IG metadata
   # included in the package
   # - SUPPQUAL is not included, it's only included in metadata to enable check
@@ -160,10 +160,10 @@ dbImportOneStudy <- function(dbToken,
 {
   if (dbToken$dbType != 'sqlite')
     stop("Function is only valid to execute for dbType = 'sqlite'")
-  
+
   if (!file.exists(xptPath))
     stop(sprintf('Specified path %s cannot be found', xptPath))
-  
+
   loadStudyData(dbToken, xptPath, overWrite, checkRequiredVars)
 }
 
@@ -247,10 +247,10 @@ dbImportStudies <- function(dbToken,
 {
   if (dbToken$dbType != 'sqlite')
     stop("Function is only valid to execute for dbType = 'sqlite'")
-  
+
   if (!file.exists(xptPathRoot))
     stop(sprintf('Specified XPT path %s cannot be found', xptPathRoot))
-  
+
   if (!is.null(logFilePath))
     if (!file.exists(logFilePath))
       stop(sprintf('Specified log file path %s cannot be found', logFilePath))
@@ -259,10 +259,10 @@ dbImportStudies <- function(dbToken,
     logr::log_open(logFileName, logdir = FALSE, show_notes = FALSE)
     #   print(paste0('Writing status to log file: ', logFileName))
   }
-  
+
   # initiate list to hold status for load of each study folder
   statusAll <- list()
-  
+
   # Loop through each sub folder below specified folder
   for (pathName in list.dirs(xptPathRoot, full.names = FALSE)) {
     pathNameFull <- paste0(xptPathRoot,'/',pathName)
@@ -321,14 +321,24 @@ dbImportStudies <- function(dbToken,
 #' # delete multiple studies
 #' dbDeleteStudies(myDbToken, list('122312', '552343', '0942347'))
 #' }
-dbDeleteStudies <- function(dbToken,
-                            studyIdList)
-{
-  if (dbToken$dbType != 'sqlite')
-    stop("Function is only valid to execute for dbType = 'sqlite'")
-  
-  for (studyId in studyIdList) {
-    deleteStudyData(dbToken, studyId)
+# dbDeleteStudies <- function(dbToken,
+#                             studyIdList)
+# {
+#   if (dbToken$dbType != 'sqlite')
+#     stop("Function is only valid to execute for dbType = 'sqlite'")
+#
+#   for (studyId in studyIdList) {
+#     deleteStudyData(dbToken, studyId)
+#   }
+# }
+
+dbDeleteStudies <- function(dbToken, studyIdList) {
+  if (dbToken$dbType == 'sqlite' | dbToken$dbType == 'postgresql') {
+    for (studyId in studyIdList) {
+      deleteStudyData(dbToken, studyId)
+    }
+  } else {
+    stop("Function is only valid to execute for dbType = 'sqlite' or dbType = 'postgresql'")
   }
 }
 
@@ -366,66 +376,148 @@ dbDeleteStudies <- function(dbToken,
 #' }
 #'
 dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
-  
-  # Create one index
-  creIdx <- function(tab, idxName, colListStr) {
-    RPostgres::dbClearResult(RPostgres::dbSendStatement(dbToken$dbHandle,
-                                                    sprintf("create index %s_sendigr_%s on %s (%s)",
-                                                            tab, idxName, tab, colListStr)))
-  }
-  
-  if (dbToken$dbType != 'sqlite')
-    stop("Function is only valid to execute for dbType = 'sqlite'")
-  
-  ## Check if any sendigr indexes exist - and delete if appropriate
-  idxList <-
-    genericQuery(dbToken,
-                 "select name from sqlite_master
-                   where type = 'index'
-                     and name like '%sendigr%'")$name
-  if (length(idxList) != 0)
-    if (replaceExisting) {
-      for (idxName in idxList)
-        RPostgres::dbClearResult(RPostgres::dbSendStatement(dbToken$dbHandle,
-                                                        sprintf("drop index %s",
-                                                                idxName)))
-    } else {
-      stop('There are already existing indexes, execute with replaceExisting=TRUE to replace with new set of indexes')
+
+  #Function for if dbType == 'sqlite'
+  if (dbToken$dbType == 'sqlite') {
+
+    dbCreateIndexesSQLite = function(dbToken, replaceExisting) {
+
+      # Create one index
+      creIdx <- function(tab, idxName, colListStr) {
+        RSQLite::dbClearResult(RSQLite::dbSendStatement(
+          dbToken$dbHandle,
+          sprintf("create index %s_sendigr_%s on %s (%s)",
+                  tab,
+                  idxName,
+                  tab,
+                  colListStr)))
+      }
+
+      ## Check if any sendigr indices exist - and delete if appropriate
+      idxList <-
+        genericQuery(dbToken,
+                     "select name from sqlite_master
+                      where type = 'index'
+                      and name like '%sendigr%'")$name
+
+      if (length(idxList) != 0)
+        if (replaceExisting) {
+          for (idxName in idxList)
+            RSQLite::dbClearResult(RSQLite::dbSendStatement(dbToken$dbHandle,
+                                                            sprintf("drop index %s",
+                                                                    idxName)))
+        } else {
+          stop('There are already existing indexes, execute with replaceExisting=TRUE to replace with new set of indexes')
+        }
+
+      ## Generate indexes for specific optimization of the data extraction functions
+
+      # TS
+      creIdx('ts','01', 'studyid, tsparmcd, tsval')
+      creIdx('ts','02', 'studyid, tsparmcd, tsgrpid, tsval')
+
+      # TX
+      creIdx('tx','01', 'studyid, txparmcd, setcd, txval')
+
+      # DM
+      creIdx('dm', '01', 'studyid, setcd')
+      creIdx('dm', '02', 'studyid, usubjid')
+      creIdx('dm', '03', 'studyid, setcd, sex, usubjid')
+
+      # POOLDEF
+      creIdx('pooldef', '01', 'studyid, poolid, usubjid')
+
+      # EX
+      creIdx('ex', '01', 'studyid, exroute, usubjid')
+      creIdx('ex', '02', 'studyid, exroute, poolid')
+
+      ## Generate general indexes for the remaining tables on STUDYID and
+      ## (if included) USUBJID
+
+      exclTabList = c('TS','TX','DM','POOLDEF','EX')
+
+      for (tab in setdiff(getDbTables(dbToken), exclTabList)) {
+        if ('USUBJID' %in% dbListFields(dbToken, tab))
+          creIdx(tab, '01', 'studyid, usubjid')
+        else
+          creIdx(tab, '01', 'studyid')
+      }
     }
-  
-  ## Generate indexes for specific optimization of the data extraction functions
-  
-  # TS
-  creIdx('ts','01', 'studyid, tsparmcd, tsval')
-  creIdx('ts','02', 'studyid, tsparmcd, tsgrpid, tsval')
-  
-  # TX
-  creIdx('tx','01', 'studyid, txparmcd, setcd, txval')
-  
-  # DM
-  creIdx('dm', '01', 'studyid, setcd')
-  creIdx('dm', '02', 'studyid, usubjid')
-  creIdx('dm', '03', 'studyid, setcd, sex, usubjid')
-  
-  # POOLDEF
-  creIdx('pooldef', '01', 'studyid, poolid, usubjid')
-  
-  # EX
-  creIdx('ex', '01', 'studyid, exroute, usubjid')
-  creIdx('ex', '02', 'studyid, exroute, poolid')
-  
-  ## Generate general indexes for the remaining tables on STUDYID and
-  ## (if included) USUBJID
-  
-  exclTabList = c('TS','TX','DM','POOLDEF','EX')
-  
-  for (tab in setdiff(getDbTables(dbToken), exclTabList)) {
-    if ('USUBJID' %in% dbListFields(dbToken, tab))
-      creIdx(tab, '01', 'studyid, usubjid')
-    else
-      creIdx(tab, '01', 'studyid')
+  }
+
+  #Function for if dbType == 'postgresql'
+  else if (dbToken$dbType == 'postgresql') {
+
+    dbCreateIndexesPostgres = function(dbToken, replaceExisting) {
+
+      # Create one index
+      creIdx <- function(tab, idxName, colListStr) {
+        RPostgres::dbClearResult(RPostgres::dbSendStatement(
+          dbToken$dbHandle,
+          sprintf("create index %s_sendigr_%s on %s (%s)",
+                  tab,
+                  idxName,
+                  tab,
+                  colListStr)))
+      }
+
+      #### SQL QUERY NEEDS TO BE UPDATED FOR POSTGRES ####
+      ## Check if any sendigr indices exist - and delete if appropriate
+      idxList <-
+        genericQuery(dbToken,
+                     "select name from postgres_master
+                      where type = 'index'
+                      and name like '%sendigr%'")$name
+
+      if (length(idxList) != 0)
+        if (replaceExisting) {
+          for (idxName in idxList)
+            RPostgres::dbClearResult(RPostgres::dbSendStatement(dbToken$dbHandle,
+                                                                sprintf("drop index %s",
+                                                                        idxName)))
+        } else {
+          stop('There are already existing indexes, execute with replaceExisting=TRUE to replace with new set of indexes')
+        }
+
+      ## Generate indexes for specific optimization of the data extraction functions
+
+      # TS
+      creIdx('ts','01', 'studyid, tsparmcd, tsval')
+      creIdx('ts','02', 'studyid, tsparmcd, tsgrpid, tsval')
+
+      # TX
+      creIdx('tx','01', 'studyid, txparmcd, setcd, txval')
+
+      # DM
+      creIdx('dm', '01', 'studyid, setcd')
+      creIdx('dm', '02', 'studyid, usubjid')
+      creIdx('dm', '03', 'studyid, setcd, sex, usubjid')
+
+      # POOLDEF
+      creIdx('pooldef', '01', 'studyid, poolid, usubjid')
+
+      # EX
+      creIdx('ex', '01', 'studyid, exroute, usubjid')
+      creIdx('ex', '02', 'studyid, exroute, poolid')
+
+      ## Generate general indexes for the remaining tables on STUDYID and
+      ## (if included) USUBJID
+
+      exclTabList = c('TS','TX','DM','POOLDEF','EX')
+
+      for (tab in setdiff(getDbTables(dbToken), exclTabList)) {
+        if ('USUBJID' %in% dbListFields(dbToken, tab))
+          creIdx(tab, '01', 'studyid, usubjid')
+        else
+          creIdx(tab, '01', 'studyid')
+      }
+    }
   }
 }
+else
+  stop("Function is not valid for dbType 'sqlite' or 'postgres'")
+}
+
 
 
 
@@ -472,7 +564,7 @@ loadStudyData <- function(dbToken,
                           # are included
                           checkRequiredVars = TRUE)
 {
-  
+
   ##############################################################################
   # Import domain from xpt file - return content in a data table
   importXptFile <- function(file, domain) {
@@ -484,12 +576,12 @@ loadStudyData <- function(dbToken,
     # if (toupper(names(xptContent)) != domain)
     #   stop(sprintf('The in xpt file %s contains an unexpected table name %s - should have been %s',
     #                file, names(xptContent), domain))
-    
+
     # Convert to data.table and return
     data.table::as.data.table(sjlabelled::remove_all_labels(xptContent))
   }
   ### End of importXptFile
-  
+
   ##############################################################################
   # Import SUPPQUAL file and write subsets of data to domain specific
   # SUPP-- tables
@@ -500,13 +592,13 @@ loadStudyData <- function(dbToken,
         rdomainsInvalid <- c(rdomainsInvalid, rdomain)
         next
       }
-      
+
       RPostgres::dbWriteTable(dbToken$dbHandle,
                             name = paste0('SUPP',rdomain),
                             value = suppqual[RDOMAIN == rdomain],
                             append = TRUE)
     }
-    
+
     if (length(rdomainsInvalid) != 0)
       paste0('Domain SUPPQUAL contains RDOMAIN references to not-existing domains: ',
              paste(rdomainsInvalid, collapse = ','))
@@ -514,7 +606,7 @@ loadStudyData <- function(dbToken,
       c()
   }
   ### End of loadSuppData
-  
+
   ##############################################################################
   # If imported domain data  fulfills minimum requirements, insert data into
   # the database
@@ -523,7 +615,7 @@ loadStudyData <- function(dbToken,
     errMsg <- ''
     requiredCols <- sendIGcolumns[TABLE_NAME == domain & REQUIRED == 'Y']$COLUMN_NAME
     requiredTab <- (nrow(sendIGtables[TABLE_NAME == domain & REQUIRED == 'Y']) == 1)
-    
+
     # Do checks for other domains than TS (these are already done for TS)
     if (domain != 'TS') {
       if (nrow(dtDomain) == 0)
@@ -548,12 +640,12 @@ loadStudyData <- function(dbToken,
           }
         }
     }
-    
+
     if (errMsg == '' &
         (checkRequiredVars | requiredTab ) ) {
       # Check for required column condtions
       #  - always for required domains and option for other domains
-      
+
       # Check for existence of required columns
       missCols <- setdiff(requiredCols, names(dtDomain))
       if (length(missCols) != 0)
@@ -568,7 +660,7 @@ loadStudyData <- function(dbToken,
                               domain)
         }
     }
-    
+
     if (errMsg != '') {
       # An error has been identified
       # - if it's in a required domain, report as an error
@@ -578,7 +670,7 @@ loadStudyData <- function(dbToken,
       else
         return(paste0(errMsg, ' (skipped)'))
     }
-    
+
     # Check if imported table contains columns not in the database table
     extraCols <- setdiff(names(dtDomain), dbListFields(dbToken, domain))
     if (length(extraCols) != 0) {
@@ -588,7 +680,7 @@ loadStudyData <- function(dbToken,
                    sprintf('Additional columns in domain %s has been ignored: %s',
                            domain, paste(extraCols, collapse=',')))
     }
-    
+
     if (domain == 'SUPPQUAL')
       warnTxt <- c(warnTxt, loadSuppData(dtDomain))
     else
@@ -599,9 +691,9 @@ loadStudyData <- function(dbToken,
     warnTxt
   }
   ### End of loadDomainData
-  
+
   ##############################################################################
-  
+
   # Get list of xpt files - if any
   filesAll <-
     list.files(path = xptPath,
@@ -610,42 +702,42 @@ loadStudyData <- function(dbToken,
                full.names = FALSE)
   if (length(filesAll) == 0)
     stop('No xpt files found')
-  
+
   filesSEND <- tolower(paste0(sendIGtables$TABLE_NAME, '.xpt'))
   filesRequired <- tolower(paste0(sendIGtables[REQUIRED == 'Y']$TABLE_NAME, '.xpt'))
   filesMiss <- setdiff(filesRequired,
                        filesRequired[filesRequired %in% tolower(filesAll)])
   if (length(filesMiss) != 0)
     stop(paste0('Missing xpt file(s): ', paste(filesMiss, collapse = ',')))
-  
+
   ## Check TS domain
-  
+
   # Get the TS xpt file name in correct case and import
   fileTS <- stringr::str_match(filesAll, stringr::regex('ts.xpt', ignore_case = TRUE))
   dtTS <- importXptFile(fileTS[!is.na(fileTS)], 'TS')
-  
+
   # Check it's not empty
   if (nrow(dtTS) == 0)
     stop('TS domain is empty')
-  
+
   # Check existence of studyid var
   if (! 'STUDYID' %in% names(dtTS))
     stop('TS domain misses a STUDYID variable')
-  
+
   # Get studyid and check if it's unique
   studyId <- as.character(unique(dtTS$STUDYID))
   if ('' %in% studyId | NA %in% studyId)
     stop('TS domain misses a STUDYID value in one or more rows')
   else if (length(studyId) != 1)
     stop('TS domain contains more than one distinct STUDYID value')
-  
+
   # Check if study already exists in the database
   studyExists <- (genericQuery(dbToken, 'select count(1) as n from ts where studyid = :1', studyId)$n != 0)
   if (studyExists & !overWrite)
     stop('The study exists in the database, but it is specified not to overwrite existing studies')
-  
+
   ## Import and load all domains in a transaction
-  
+
   # Do a rollback to ensure we are not unexpected in an open transaction
   #  - ignore error message if no transaction is open
   tryCatch(
@@ -657,7 +749,7 @@ loadStudyData <- function(dbToken,
     {
       if (studyExists)
         deleteStudyData(dbToken, studyId)
-      
+
       # Loop through all xpt files
       filesNotSEND <- c()
       loadWarnings <- c()
@@ -687,7 +779,7 @@ loadStudyData <- function(dbToken,
     }
   )
   RPostgres::dbCommit(dbToken$dbHandle)
-  
+
   # Check if any warnings are to be reported
   warningMessage <-
     paste0(ifelse(!is.null(filesNotSEND),
