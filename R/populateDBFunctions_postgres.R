@@ -245,57 +245,59 @@ dbImportStudies <- function(dbToken,
                             verbose = FALSE,
                             logFilePath = NULL)
 {
-  if (dbToken$dbType != 'sqlite')
-    stop("Function is only valid to execute for dbType = 'sqlite'")
+  if (dbToken$dbType == 'sqlite' | dbToken$dbType == 'postgresql') {
 
-  if (!file.exists(xptPathRoot))
-    stop(sprintf('Specified XPT path %s cannot be found', xptPathRoot))
+    if (!file.exists(xptPathRoot))
+      stop(sprintf('Specified XPT path %s cannot be found', xptPathRoot))
 
-  if (!is.null(logFilePath))
-    if (!file.exists(logFilePath))
-      stop(sprintf('Specified log file path %s cannot be found', logFilePath))
-  else {
-    logFileName <- paste0(logFilePath, '/', 'dbImportStudies_', format(Sys.time(), '%Y%m%d_%H%M%S'), '.log')
-    logr::log_open(logFileName, logdir = FALSE, show_notes = FALSE)
-    #   print(paste0('Writing status to log file: ', logFileName))
-  }
-
-  # initiate list to hold status for load of each study folder
-  statusAll <- list()
-
-  # Loop through each sub folder below specified folder
-  for (pathName in list.dirs(xptPathRoot, full.names = FALSE)) {
-    pathNameFull <- paste0(xptPathRoot,'/',pathName)
-    # Exclude the root folder itself and sub folders with files included
-    if (nchar(pathName) > 1 &
-        length(list.files(pathNameFull, '\\..+')) != 0) {
-      statusTxt <-
-        tryCatch(
-          {
-            loadStudyData(dbToken, pathNameFull, overWrite, checkRequiredVars)
-            'OK'
-          }
-          ,
-          warning = function(warn) {
-            paste0('OK with warning(s): ', warn$message)
-          }
-          ,
-          error = function(err) {
-            paste0('Cancelled: ', err$message)
-          }
-        )
-      statusAll[[pathName]] <- statusTxt
-      if (verbose)
-        print(paste0(pathName, ': ', statusTxt))
-      if (!is.null(logFilePath))
-        logr::log_print(paste0(pathName, ': ', statusTxt),
-                        console = FALSE,
-                        blank_after = FALSE)
+    if (!is.null(logFilePath))
+      if (!file.exists(logFilePath))
+        stop(sprintf('Specified log file path %s cannot be found', logFilePath))
+    else {
+      logFileName <- paste0(logFilePath, '/', 'dbImportStudies_', format(Sys.time(), '%Y%m%d_%H%M%S'), '.log')
+      logr::log_open(logFileName, logdir = FALSE, show_notes = FALSE)
+      #   print(paste0('Writing status to log file: ', logFileName))
     }
+
+    # initiate list to hold status for load of each study folder
+    statusAll <- list()
+
+    # Loop through each sub folder below specified folder
+    for (pathName in list.dirs(xptPathRoot, full.names = FALSE)) {
+      pathNameFull <- paste0(xptPathRoot,'/',pathName)
+      # Exclude the root folder itself and sub folders with files included
+      if (nchar(pathName) > 1 &
+          length(list.files(pathNameFull, '\\..+')) != 0) {
+        statusTxt <-
+          tryCatch(
+            {
+              loadStudyData(dbToken, pathNameFull, overWrite, checkRequiredVars)
+              'OK'
+            }
+            ,
+            warning = function(warn) {
+              paste0('OK with warning(s): ', warn$message)
+            }
+            ,
+            error = function(err) {
+              paste0('Cancelled: ', err$message)
+            }
+          )
+        statusAll[[pathName]] <- statusTxt
+        if (verbose)
+          print(paste0(pathName, ': ', statusTxt))
+        if (!is.null(logFilePath))
+          logr::log_print(paste0(pathName, ': ', statusTxt),
+                          console = FALSE,
+                          blank_after = FALSE)
+      }
+    }
+    if (!is.null(logFilePath))
+      logr::log_close()
+    statusAll
+  } else {
+    stop("Function is only valid to execute for dbType = 'sqlite' or dbType = 'postgresql'")
   }
-  if (!is.null(logFilePath))
-    logr::log_close()
-  statusAll
 }
 
 #' Delete one or more studies in SEND database
@@ -321,16 +323,6 @@ dbImportStudies <- function(dbToken,
 #' # delete multiple studies
 #' dbDeleteStudies(myDbToken, list('122312', '552343', '0942347'))
 #' }
-# dbDeleteStudies <- function(dbToken,
-#                             studyIdList)
-# {
-#   if (dbToken$dbType != 'sqlite')
-#     stop("Function is only valid to execute for dbType = 'sqlite'")
-#
-#   for (studyId in studyIdList) {
-#     deleteStudyData(dbToken, studyId)
-#   }
-# }
 
 dbDeleteStudies <- function(dbToken, studyIdList) {
   if (dbToken$dbType == 'sqlite' | dbToken$dbType == 'postgresql') {
