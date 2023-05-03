@@ -68,8 +68,8 @@ dbCreateSchema <- function(dbToken) {
     # Generate and execute create table stmt
     sqlStmt <- paste0("create table '", tab, "' (", cols, ")" )
     # print(sqlStmt)
-    res <- RPostgres::dbSendStatement(dbToken$dbHandle, sqlStmt)
-    RPostgres::dbClearResult(res)
+    res <- RSQLite::dbSendStatement(dbToken$dbHandle, sqlStmt)
+    RSQLite::dbClearResult(res)
   }
 }
 
@@ -540,10 +540,10 @@ getDbTables <- function(dbToken) {
 deleteStudyData <- function(dbToken, studyId) {
   for (tab in getDbTables(dbToken)) {
     res <-
-      RPostgres::dbSendStatement(dbToken$dbHandle,
+      RSQLite::dbSendStatement(dbToken$dbHandle,
                                sprintf('delete from %s where studyid = :1',tab),
                                studyId)
-    RPostgres::dbClearResult(res)
+    RSQLite::dbClearResult(res)
   }
 }
 
@@ -593,7 +593,7 @@ loadStudyData <- function(dbToken,
         next
       }
 
-      RPostgres::dbWriteTable(dbToken$dbHandle,
+      RSQLite::dbWriteTable(dbToken$dbHandle,
                             name = paste0('SUPP',rdomain),
                             value = suppqual[RDOMAIN == rdomain],
                             append = TRUE)
@@ -684,7 +684,7 @@ loadStudyData <- function(dbToken,
     if (domain == 'SUPPQUAL')
       warnTxt <- c(warnTxt, loadSuppData(dtDomain))
     else
-      RPostgres::dbWriteTable(dbToken$dbHandle,
+      RSQLite::dbWriteTable(dbToken$dbHandle,
                             name = domain,
                             value = dtDomain,
                             append = TRUE)
@@ -741,10 +741,10 @@ loadStudyData <- function(dbToken,
   # Do a rollback to ensure we are not unexpected in an open transaction
   #  - ignore error message if no transaction is open
   tryCatch(
-    { RPostgres::dbRollback(dbToken$dbHandle) }
+    { RSQLite::dbRollback(dbToken$dbHandle) }
     , error = function(errMsg) { } )
   # Open new transaction
-  RPostgres::dbBegin(dbToken$dbHandle)
+  RSQLite::dbBegin(dbToken$dbHandle)
   tryCatch(
     {
       if (studyExists)
@@ -774,11 +774,11 @@ loadStudyData <- function(dbToken,
     ,
     error = function(errMsg) {
       # Error detected - rollback database changes an exit
-      RPostgres::dbRollback(dbToken$dbHandle)
+      RSQLite::dbRollback(dbToken$dbHandle)
       stop(errMsg)
     }
   )
-  RPostgres::dbCommit(dbToken$dbHandle)
+  RSQLite::dbCommit(dbToken$dbHandle)
 
   # Check if any warnings are to be reported
   warningMessage <-
