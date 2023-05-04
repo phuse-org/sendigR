@@ -41,12 +41,46 @@ disconnectDB_postgresql <- function(dbHandle) {
 
 
 ## Send generic statement
-dbSendStatement_postgresql <- function(dbToken, queryString, queryParams = NULL) {
+dbSendStatement_postgresql <- function(dbHandle, queryString, queryParams = NULL) {
   if (is.null(queryParams)){
-    RPostgres::dbSendStatement(dbToken$dbHandle, queryString)
+    RPostgres::dbSendStatement(dbHandle, queryString)
   } else {
-    RPostgres::dbSendStatement(dbToken$dbHandle, queryString, queryParams)
+    formatQuery <- DBI::sqlInterpolate(dbHandle, queryString, paste(queryParams))
+    RPostgres::dbSendStatement(dbHandle, formatQuery)
   }
+}
+
+
+## Clear Result
+dbClearResult_postgresql <- function(res) {
+  RPostgres::dbClearResult(res)
+}
+
+
+## Begin Transaction
+dbBegin_postgresql <- function(dbHandle) {
+  RPostgres::dbBegin(dbHandle)
+}
+
+
+## Rollback Transaction
+dbRollback_postgresql <- function(dbHandle) {
+  RPostgres::dbRollback(dbHandle)
+}
+
+
+## Rollback Transaction
+dbCommit_postgresql <- function(dbHandle) {
+  RPostgres::dbCommit(dbHandle)
+}
+
+
+## Write Table
+dbWriteTable_postgresql <- function(dbHandle, name, value, append=TRUE) {
+  RPostgres::dbWriteTable(dbHandle,
+                        name = name,
+                        value = value,
+                        append = append)
 }
 
 

@@ -21,14 +21,45 @@ disconnectDB_sqlite<-function(dbHandle) {
 
 
 ## Send generic statement
-dbSendStatement_postgresql <- function(dbToken, queryString, queryParams = NULL) {
+dbSendStatement_sqlite <- function(dbHandle, queryString, queryParams = NULL) {
   if (is.null(queryParams)){
-    RSQLte::dbSendStatement(dbToken$dbHandle, queryString)
+    RSQLite::dbSendStatement(dbHandle, queryString)
   } else {
-    RSQLte::dbSendStatement(dbToken$dbHandle, queryString, queryParams)
+    RSQLite::dbSendStatement(dbHandle, queryString, queryParams)
   }
 }
 
+## Clear Result
+dbClearResult_sqlite <- function(res) {
+  RSQLite::dbClearResult(res)
+}
+
+
+## Begin Transaction
+dbBegin_sqlite <- function(dbHandle) {
+  RSQLite::dbBegin(dbHandle)
+}
+
+
+## Rollback Transaction
+dbRollback_sqlite <- function(dbHandle) {
+  RSQLite::dbRollback(dbHandle)
+}
+
+
+## Commit Transaction
+dbCommit_sqlite <- function(dbHandle) {
+  RSQLite::dbCommit(dbHandle)
+}
+
+
+## Write Table
+dbWriteTable_sqlite <- function(dbHandle, name, value, append=TRUE) {
+  RSQLite::dbWriteTable(dbHandle,
+                        name = name,
+                        value = value,
+                        append = append)
+}
 
 ## Execute a generic query
 # Result data set always returned as data table
