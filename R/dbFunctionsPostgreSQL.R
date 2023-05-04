@@ -110,3 +110,21 @@ dbExistsTable_postgresql <- function(dbHandle, table) {
 dbListFields_postgresql <- function(dbHandle, table) {
   RPostgres::dbListFields(dbHandle, table)
 }
+
+# Return list of tables in the Postgres database
+dbGetTables_postgresql <- function(dbHandle) {
+  queryString <- "SELECT table_name 
+                  FROM information_schema.tables 
+                  WHERE table_schema='public'"
+  res <- data.table::as.data.table(RPostgres::dbGetQuery(dbHandle, queryString))
+  res$table_name;
+}
+
+# Return list of indexes in the Postgres database
+dbGetIndexes_postgresql <- function(dbHandle) {
+  queryString <- "select indexname 
+                  from pg_indexes 
+                  where tablename not like 'pg%';"
+  res <- data.table::as.data.table(RPostgres::dbGetQuery(dbHandle, queryString))
+  res$indexname;
+}

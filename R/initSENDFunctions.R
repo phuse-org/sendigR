@@ -259,6 +259,16 @@ initEnvironment <- function(dbType = NULL,
   dbWriteTableName <- paste0('dbWriteTable_', dbProperties[, c('db_type')])
   if (!exists(dbWriteTableName))
     stop(sprintf('A function named %s is missing', dbWriteTableName))
+  
+  ## Get Tables
+  dbGetTablesName <- paste0('dbGetTables_', dbProperties[, c('db_type')])
+  if (!exists(dbGetTablesName))
+    stop(sprintf('A function named %s is missing', dbGetTablesName))
+  
+  ## Get Indexes
+  dbGetIndexesName <- paste0('dbGetIndexes_', dbProperties[, c('db_type')])
+  if (!exists(dbGetIndexesName))
+    stop(sprintf('A function named %s is missing', dbGetIndexesName))
 
   ## Return a db token to be included in all calls to database related functions.
   #  It includes:
@@ -281,7 +291,9 @@ initEnvironment <- function(dbType = NULL,
        dbBegin = get(dbBeginName),
        dbRollback = get(dbRollbackName),
        dbCommit = get(dbCommitName),
-       dbWriteTable = get(dbWriteTableName)
+       dbWriteTable = get(dbWriteTableName),
+       dbGetTables = get(dbGetTablesName),
+       dbGetIndexes = get(dbGetIndexesName)
   )
 }
 

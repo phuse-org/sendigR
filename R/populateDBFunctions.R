@@ -45,7 +45,7 @@ checkDbType <- function(dbToken) {
 #' }
 dbCreateSchema <- function(dbToken) {
   checkDbType(dbToken)
-  nTab <- getDbTables(dbToken)
+  nTab <- dbToken$dbGetTables(dbToken$dbHandle)
 
   if (length(nTab) > 0)
     stop('One or more tables exist in the database - it must be empty to create a new SEND db schema.')
@@ -375,8 +375,8 @@ dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
   }
 
   ## Check if any sendigr indexes exist - and delete if appropriate
-  idxList <- getDbIndexes(dbToken)
-
+  idxList <- dbToken$dbGetIndexes(dbToken$dbHandle)
+  
   if (length(idxList) != 0) {
     if (replaceExisting) {
       for (idxName in idxList)
@@ -414,8 +414,9 @@ dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
   ## (if included) USUBJID
 
   exclTabList = c('TS','TX','DM','POOLDEF','EX')
+  tabList <- dbToken$dbGetTables(dbToken$dbHandle)
 
-  for (tab in setdiff(getDbTables(dbToken), exclTabList)) {
+  for (tab in setdiff(tabList, exclTabList)) {
     if ('USUBJID' %in% dbListFields(dbToken, tab))
       creIdx(tab, '01', '"STUDYID", "USUBJID"')
     else
@@ -429,42 +430,11 @@ dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
 # Helper functions used internally for load of study data
 ##############################################################################
 
-##############################################################################
-# Extract and return list of tables in the database
-getDbTables <- function(dbToken) {
-  if (dbToken$dbType == 'sqlite') {
-    genericQuery(dbToken,
-                 "select name
-                        from sqlite_master
-                        where type ='table'
-                        and name not like 'sqlite_%'")$name;
-  } else if (dbToken$dbType == 'postgresql') {
-    genericQuery(dbToken,
-                 "SELECT table_name 
-                  FROM information_schema.tables 
-                  WHERE table_schema='public'")$table_name;
-  }
-}
-
-# Extract and return list of tables in the database
-getDbIndexes <- function(dbToken) {
-  if (dbToken$dbType == 'sqlite') {
-    genericQuery(dbToken,
-                 "select name from sqlite_master
-                  where type = 'index'
-                  and name like '%sendigr%'")$name;
-  } else if (dbToken$dbType == 'postgresql') {
-    genericQuery(dbToken,
-                 "select indexname
-                  from pg_indexes
-                  where tablename not like 'pg%';")$indexname;
-  }
-}
 
 ##############################################################################
 # Delete rows for specified study in all tables in the database
 deleteStudyData <- function(dbToken, studyId) {
-  for (tab in getDbTables(dbToken)) {
+  for (tab in dbToken$dbGetTables(dbToken$dbHandle)) {
     res <- dbToken$dbSendStatement(dbToken$dbHandle,
                                    sprintf('delete from "%s" where "STUDYID" = ?',tab),
                                    studyId)
