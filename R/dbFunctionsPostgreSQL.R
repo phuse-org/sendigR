@@ -69,7 +69,7 @@ dbRollback_postgresql <- function(dbHandle) {
 }
 
 
-## Rollback Transaction
+## Commit Transaction
 dbCommit_postgresql <- function(dbHandle) {
   RPostgres::dbCommit(dbHandle)
 }
