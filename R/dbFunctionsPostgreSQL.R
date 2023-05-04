@@ -9,7 +9,6 @@
 ## 2023-02-14   Cecily Abraham        Initial version
 ################################################################################
 
-
 ## Connect function
 connectDB_postgresql <- function(dbPath, dbHost, dbUser, dbPwd, dbPort = 5432) {
   DBI::dbConnect(
@@ -38,6 +37,50 @@ canConnectDB_postgresql <- function(dbPath, dbHost, dbUser, dbPwd, dbPort = 5432
 ## Disconnect function
 disconnectDB_postgresql <- function(dbHandle) {
   RPostgres::dbDisconnect(dbHandle)
+}
+
+
+## Send generic statement
+dbSendStatement_postgresql <- function(dbHandle, queryString, queryParams = NULL) {
+  if (is.null(queryParams)){
+    RPostgres::dbSendStatement(dbHandle, queryString)
+  } else {
+    formatQuery <- DBI::sqlInterpolate(dbHandle, queryString, paste(queryParams))
+    RPostgres::dbSendStatement(dbHandle, formatQuery)
+  }
+}
+
+
+## Clear Result
+dbClearResult_postgresql <- function(res) {
+  RPostgres::dbClearResult(res)
+}
+
+
+## Begin Transaction
+dbBegin_postgresql <- function(dbHandle) {
+  RPostgres::dbBegin(dbHandle)
+}
+
+
+## Rollback Transaction
+dbRollback_postgresql <- function(dbHandle) {
+  RPostgres::dbRollback(dbHandle)
+}
+
+
+## Commit Transaction
+dbCommit_postgresql <- function(dbHandle) {
+  RPostgres::dbCommit(dbHandle)
+}
+
+
+## Write Table
+dbWriteTable_postgresql <- function(dbHandle, name, value, append=TRUE) {
+  RPostgres::dbWriteTable(dbHandle,
+                        name = name,
+                        value = value,
+                        append = append)
 }
 
 

@@ -229,6 +229,36 @@ initEnvironment <- function(dbType = NULL,
   dbListFieldsName <- paste0('dbListFields_', dbProperties[, c('db_type')])
   if (!exists(dbListFieldsName))
     stop(sprintf('A function named %s is missing', dbListFieldsName))
+  
+  ## Send generic statement to the database
+  dbSendStatementName <- paste0('dbSendStatement_', dbProperties[, c('db_type')])
+  if (!exists(dbSendStatementName))
+    stop(sprintf('A function named %s is missing', dbSendStatementName))
+  
+  ## Clear result
+  dbClearResultName <- paste0('dbClearResult_', dbProperties[, c('db_type')])
+  if (!exists(dbClearResultName))
+    stop(sprintf('A function named %s is missing', dbClearResultName))
+  
+  ## Begin transaction
+  dbBeginName <- paste0('dbBegin_', dbProperties[, c('db_type')])
+  if (!exists(dbBeginName))
+    stop(sprintf('A function named %s is missing', dbBeginName))
+  
+  ## Rollback transaction
+  dbRollbackName <- paste0('dbRollback_', dbProperties[, c('db_type')])
+  if (!exists(dbRollbackName))
+    stop(sprintf('A function named %s is missing', dbRollbackName))
+  
+  ## Commit transaction
+  dbCommitName <- paste0('dbCommit_', dbProperties[, c('db_type')])
+  if (!exists(dbCommitName))
+    stop(sprintf('A function named %s is missing', dbCommitName))
+  
+  ## Write Table
+  dbWriteTableName <- paste0('dbWriteTable_', dbProperties[, c('db_type')])
+  if (!exists(dbWriteTableName))
+    stop(sprintf('A function named %s is missing', dbWriteTableName))
 
   ## Return a db token to be included in all calls to database related functions.
   #  It includes:
@@ -245,7 +275,13 @@ initEnvironment <- function(dbType = NULL,
        genericQuery = get(genericQueryName),
        disconnectDB = get(disconnectDBName),
        dbExistsTable = get(dbExistsTableName),
-       dbListFieldsTable = get(dbListFieldsName)
+       dbListFieldsTable = get(dbListFieldsName),
+       dbSendStatement = get(dbSendStatementName),
+       dbClearResult = get(dbClearResultName),
+       dbBegin = get(dbBeginName),
+       dbRollback = get(dbRollbackName),
+       dbCommit = get(dbCommitName),
+       dbWriteTable = get(dbWriteTableName)
   )
 }
 

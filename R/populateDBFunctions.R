@@ -10,6 +10,15 @@
 ## 2021-03-03   Bo Larsen             Initial version
 ################################################################################
 
+# Check for a valid database type based on the engine found in the database token
+checkDbType <- function(dbToken) {
+  # Check if dbType is valid
+  if (dbToken$dbType != 'sqlite' && dbToken$dbType != 'postgresql') {
+    stop('Database must be either SQLite or PostgreSQL')
+  }
+}
+
+
 #' Create a SEND schema in an open and empty database
 #'
 #' Create all the domains and variables which are described in the SEND IG
@@ -35,9 +44,7 @@
 #' dbCreateSchema(myDbToken)
 #' }
 dbCreateSchema <- function(dbToken) {
-  # Check if dbType is valid
-  if (dbToken$dbType != 'sqlite')
-    stop('Function is only supported for SQLite databases')
+  checkDbType(dbToken)
 
   # Check if any tables already exist
   nTab <- genericQuery(dbToken,
@@ -158,8 +165,7 @@ dbImportOneStudy <- function(dbToken,
                              overWrite = FALSE,
                              checkRequiredVars = TRUE)
 {
-  if (dbToken$dbType != 'sqlite')
-    stop("Function is only valid to execute for dbType = 'sqlite'")
+  checkDbType(dbToken)
 
   if (!file.exists(xptPath))
     stop(sprintf('Specified path %s cannot be found', xptPath))
@@ -245,8 +251,7 @@ dbImportStudies <- function(dbToken,
                             verbose = FALSE,
                             logFilePath = NULL)
 {
-  if (dbToken$dbType != 'sqlite')
-    stop("Function is only valid to execute for dbType = 'sqlite'")
+  checkDbType(dbToken)
 
   if (!file.exists(xptPathRoot))
     stop(sprintf('Specified XPT path %s cannot be found', xptPathRoot))
@@ -436,22 +441,28 @@ dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
 ##############################################################################
 # Extract and return list of tables in the database
 getDbTables <- function(dbToken) {
-  genericQuery(dbToken,
-                     "select name
+  if (dbToken$dbType == 'sqlite') {
+    genericQuery(dbToken,
+                 "select name
                         from sqlite_master
-                       where type ='table'
-                         and name not like 'sqlite_%'")$name;
+                        where type ='table'
+                        and name not like 'sqlite_%'")$name;
+  } else if (dbToken$dbType == 'postgresql') {
+    genericQuery(dbToken,
+                 "SELECT table_name 
+                  FROM information_schema.tables 
+                  WHERE table_schema='public'")$table_name;
+  }
 }
 
 ##############################################################################
 # Delete rows for specified study in all tables in the database
 deleteStudyData <- function(dbToken, studyId) {
   for (tab in getDbTables(dbToken)) {
-    res <-
-      RSQLite::dbSendStatement(dbToken$dbHandle,
-                               sprintf('delete from %s where studyid = :1',tab),
-                               studyId)
-    RSQLite::dbClearResult(res)
+    res <- dbToken$dbSendStatement(dbToken$dbHandle,
+                                   sprintf('delete from "%s" where "STUDYID" = ?',tab),
+                                   studyId)
+    dbToken$dbClearResult(res)
   }
 }
 
@@ -500,11 +511,11 @@ loadStudyData <- function(dbToken,
         rdomainsInvalid <- c(rdomainsInvalid, rdomain)
         next
       }
-
-      RSQLite::dbWriteTable(dbToken$dbHandle,
-                            name = paste0('SUPP',rdomain),
-                            value = suppqual[RDOMAIN == rdomain],
-                            append = TRUE)
+      
+      dbToken$dbWriteTable(dbToken$dbHandle,
+                           name = paste0('SUPP',rdomain),
+                           value = suppqual[RDOMAIN == rdomain],
+                           append = TRUE)
     }
 
     if (length(rdomainsInvalid) != 0)
@@ -592,10 +603,10 @@ loadStudyData <- function(dbToken,
     if (domain == 'SUPPQUAL')
       warnTxt <- c(warnTxt, loadSuppData(dtDomain))
     else
-      RSQLite::dbWriteTable(dbToken$dbHandle,
-                            name = domain,
-                            value = dtDomain,
-                            append = TRUE)
+      dbToken$dbWriteTable(dbToken$dbHandle,
+                           name = domain,
+                           value = dtDomain,
+                           append = TRUE)
     warnTxt
   }
   ### End of loadDomainData
@@ -640,7 +651,7 @@ loadStudyData <- function(dbToken,
     stop('TS domain contains more than one distinct STUDYID value')
 
   # Check if study already exists in the database
-  studyExists <- (genericQuery(dbToken, 'select count(1) as n from ts where studyid = :1', studyId)$n != 0)
+  studyExists <- (genericQuery(dbToken, 'select count(1) as n from "TS" where "STUDYID" = ?', studyId)$n != 0)
   if (studyExists & !overWrite)
     stop('The study exists in the database, but it is specified not to overwrite existing studies')
 
@@ -649,10 +660,12 @@ loadStudyData <- function(dbToken,
   # Do a rollback to ensure we are not unexpected in an open transaction
   #  - ignore error message if no transaction is open
   tryCatch(
-    { RSQLite::dbRollback(dbToken$dbHandle) }
+    { dbToken$dbRollback(dbToken$dbHandle) }
     , error = function(errMsg) { } )
+  
   # Open new transaction
-  RSQLite::dbBegin(dbToken$dbHandle)
+  dbToken$dbBegin(dbToken$dbHandle)
+  
   tryCatch(
     {
       if (studyExists)
@@ -682,11 +695,12 @@ loadStudyData <- function(dbToken,
     ,
     error = function(errMsg) {
       # Error detected - rollback database changes an exit
-      RSQLite::dbRollback(dbToken$dbHandle)
+      dbToken$dbRollback(dbToken$dbHandle)
       stop(errMsg)
     }
   )
-  RSQLite::dbCommit(dbToken$dbHandle)
+  
+  dbToken$dbCommit(dbToken$dbHandle)
 
   # Check if any warnings are to be reported
   warningMessage <-
