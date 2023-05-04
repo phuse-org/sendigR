@@ -1,5 +1,5 @@
 ################################################################################
-## The functions to populate a SQLite database with SEND study data
+## The functions to populate a database with SEND study data
 ## Inclusive a set of internal helper functions for load and deletion of study
 ## data in a database.
 ##
@@ -26,8 +26,8 @@ checkDbType <- function(dbToken) {
 #' SEND IG versions and in each domain a union of variables from the SEND IG
 #' versions.
 #'
-#' The database must be an SQLite database - no other types of databases are
-#' supported by this function.
+#' Databases supported are SQLite and Postgres, the checkDbType function
+#' makes sure one of those types are used
 #'
 #' @param dbToken Mandatory\cr
 #'   Token for the open database connection (see \code{\link{initEnvironment}}).
@@ -45,14 +45,9 @@ checkDbType <- function(dbToken) {
 #' }
 dbCreateSchema <- function(dbToken) {
   checkDbType(dbToken)
+  nTab <- getDbTables(dbToken)
 
-  # Check if any tables already exist
-  nTab <- genericQuery(dbToken,
-                      "select count(0)  n
-                         from sqlite_master
-                        where type ='table'
-                          and name not like 'sqlite_%'")$n
-  if (nTab != 0)
+  if (length(nTab) > 0)
     stop('One or more tables exist in the database - it must be empty to create a new SEND db schema.')
 
   # Create each domain with all variables described in the SEND IG metadata
@@ -64,19 +59,19 @@ dbCreateSchema <- function(dbToken) {
     cols <-
       paste(sapply(data.table::setorder(sendIGcolumns[TABLE_NAME == tab,
                                                       list(SEQ,
-                                                           col_def = paste0("'",
+                                                           col_def = paste0('"',
                                                                             COLUMN_NAME,
-                                                                            "' ",
+                                                                            '" ',
                                                                             DATATYPE))],
                                         SEQ)[,SEQ := NULL],
                    paste0),
             collapse = ' ,')
     # print(cols)
     # Generate and execute create table stmt
-    sqlStmt <- paste0("create table '", tab, "' (", cols, ")" )
+    sqlStmt <- paste0('create table "', tab, '" (', cols, ')')
     # print(sqlStmt)
-    res <- RSQLite::dbSendStatement(dbToken$dbHandle, sqlStmt)
-    RSQLite::dbClearResult(res)
+    res <- dbToken$dbSendStatement(dbToken$dbHandle, sqlStmt)
+    dbToken$dbClearResult(res)
   }
 }
 
