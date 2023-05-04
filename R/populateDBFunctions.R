@@ -26,7 +26,7 @@ checkDbType <- function(dbToken) {
 #' SEND IG versions and in each domain a union of variables from the SEND IG
 #' versions.
 #'
-#' Databases supported are SQLite and Postgres, the checkDbType function
+#' Databases supported are SQLite and PostgreSQL, the checkDbType function
 #' makes sure one of those types are used
 #'
 #' @param dbToken Mandatory\cr
@@ -131,8 +131,8 @@ dbCreateSchema <- function(dbToken) {
 #'   do(es)n't exist(s) in the corresponding domain.
 #' }
 #'
-#' The database must be an SQLite database - no other types of databases are
-#' supported by this function.
+#' Databases supported are SQLite and PostgreSQL, the checkDbType function
+#' makes sure one of those types are used
 #'
 #' @param dbToken Mandatory\cr
 #'   Token for the open database connection (see \code{\link{initEnvironment}}).
@@ -185,8 +185,8 @@ dbImportOneStudy <- function(dbToken,
 #' folder, the status for each processed sub folder is also printed to a log
 #' file in this folder each time a sub folder has been processed.
 #'
-#' The database must be an SQLite database - no other types of databases are
-#' supported by this function.
+#' Databases supported are SQLite and PostgreSQL, the checkDbType function
+#' makes sure one of those types are used
 #'
 #' @param dbToken Mandatory\cr
 #'   Token for the open database connection (see \code{\link{initEnvironment}}).
@@ -300,11 +300,10 @@ dbImportStudies <- function(dbToken,
 
 #' Delete one or more studies in SEND database
 #'
-#' Deletes data from all domains for one or more studies in an SQLite based SEND
-#' database
+#' Deletes data from all domains for one or more studies in a SEND database
 #'
-#' The database must be a SQLite database - no other types of databases are
-#' supported by this function.
+#' Databases supported are SQLite and PostgreSQL, the checkDbType function
+#' makes sure one of those types are used
 
 #' @param dbToken Mandatory\cr
 #'   Token for the open database connection (see \code{\link{initEnvironment}}).
@@ -324,8 +323,7 @@ dbImportStudies <- function(dbToken,
 dbDeleteStudies <- function(dbToken,
                             studyIdList)
 {
-  if (dbToken$dbType != 'sqlite')
-    stop("Function is only valid to execute for dbType = 'sqlite'")
+  checkDbType(dbToken)
 
   for (studyId in studyIdList) {
     deleteStudyData(dbToken, studyId)
@@ -335,7 +333,7 @@ dbDeleteStudies <- function(dbToken,
 
 #' Create indexes in SEND database
 #'
-#' Create a set of indexes on the tables in an SQLite SEND database to
+#' Create a set of indexes on the tables in a SEND database to
 #' optimize performance of extraction of data from the different functions in
 #' the package.
 #'
@@ -348,8 +346,8 @@ dbDeleteStudies <- function(dbToken,
 #' It's recommended to wait with the creation of the indexes until the major
 #' amount of studies to be loaded in to the database are loaded.
 #'
-#' The database must be an SQLite database - no other types of databases are
-#' supported by this function.
+#' Databases supported are SQLite and PostgreSQL, the checkDbType function
+#' makes sure one of those types are used
 
 #' @param dbToken  Mandatory\cr
 #'   Token for the open database connection (see \code{\link{initEnvironment}}).
@@ -366,53 +364,51 @@ dbDeleteStudies <- function(dbToken,
 #' }
 #'
 dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
-
-  # Create one index
+  checkDbType(dbToken)
+  
+  # Repeat function in dbCreateIndexes to create a new index
   creIdx <- function(tab, idxName, colListStr) {
-    RSQLite::dbClearResult(RSQLite::dbSendStatement(dbToken$dbHandle,
-                                                    sprintf("create index %s_sendigr_%s on %s (%s)",
-                                                            tab, idxName, tab, colListStr)))
+    res <- dbToken$dbSendStatement(dbToken$dbHandle,
+                                   sprintf('create index "%s_sendigr_%s" on "%s" (%s)',
+                                           tab, idxName, tab, colListStr))
+    dbToken$dbClearResult(res)
   }
 
-  if (dbToken$dbType != 'sqlite')
-    stop("Function is only valid to execute for dbType = 'sqlite'")
-
   ## Check if any sendigr indexes exist - and delete if appropriate
-  idxList <-
-    genericQuery(dbToken,
-                 "select name from sqlite_master
-                   where type = 'index'
-                     and name like '%sendigr%'")$name
-  if (length(idxList) != 0)
+  idxList <- getDbIndexes(dbToken)
+
+  if (length(idxList) != 0) {
     if (replaceExisting) {
       for (idxName in idxList)
-        RSQLite::dbClearResult(RSQLite::dbSendStatement(dbToken$dbHandle,
-                                                        sprintf("drop index %s",
-                                                                idxName)))
+        res <- dbToken$dbSendStatement(dbToken$dbHandle,
+                                        sprintf('drop index "%s"',
+                                                idxName))
+        dbToken$dbClearResult(res)
     } else {
       stop('There are already existing indexes, execute with replaceExisting=TRUE to replace with new set of indexes')
     }
+  }
 
   ## Generate indexes for specific optimization of the data extraction functions
 
   # TS
-  creIdx('ts','01', 'studyid, tsparmcd, tsval')
-  creIdx('ts','02', 'studyid, tsparmcd, tsgrpid, tsval')
+  creIdx('TS','01', '"STUDYID", "TSPARMCD", "TSVAL"')
+  creIdx('TS','02', '"STUDYID", "TSPARMCD", "TSGRPID", "TSVAL"')
 
   # TX
-  creIdx('tx','01', 'studyid, txparmcd, setcd, txval')
+  creIdx('TX','01', '"STUDYID", "TXPARMCD", "SETCD", "TXVAL"')
 
   # DM
-  creIdx('dm', '01', 'studyid, setcd')
-  creIdx('dm', '02', 'studyid, usubjid')
-  creIdx('dm', '03', 'studyid, setcd, sex, usubjid')
+  creIdx('DM', '01', '"STUDYID", "SETCD"')
+  creIdx('DM', '02', '"STUDYID", "USUBJID"')
+  creIdx('DM', '03', '"STUDYID", "SETCD", "SEX", "USUBJID"')
 
   # POOLDEF
-  creIdx('pooldef', '01', 'studyid, poolid, usubjid')
+  creIdx('POOLDEF', '01', '"STUDYID", "POOLID", "USUBJID"')
 
   # EX
-  creIdx('ex', '01', 'studyid, exroute, usubjid')
-  creIdx('ex', '02', 'studyid, exroute, poolid')
+  creIdx('EX', '01', '"STUDYID", "EXROUTE", "USUBJID"')
+  creIdx('EX', '02', '"STUDYID", "EXROUTE", "POOLID"')
 
   ## Generate general indexes for the remaining tables on STUDYID and
   ## (if included) USUBJID
@@ -421,9 +417,9 @@ dbCreateIndexes <- function(dbToken, replaceExisting = FALSE) {
 
   for (tab in setdiff(getDbTables(dbToken), exclTabList)) {
     if ('USUBJID' %in% dbListFields(dbToken, tab))
-      creIdx(tab, '01', 'studyid, usubjid')
+      creIdx(tab, '01', '"STUDYID", "USUBJID"')
     else
-      creIdx(tab, '01', 'studyid')
+      creIdx(tab, '01', '"STUDYID"')
   }
 }
 
@@ -447,6 +443,21 @@ getDbTables <- function(dbToken) {
                  "SELECT table_name 
                   FROM information_schema.tables 
                   WHERE table_schema='public'")$table_name;
+  }
+}
+
+# Extract and return list of tables in the database
+getDbIndexes <- function(dbToken) {
+  if (dbToken$dbType == 'sqlite') {
+    genericQuery(dbToken,
+                 "select name from sqlite_master
+                  where type = 'index'
+                  and name like '%sendigr%'")$name;
+  } else if (dbToken$dbType == 'postgresql') {
+    genericQuery(dbToken,
+                 "select indexname
+                  from pg_indexes
+                  where tablename not like 'pg%';")$indexname;
   }
 }
 
