@@ -124,7 +124,7 @@ dbGetTables_postgresql <- function(dbHandle) {
 dbGetIndexes_postgresql <- function(dbHandle) {
   queryString <- "select indexname 
                   from pg_indexes 
-                  where tablename not like 'pg%';"
+                  where tablename not like 'pg%'"
   res <- data.table::as.data.table(RPostgres::dbGetQuery(dbHandle, queryString))
   res$indexname;
 }
