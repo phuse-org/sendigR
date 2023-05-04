@@ -89,3 +89,22 @@ dbExistsTable_sqlite <- function(dbHandle, table) {
 dbListFields_sqlite <- function(dbHandle, table) {
   RSQLite::dbListFields(dbHandle, table)
 }
+
+# Return list of tables in the SQLite database
+dbGetTables_sqlite <- function(dbHandle) {
+  queryString <- "select name
+                  from sqlite_master
+                  where type ='table' and name not like 'sqlite_%'"
+  res <- data.table::as.data.table(RSQLite::dbGetQuery(dbHandle, queryString))
+  res$name;
+}
+
+# Return list of indexes in the SQLite database
+dbGetIndexes_sqlite <- function(dbHandle) {
+  queryString <- "select name from sqlite_master
+                  where type = 'index'
+                  and name like '%sendigr%'"
+  res <- data.table::as.data.table(RSQLite::dbGetQuery(dbHandle, queryString))
+  res$name;
+}
+
