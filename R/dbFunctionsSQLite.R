@@ -19,6 +19,17 @@ disconnectDB_sqlite<-function(dbHandle) {
   RSQLite::dbDisconnect(dbHandle)
 }
 
+
+## Send generic statement
+dbSendStatement_postgresql <- function(dbToken, queryString, queryParams = NULL) {
+  if (is.null(queryParams)){
+    RSQLte::dbSendStatement(dbToken$dbHandle, queryString)
+  } else {
+    RSQLte::dbSendStatement(dbToken$dbHandle, queryString, queryParams)
+  }
+}
+
+
 ## Execute a generic query
 # Result data set always returned as data table
 #  ## ADD

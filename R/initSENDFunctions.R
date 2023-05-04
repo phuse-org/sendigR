@@ -229,6 +229,12 @@ initEnvironment <- function(dbType = NULL,
   dbListFieldsName <- paste0('dbListFields_', dbProperties[, c('db_type')])
   if (!exists(dbListFieldsName))
     stop(sprintf('A function named %s is missing', dbListFieldsName))
+  
+  ## Verify existence of function specific for db type to list columns in a
+  #  specific table in database
+  dbSendStatementName <- paste0('dbSendStatement_', dbProperties[, c('db_type')])
+  if (!exists(dbSendStatementName))
+    stop(sprintf('A function named %s is missing', dbSendStatementName))
 
   ## Return a db token to be included in all calls to database related functions.
   #  It includes:
@@ -245,7 +251,8 @@ initEnvironment <- function(dbType = NULL,
        genericQuery = get(genericQueryName),
        disconnectDB = get(disconnectDBName),
        dbExistsTable = get(dbExistsTableName),
-       dbListFieldsTable = get(dbListFieldsName)
+       dbListFieldsTable = get(dbListFieldsName),
+       dbSendStatement = get(dbSendStatementName)
   )
 }
 

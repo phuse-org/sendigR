@@ -9,7 +9,6 @@
 ## 2023-02-14   Cecily Abraham        Initial version
 ################################################################################
 
-
 ## Connect function
 connectDB_postgresql <- function(dbPath, dbHost, dbUser, dbPwd, dbPort = 5432) {
   DBI::dbConnect(
@@ -38,6 +37,16 @@ canConnectDB_postgresql <- function(dbPath, dbHost, dbUser, dbPwd, dbPort = 5432
 ## Disconnect function
 disconnectDB_postgresql <- function(dbHandle) {
   RPostgres::dbDisconnect(dbHandle)
+}
+
+
+## Send generic statement
+dbSendStatement_postgresql <- function(dbToken, queryString, queryParams = NULL) {
+  if (is.null(queryParams)){
+    RPostgres::dbSendStatement(dbToken$dbHandle, queryString)
+  } else {
+    RPostgres::dbSendStatement(dbToken$dbHandle, queryString, queryParams)
+  }
 }
 
 
