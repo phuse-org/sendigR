@@ -32,3 +32,4 @@
 ^index\.md$
 ^vignettes/SendDashboard\.Rmd$
 ^sendigR_example\.zip$
+^build_postgres$
