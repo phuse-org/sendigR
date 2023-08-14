@@ -12,6 +12,8 @@
 ## ----------   --------------------  ------------------------------------------
 ## 2020-12-04   Bo Larsen             Initial version
 ## 2023-17-03   Cecily Abraham        Added PostgreSQL support
+## 2023-14-08   Yousuf Ali            fixed about port issue for localhost and
+##                                    column type in postgresql
 ################################################################################
 
 
@@ -194,7 +196,7 @@ initEnvironment <- function(dbType = NULL,
 
   ## if PostgreSQL db type - check for existence of PostgreSQL db
   if (dbType == 'postgresql') {
-    dbExists <- canConnectDB_postgresql(dbPath, dbHost, dbUser, dbPwd, dbPort = 5432)
+    dbExists <- canConnectDB_postgresql(dbPath, dbHost, dbUser, dbPwd, dbPort = dbPort)
     if (dbExists == FALSE)
       stop(attr(dbExists, "reason"))
   }

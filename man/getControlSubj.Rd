@@ -27,7 +27,7 @@ The function return a data.table with columns:
 \item Additional columns contained in the \code{studyList} table
 \item TCNTRL        (character)\cr
 The value of the TX parameter TCNTRL which is used for identification
-of whether its a negative control group or not
+of whether it is a negative control group or not
 \item USUBJID       (character)
 \item RFSTDTC       (character)
 \item DM_AGEDAYS    (integer)\cr
@@ -70,7 +70,7 @@ automatically distinguish it as a negative control:
 }
 Animals are in all cases excluded (i.e. whether \code{inclUncertain=TRUE} or
 \code{inclUncertain=FALSE}) from the output set, when they are identified as
-positive control animals - i.e they are associated with a TX parameter
+positive control animals - i.e. they are associated with a TX parameter
 'TCNTRL' containing a word from this set of words:
 \itemize{
 \item ['positive','reference']

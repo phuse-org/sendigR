@@ -19,8 +19,8 @@ dbImportStudies(
 Token for the open database connection (see \code{\link{initEnvironment}}).}
 
 \item{xptPathRoot}{Mandatory, character\cr
-Root location of a set of sub folders - each sub folder with a if SAS xport
-files per study to import.\cr
+Root location of a set of sub folders - each sub folder with a set of SAS xport
+files for one study to import.\cr
 The folder tree is traversed recursively - i.e. a multilevel folder
 hierarchy is allowed.}
 
@@ -45,7 +45,7 @@ The name of the log file is \code{logFilePath/dbImportStudies_<date &
 if the function was called 23. March 2021 at 8:41:50}
 }
 \value{
-A list containing a named element with the the import status for each
+A list containing a named element with the import status for each
 of the processed sub folders.\cr
 Each of the statuses are one of three variants:
 \itemize{
@@ -63,7 +63,7 @@ import a set of SAS xpt files into the opened SQLlite database described
 for function \link{dbImportOneStudy}.
 }
 \details{
-The status for the processing of each sub folder is catched and returned as
+The status for the processing of each sub folder is caught and returned as
 described below.\cr
 If parameter \code{verbose = TRUE}, the status for each processed sub folder
 is also printed to the console each time a sub folder has been processed -
@@ -72,8 +72,8 @@ If parameter \code{logFilePath} has been specified with an existing path to a
 folder, the status for each processed sub folder is also printed to a log
 file in this folder each time a sub folder has been processed.
 
-The database must be an SQLite database - no other types of databases are
-supported by this function.
+Databases supported are SQLite and PostgreSQL, the checkDbType function
+makes sure one of those types are used
 }
 \examples{
 \dontrun{

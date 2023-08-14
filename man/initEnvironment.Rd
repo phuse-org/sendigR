@@ -7,9 +7,11 @@
 initEnvironment(
   dbType = NULL,
   dbPath = NULL,
+  dbHost = NULL,
   dbCreate = FALSE,
   dbUser = NULL,
   dbPwd = NULL,
+  dbPort = NULL,
   dbSchema = NULL,
   ctFile = NULL
 )
@@ -20,10 +22,19 @@ The type of database, valid values (case insensitive):
 \itemize{
 \item 'sqlite'
 \item 'oracle'
+\item 'postgresql'
 }}
 
 \item{dbPath}{Mandatory, character\cr
 The path to the database (path to file or another kind of db reference)}
+
+\item{dbHost}{Optional, character\cr
+Name of PostgreSQL host/server.
+This parameter is only relevant to specify if a server or host name
+is necessary to connect to the database. Only necessary for a PostgreSQL
+database connection.
+
+Add param for port number}
 
 \item{dbCreate}{Mandatory, boolean\cr
 If \code{TRUE}, a new database is to be created - this is only valid for
@@ -37,15 +48,22 @@ The user name to be used for login to database.}
 specific db type\cr
 The password to be used for login to database.}
 
+\item{dbPort}{Optional, character?\cr
+Port number for connecting to database. This parameter is only necessary if
+the database type requires a port number for connection (e.g., PostgreSQL
+uses port number 5432).}
+
 \item{dbSchema}{Optional, character\cr
 The table owner of the SEND table in the specific database.\cr
 This parameter is only relevant to specify if it is necessary to prefix
-table names with schema in SQL statements i the database.}
+table names with schema in SQL statements in the database.}
 
 \item{ctFile}{Optional, character.\cr
-Name (full path) of CDISC CT file in Excel xls format to be imported.
+Name (full path) of CDISC CT file in Excel xlsx format to be imported.
 Only relevant to use if another CDISC CT version than the version
-included in packages is wanted.\cr}
+included in packages is wanted.\cr
+
+Add param for host/server}
 }
 \value{
 The function returns a token which is a data structure describing
@@ -66,7 +84,7 @@ compliant with SEND IG version 3.0 and/on 3.1.\cr
 
 If the function is executed with parameter \code{dbCreate=TRUE}, an empty
 database is created and opened. This is only supported for a SQLite database,
-i.e. parameter \code{dbType='sqlite'}. The SEND domain tables may then be
+i.e., parameter \code{dbType='sqlite'}. The SEND domain tables may then be
 created by execution of the function \code{\link{dbCreateSchema}}.
 
 Besides the open database connection, a set of CDISC SEND controlled
@@ -84,12 +102,22 @@ time of the build of the current version of the package which is included.
 db <- initEnvironment(dbType='sqlite',
                       dbPath='//servername/SendData/db/send.db',
                       ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
+
 db <- initEnvironment(dbType='oracle',
                       dbPath='dbserver:1521/send_db',
                       dbUser='ME',
                       dbPwd='mypassword',
                       dbSchema = 'send',
                       ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
+
+db <- initEnvironment(dbType='postgresql',
+                      dbPath='send_db_name',
+                      dbHost='dbserver',
+                      dbUser='ME',
+                      dbPwd='mypassword',
+                      dbPort='5432',
+                      ctFile='//servername/SendData/metadata/SEND_Terminology_2019-12-27.xls')
+
 }
 
 

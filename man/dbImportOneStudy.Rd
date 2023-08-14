@@ -22,6 +22,9 @@ newly imported data.}
 Whether not-required domains are checked for existence and content of
 required variables}
 }
+\value{
+No return value, called for side effects\cr
+}
 \description{
 Check each of the SAS xpt file located in the specified folder - import
 content from file and load it into the corresponding SEND domain table in the
@@ -77,8 +80,8 @@ Such files are ignored by the import/load process.
 do(es)n't exist(s) in the corresponding domain.
 }
 
-The database must be an SQLite database - no other types of databases are
-supported by this function.
+Databases supported are SQLite and PostgreSQL, the checkDbType function
+makes sure one of those types are used
 }
 \examples{
 \dontrun{

@@ -15,6 +15,9 @@ List of tab-delimited files with synonyms and preferred terms.}
 \item{out_path}{Mandatory.\cr
 output json filename. \cr}
 }
+\value{
+No return value, called for side effects\cr
+}
 \description{
 Create json file for vocabulary mappings.
 Keys are synonyms and values are the CDISC Controlled Terminology Submission values.

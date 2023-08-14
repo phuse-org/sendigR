@@ -13,13 +13,15 @@ Token for the open database connection (see \code{\link{initEnvironment}}).}
 \item{studyIdList}{Mandatory, character\cr
 A list or vector of study id values}
 }
+\value{
+No return value, called for side effects\cr
+}
 \description{
-Deletes data from all domains for one or more studies in an SQLite based SEND
-database
+Deletes data from all domains for one or more studies in a SEND database
 }
 \details{
-The database must be a SQLite database - no other types of databases are
-supported by this function.
+Databases supported are SQLite and PostgreSQL, the checkDbType function
+makes sure one of those types are used
 }
 \examples{
 \dontrun{

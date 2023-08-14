@@ -14,8 +14,11 @@ Token for the open database connection (see \code{\link{initEnvironment}}).}
 Whether an already existing set of indexes in the database may be replaced
 by a new set of indexes.}
 }
+\value{
+No return value, called for side effects\cr
+}
 \description{
-Create a set of indexes on the tables in an SQLite SEND database to
+Create a set of indexes on the tables in a SEND database to
 optimize performance of extraction of data from the different functions in
 the package.
 }
@@ -29,8 +32,8 @@ with \code{replaceExisting = TRUE}.\cr
 It's recommended to wait with the creation of the indexes until the major
 amount of studies to be loaded in to the database are loaded.
 
-The database must be an SQLite database - no other types of databases are
-supported by this function.
+Databases supported are SQLite and PostgreSQL, the checkDbType function
+makes sure one of those types are used
 }
 \examples{
 \dontrun{
