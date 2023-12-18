@@ -161,7 +161,7 @@ dbImportOneStudy <- function(dbToken,
   if (dbToken$dbType != 'sqlite')
     stop("Function is only valid to execute for dbType = 'sqlite'")
 
-  if (!file.exists(xptPath))
+  if (!dir.exists(xptPath))
     stop(sprintf('Specified path %s cannot be found', xptPath))
 
   loadStudyData(dbToken, xptPath, overWrite, checkRequiredVars)
@@ -248,14 +248,15 @@ dbImportStudies <- function(dbToken,
   if (dbToken$dbType != 'sqlite')
     stop("Function is only valid to execute for dbType = 'sqlite'")
 
-  if (!file.exists(xptPathRoot))
+  if (!dir.exists(xptPathRoot))
     stop(sprintf('Specified XPT path %s cannot be found', xptPathRoot))
 
   if (!is.null(logFilePath))
-    if (!file.exists(logFilePath))
+    if (!dir.exists(logFilePath))
       stop(sprintf('Specified log file path %s cannot be found', logFilePath))
     else {
-      logFileName <- paste0(logFilePath, '/', 'dbImportStudies_', format(Sys.time(), '%Y%m%d_%H%M%S'), '.log')
+      ## logFileName <- paste0(logFilePath, '/', 'dbImportStudies_', format(Sys.time(), '%Y%m%d_%H%M%S'), '.log')
+      logFileName <- fs::path(logFilePath, paste0('dbImportStudies_', format(Sys.time(), '%Y%m%d_%H%M%S')), ext = 'log')
       logr::log_open(logFileName, logdir = FALSE, show_notes = FALSE)
     #   print(paste0('Writing status to log file: ', logFileName))
     }
