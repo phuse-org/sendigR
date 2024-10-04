@@ -1791,9 +1791,9 @@ output$lb_findingsTable  <- DT::renderDataTable({
 
 
     # CLose connection to database at end of execution
-    shiny::onSessionEnded(function() {
-      sendigR::disconnectDB(dbToken)
-    })
+    ## shiny::onSessionEnded(function() {
+    ##   sendigR::disconnectDB(dbToken)
+    ## })
 
   }
 

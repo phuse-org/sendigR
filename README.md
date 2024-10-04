@@ -56,7 +56,7 @@ installation](https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html)
 
 ``` r
 
-# Get CRAN version, this will be available soon
+# Get CRAN version
 install.packages("sendigR")
 
 # Or the development version from GitHub:
@@ -76,6 +76,10 @@ devtools::install_github('phuse-org/sendigR')
 
 [![R-CMD-check](https://github.com/phuse-org/sendigR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/phuse-org/sendigR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
+
+[![](https://cranlogs.r-pkg.org/badges/sendigR)](https://cran.r-project.org/package=sendigR)
+
+[![](https://cranlogs.r-pkg.org/badges/grand-total/sendigR)](https://cran.r-project.org/package=sendigR)
 
 ## sendigR License
 
