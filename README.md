@@ -1,4 +1,3 @@
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
 # 
@@ -16,6 +15,7 @@ SEND](https://www.cdisc.org/standards/foundational/send) format in a
 database to be used for cross study analysis.
 
 `sendigR` includes:
+
 
 -   Functions to construct a relational database from any collection of
     SEND datasets;

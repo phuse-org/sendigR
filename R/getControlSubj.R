@@ -261,7 +261,7 @@ getControlSubj<-function(dbToken,
     stop("Parameter inclUncertain must be either TRUE or FALSE")
   }
 
-  # Extract  TX parameter 'TCNTRL' for the studies included in studyList
+  # Extract TX parameter 'TCNTRL' for the studies included in studyList
   # - include a row for each for study which may miss a 'TCNTRL' parameter
   # - include the animals from DM belonging to the identified trial sets
   txDmCtrlSet <- genericQuery(dbToken,
@@ -292,6 +292,7 @@ getControlSubj<-function(dbToken,
                                on ts.studyid = ds.studyid
                                and dm.usubjid = ds.usubjid",
                             studyList[,c('STUDYID')])
+
 
   # Extract the unique set of trial sets
   txCtrlSet <- unique(txDmCtrlSet[!is.na(TCNTRL),c('TCNTRL')])

@@ -19,6 +19,48 @@ disconnectDB_sqlite<-function(dbHandle) {
   RSQLite::dbDisconnect(dbHandle)
 }
 
+
+## Send generic statement
+dbSendStatement_sqlite <- function(dbHandle, queryString, queryParams = NULL) {
+  if (is.null(queryParams)){
+    RSQLite::dbSendStatement(dbHandle, queryString)
+  } else {
+    RSQLite::dbSendStatement(dbHandle, queryString, queryParams)
+  }
+}
+
+## Clear Result
+dbClearResult_sqlite <- function(res) {
+  RSQLite::dbClearResult(res)
+}
+
+
+## Begin Transaction
+dbBegin_sqlite <- function(dbHandle) {
+  RSQLite::dbBegin(dbHandle)
+}
+
+
+## Rollback Transaction
+dbRollback_sqlite <- function(dbHandle) {
+  RSQLite::dbRollback(dbHandle)
+}
+
+
+## Commit Transaction
+dbCommit_sqlite <- function(dbHandle) {
+  RSQLite::dbCommit(dbHandle)
+}
+
+
+## Write Table
+dbWriteTable_sqlite <- function(dbHandle, name, value, append=TRUE) {
+  RSQLite::dbWriteTable(dbHandle,
+                        name = name,
+                        value = value,
+                        append = append)
+}
+
 ## Execute a generic query
 # Result data set always returned as data table
 #  ## ADD
@@ -47,3 +89,22 @@ dbExistsTable_sqlite <- function(dbHandle, table) {
 dbListFields_sqlite <- function(dbHandle, table) {
   RSQLite::dbListFields(dbHandle, table)
 }
+
+# Return list of tables in the SQLite database
+dbGetTables_sqlite <- function(dbHandle) {
+  queryString <- "select name
+                  from sqlite_master
+                  where type ='table' and name not like 'sqlite_%'"
+  res <- data.table::as.data.table(RSQLite::dbGetQuery(dbHandle, queryString))
+  res$name;
+}
+
+# Return list of indexes in the SQLite database
+dbGetIndexes_sqlite <- function(dbHandle) {
+  queryString <- "select name from sqlite_master
+                  where type = 'index'
+                  and name like '%sendigr%'"
+  res <- data.table::as.data.table(RSQLite::dbGetQuery(dbHandle, queryString))
+  res$name;
+}
+

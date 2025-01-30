@@ -141,19 +141,22 @@ getStudiesSTSTDTC <- function(dbToken,
   # Extract TS parameter STSTDTC
   # - include a row for each for study which may miss a STSTDTC parameter
   tsSTSTDTC <-
-    genericQuery(dbToken, "select ts0.studyid,
+    genericQuery(dbToken, 'select "TS0"."STUDYID",
                                   case
-                                    when ts1.tsval = '' then null
-                                    else ts1.tsval
-                                  end as STSTDTC
-                             from (select distinct STUDYID from ts) ts0
-                             left join ts ts1
-                               on ts0.studyid = ts1.studyid
-                              and ts1.tsparmcd = 'STSTDTC'")
+                                    when "TS1"."TSVAL" = \'\' then null
+                                    else "TS1"."TSVAL"
+                                  end as "STSTDTC"
+                             from (select distinct "STUDYID" from "TS") "TS0"
+                             left join "TS" "TS1"
+                               on "TS0"."STUDYID" = "TS1"."STUDYID"
+                              and "TS1"."TSPARMCD" = \'STSTDTC\'')
 
   if (studyListIncl) {
     # Limit to the set of studies given as input
-    tsSTSTDTC<-data.table::merge.data.table(tsSTSTDTC, studyList[,c('STUDYID')], by='STUDYID')
+    tsSTSTDTC <- data.table::merge.data.table(
+      tsSTSTDTC,
+      studyList[, c('STUDYID')],
+      by = 'STUDYID')
   }
 
   # Check if a message column for uncertainties shall be included
