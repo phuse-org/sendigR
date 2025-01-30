@@ -1,96 +1,34 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/404.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/articles/Introduction.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/articles/SendDashboard.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/index.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/dbCreateIndexes.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/dbCreateSchema.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/dbDeleteStudies.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/dbImportOneStudy.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/dbImportStudies.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/disconnectDB.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/execSendDashboard.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/gen_vocab.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/genericQuery.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getControlSubj.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getFindingsPhase.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getFindingsSubjAge.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getStudiesSDESIGN.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getStudiesSTSTDTC.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getSubjData.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getSubjRoute.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getSubjSex.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getSubjSpeciesStrain.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/getTabColLabels.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/initEnvironment.html</loc>
-  </url>
-  <url>
-    <loc>https://phuse-org.github.io/sendigR/reference/standardize_file.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://phuse-org.github.io/sendigR/404.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/LICENSE-text.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/LICENSE.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/articles/Introduction.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/articles/SendDashboard.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/articles/Usingxptcleaner.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/articles/index.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/authors.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/index.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/dbCreateIndexes.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/dbCreateSchema.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/dbDeleteStudies.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/dbImportOneStudy.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/dbImportStudies.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/disconnectDB.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/execSendDashboard.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/gen_vocab.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/genericQuery.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getControlSubj.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getFindingsPhase.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getFindingsSubjAge.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getStudiesSDESIGN.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getStudiesSTSTDTC.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getSubjData.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getSubjRoute.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getSubjSex.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getSubjSpeciesStrain.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/getTabColLabels.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/index.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/initEnvironment.html</loc></url>
+<url><loc>https://phuse-org.github.io/sendigR/reference/standardize_file.html</loc></url>
 </urlset>
+
