@@ -1,6 +1,6 @@
 Package: sendigR
 Title: Enable Cross-Study Analysis of 'CDISC' 'SEND' Datasets 
-Version: 1.0.1
+Version: 1.0.2
 Authors@R:
  c(
     person("Bo", "Larsen", email = "bolr@novonordisk.com", role = "aut"),
@@ -56,6 +56,6 @@ Suggests:
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Depends: 
-    R (>= 4.1.0)
+    R (>= 4.2.0)
 SystemRequirements:
     Python(>=3.9.6)
