@@ -46,11 +46,12 @@ Imports:
     plotly,
     cicerone,
     reticulate,
-    sjlabelled
+    sjlabelled,
+    fs
 Suggests:
     knitr,
     rmarkdown,
-  	logr, 
+    logr,
     shinycssloaders,
     testthat
 VignetteBuilder: knitr
