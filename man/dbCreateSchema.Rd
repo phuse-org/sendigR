@@ -10,6 +10,9 @@ dbCreateSchema(dbToken)
 \item{dbToken}{Mandatory\cr
 Token for the open database connection (see \code{\link{initEnvironment}}).}
 }
+\value{
+No return value, called for side effects\cr
+}
 \description{
 Create all the domains and variables which are described in the SEND IG
 versions 3.0 and 3.1 in the database - i.e. a union of domains from the
@@ -17,8 +20,8 @@ SEND IG versions and in each domain a union of variables from the SEND IG
 versions.
 }
 \details{
-The database must be an SQLite database - no other types of databases are
-supported by this function.
+Databases supported are SQLite and PostgreSQL, the checkDbType function
+makes sure one of those types are used
 }
 \examples{
 \dontrun{

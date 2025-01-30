@@ -30,7 +30,7 @@ the fetched set of rows as a data.table.
 genericQuery(dbToken,
              'select studyid, tsseq, tsgrpid, tsparmcd, tsval from ts')
 genericQuery(dbToken,
-             'select studyid, tsval from ts where tsprmcd = "SDESIGN" and studyid in (:1)',
+             'select studyid, tsval from ts where tsparmcd = "SDESIGN" and studyid in (:1)',
              list("1234546","222333","444555"))
 }
 }

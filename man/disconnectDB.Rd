@@ -10,6 +10,9 @@ disconnectDB(dbToken)
 \item{dbToken}{Mandatory\cr
 Token for the open database connection (see \code{\link{initEnvironment}}).}
 }
+\value{
+No return value, called for side effects\cr
+}
 \description{
 Close database session and disconnect from open database.
 }

@@ -16,6 +16,9 @@ output folder name for writing the cleaned xpt files. \cr}
 \item{json_file}{Mandatory.\cr
 json filename used for mapping. \cr}
 }
+\value{
+No return value, called for side effects\cr
+}
 \description{
 Standardizes SEND xpt files using CDISC controlled terminologies
 }
