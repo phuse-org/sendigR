@@ -33,3 +33,4 @@
 ^vignettes/SendDashboard\.Rmd$
 ^sendigR_example\.zip$
 ^no_git_dir$
+^build_postgres$

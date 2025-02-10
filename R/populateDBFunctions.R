@@ -460,7 +460,12 @@ loadStudyData <- function(dbToken,
                             # are included
                           checkRequiredVars = TRUE)
 {
-
+# number like 100000 get convert to 1e+05 and when postgreSQL load the data, it 
+  # conver to string and give error.
+  orig_scipen <- getOption('scipen')
+  options(scipen = 999)
+  on.exit(options(scipen = orig_scipen))
+  
   ##############################################################################
   # Import domain from xpt file - return content in a data table
   importXptFile <- function(file, domain) {
@@ -474,7 +479,29 @@ loadStudyData <- function(dbToken,
     #                file, names(xptContent), domain))
 
     # Convert to data.table and return
-     data.table::as.data.table(sjlabelled::remove_all_labels(xptContent))
+    dt <- data.table::as.data.table(sjlabelled::remove_all_labels(xptContent))
+    
+    for (j in colnames(dt))
+      data.table::set(dt, j = j, value = iconv(dt[[j]], from="iso8859-1", to="utf-8"))
+  # when LBSTNRLO and LBSTNRHI "" just empty string, it converted to empty character and
+    # column become character. but column should be numeric.
+   dm_l <- tolower(domain)
+    if(dm_l=='lb'){
+      if('LBSTNRLO' %in% colnames(dt)){
+       dt[LBSTNRLO=="", LBSTNRLO:=NA]
+      dt$LBSTNRLO <- as.numeric(dt$LBSTNRLO)
+      }
+     if('LBSTNRHI' %in% colnames(dt)){
+      dt[LBSTNRHI=="", LBSTNRHI:=NA] 
+       dt$LBSTNRHI <- as.numeric(dt$LBSTNRHI)
+     } 
+      
+    }
+    
+   
+    
+    dt
+     
   }
   ### End of importXptFile
 
