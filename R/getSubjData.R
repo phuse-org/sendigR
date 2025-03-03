@@ -138,10 +138,24 @@ getSubjData <- function(dbToken,
   studyList <- unique(animalList[,c('STUDYID')])
 
   # Extract subset of findings rows from db for relevant studies
+  if(dbToken$dbType=='sqlite'){
+
   allData <- genericQuery(dbToken,
                           sprintf('select %s from "%s" where "STUDYID" in (?)',
                                   colListSelect, domain),
                           studyList)
+  }else if(dbToken$dbType=='postgresql'){
+
+  ## allData <- genericQuery(dbToken,
+  query <- sprintf('select %s from "%s" where "STUDYID" in ($1)',
+                                  colListSelect, domain)
+    ## studyList)
+
+    data <- RPostgres::dbGetQuery(dbToken$dbHandle,query,params=list(studyList$STUDYID))
+    allData <- data.table::as.data.table(data)
+
+
+  }
 
   # Extract subject level data for the input list of animals
   foundData <-
@@ -155,6 +169,7 @@ getSubjData <- function(dbToken,
       length(allData[isTRUE(nchar(POOLID) > 0), c('POOLID')]) > 0) {
     # Extract pool level data for the input list of animals and add to
     # subject level set of found data
+    if(dbToken$dbType=='sqlite'){
     foundData<-
       # extract subset of POOLDEF from db for relevant studies
       (genericQuery(dbToken,
@@ -175,7 +190,34 @@ getSubjData <- function(dbToken,
                                    by=c('STUDYID', 'POOLID')) %>%
       # add rows to the extracted subject level data
       {data.table::rbindlist(list(foundData, .), use.names=TRUE, fill=TRUE)}
-  }
+
+
+    }else if(dbToken$dbType=='postgresql'){
+
+   foundData<-
+      (DBI::dbGetQuery(dbToken$dbHandle,
+                   'select "STUDYID"  as "STUDYID"
+                          ,"POOLID"   as "POOLID"
+                          ,"USUBJID"  as "USUBJID"
+                      from "POOLDEF"
+                     where "STUDYID" in ($1)',
+                   params=list(studyList$STUDYID)) %>%
+       data.table::as.data.table() %>%
+      # input list of animals is joined to POOLDEF to get the related POOLID values
+      # - delete col USUBJID after join
+      data.table::merge.data.table(animalList[,c('STUDYID', 'USUBJID')],
+                                   by=c('STUDYID', 'USUBJID')))[,!"USUBJID"] %>%
+      # get unique list of pools
+      unique() %>%
+      # extract pool level data from fetched data
+      data.table::merge.data.table(allData[!(is.null(POOLID) | POOLID == '')],
+                                   by=c('STUDYID', 'POOLID')) %>%
+      # add rows to the extracted subject level data
+      {data.table::rbindlist(list(foundData, .), use.names=TRUE, fill=TRUE)}
+
+
+    }
+   }
 
   # Return the found rows with columns order as define in SEND IG
   data.table::setorderv(sendIGcolumns[TABLE_NAME == domain &
