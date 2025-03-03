@@ -224,6 +224,8 @@ getFindingsPhase <-function(dbToken,
                              domainDTC))
 
       # Get subjects included in the pools
+      if(dbToken$dbType=='sqlite'){
+
       studyAnimalList <-
         (genericQuery(dbToken,
                      "select * from pooldef
@@ -237,6 +239,26 @@ getFindingsPhase <-function(dbToken,
                                fill=TRUE)} %>%
         # Ensure the list is unique
         unique()
+
+      }else if(dbToken$dbType=='postgresql'){
+
+      studyAnimalList <-
+        (DBI::dbGetQuery(dbToken$dbHandle,
+                     'select * from "POOLDEF"
+                       where "STUDYID" in ($1)',
+                    params=list(studyList$STUDYID)) %>%
+         data.table::as.data.table() %>%
+        data.table::merge.data.table(poolList,
+                                    by = c('STUDYID', 'POOLID'))) %>%
+        # - add list of pooled subjects to list of subjects
+        {data.table::rbindlist(list(studyAnimalList, .),
+                               use.names=TRUE,
+                               fill=TRUE)} %>%
+        # Ensure the list is unique
+        unique()
+
+
+      }
 
       subjFindings <-
         # Expand the pooled findings rows to subject level - i.e. each pooled
@@ -277,10 +299,22 @@ getFindingsPhase <-function(dbToken,
                                               'SESTDTC',
                                               'SEENDTC')]
   # Get related TA rows
+  if(dbToken$dbType=='sqlite'){
+
   TA <- genericQuery(dbToken,
                      'select * from "TA"
                       where "STUDYID" in (?)',
                      studyList)
+
+  }else if(dbToken$dbType=='postgresql'){
+
+  TA <- DBI::dbGetQuery(dbToken$dbHandle,
+                     'select * from "TA"
+                      where "STUDYID" in ($1)',
+                     params=list(studyList$STUDYID))
+    TA <- data.table::as.data.table(TA)
+
+  }
 
 
   # Join DM with TA to get a list off all possible epochs per animal
