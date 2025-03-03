@@ -338,13 +338,27 @@ getFindingsSubjAge<-function(dbToken,
         # Input data contains pooled data
 
         # Get dm level ages for pools
-        poolAges <-
-          # Extract POOLDEF
-          ((genericQuery(dbToken,
-                        "select STUDYID, POOLID, USUBJID
+
+        if(dbToken$dbType=='sqlite'){
+dt_pool <- genericQuery(dbToken,
+  "select STUDYID, POOLID, USUBJID
                            from pooldef
                           where studyid in (:1)",
-                        unique(poolList[, c("STUDYID")])) %>%
+  unique(poolList[, c("STUDYID")]))
+
+        }else if(dbToken$dbType=='postgresql'){
+          dt_pool <- DBI::dbGetQuery(dbToken$dbHandle,
+                                     'select "STUDYID", "POOLID", "USUBJID"
+                           from "POOLDEF"
+                          where "STUDYID" in ($1)',
+                          params=list(poolList$STUDYID))
+          dt_pool <- data.table::as.data.table(dt_pool)
+        }
+
+
+        poolAges <-
+          # Extract POOLDEF
+          ((data.table::as.data.table(dt_pool) %>%
           # merge with pool list to get subject ids
           merge(poolList, by = c('STUDYID', 'POOLID')) %>%
           # merge with list of control animals to get age info
@@ -359,7 +373,9 @@ getFindingsSubjAge<-function(dbToken,
                          .SDcols='DM_AGEDAYS'][,`:=` (USUBJID = NULL, DM_AGEDAYS=NULL)] %>%
           # Reduce to pool/RFSTDTC level rows
           #  - for pools with different subject level RFSTDTC values, set value to NA
-          unique())[,# Get  number of distinct RFSTDTC per pool
+          unique()
+
+          )[,# Get  number of distinct RFSTDTC per pool
                    `:=` (RFSTDTC = ifelse(.N > 1, as.character(NA), RFSTDTC)),
                    by=c('STUDYID', 'POOLID')] %>%
           # Reduce to pool level rows
