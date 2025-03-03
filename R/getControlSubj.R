@@ -264,6 +264,8 @@ getControlSubj<-function(dbToken,
   # Extract TX parameter 'TCNTRL' for the studies included in studyList
   # - include a row for each for study which may miss a 'TCNTRL' parameter
   # - include the animals from DM belonging to the identified trial sets
+  if(dbToken$dbType=='sqlite'){
+
   txDmCtrlSet <- genericQuery(dbToken,
                             "select ts.studyid
                                    ,tx.txval as TCNTRL
@@ -292,6 +294,39 @@ getControlSubj<-function(dbToken,
                                on ts.studyid = ds.studyid
                                and dm.usubjid = ds.usubjid",
                             studyList[,c('STUDYID')])
+  }else if(dbToken$dbType=='postgresql'){
+
+query <- paste0('SELECT "TS"."STUDYID"
+                     ,"TX"."TXVAL" AS "TCNTRL"
+                     ,"TX"."SETCD"
+                     ,"DM"."USUBJID"
+                     ,"DM"."RFSTDTC"
+                     ,"DM"."BRTHDTC"
+                     ,"DM"."AGETXT"
+                     ,"DM"."AGE"
+                     ,"DM"."AGEU"
+                     ,"DS"."DSDECOD"
+                     ,"DS"."DSSTDTC"
+               FROM (SELECT DISTINCT "STUDYID"
+                     FROM "TS"
+                     WHERE "STUDYID" IN ($1)) "TS"
+               LEFT JOIN "TX"
+                     ON "TS"."STUDYID" = "TX"."STUDYID"
+                     AND "TX"."TXPARMCD" = \'TCNTRL\'
+               LEFT JOIN "DM"
+                     ON "DM"."STUDYID" = "TS"."STUDYID"
+                     AND (("TX"."SETCD" IS NOT NULL
+                           AND "DM"."SETCD" = "TX"."SETCD")
+                          OR
+                          ("TX"."SETCD" IS NULL))
+               LEFT JOIN "DS"
+                     ON "TS"."STUDYID" = "DS"."STUDYID"
+                     AND "DM"."USUBJID" = "DS"."USUBJID"')
+
+txDmCtrlSet <- RPostgres::dbGetQuery(dbToken$dbHandle, query,params=list(studyList$STUDYID))
+    txDmCtrlSet <- data.table::as.data.table(txDmCtrlSet)
+
+  }
 
 
   # Extract the unique set of trial sets
