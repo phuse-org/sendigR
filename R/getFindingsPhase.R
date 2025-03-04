@@ -206,6 +206,7 @@ getFindingsPhase <-function(dbToken,
   studyAnimalList <- unique(findings[nchar(USUBJID) > 0,
                                      c('STUDYID', 'USUBJID')])
   pooledFindings <- FALSE
+
   if ('POOLID' %in% names(findings)) {
     # Get list of pools included in input findings
     poolList <-
@@ -407,7 +408,8 @@ getFindingsPhase <-function(dbToken,
   findPhaseFound <-
     data.table::merge.data.table(findElement, dmEpoch,
                                  by = c('STUDYID', 'USUBJID', 'ETCD'),
-                                 all.x = TRUE)[, PHASE := mapply(getPhase,EPOCH)]
+                                 all.x = TRUE,
+                                 allow.cartesian = TRUE)[, PHASE := mapply(getPhase,EPOCH)]
 
   # Extract findings with a valid phase, ie.
   # - one identified element and phase is identified
@@ -444,7 +446,7 @@ getFindingsPhase <-function(dbToken,
       findPhaseOK[,MSG := as.character(NA)],
       unique(
         data.table::rbindlist(list(findPhaseErr1,
-                                   findPhaseErr2))[,MSG := paste(unlist(list(.SD)),
+                                   findPhaseErr2),fill = TRUE)[,MSG := paste(unlist(list(.SD)),
                                                                  collapse = ';')
                                                    ,by = c('STUDYID',
                                                            'USUBJID',

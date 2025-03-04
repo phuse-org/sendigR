@@ -351,10 +351,9 @@ dt_pool <- genericQuery(dbToken,
                                      'select "STUDYID", "POOLID", "USUBJID"
                            from "POOLDEF"
                           where "STUDYID" in ($1)',
-                          params=list(poolList$STUDYID))
+                          params=list(unique(poolList$STUDYID)))
           dt_pool <- data.table::as.data.table(dt_pool)
         }
-
 
         poolAges <-
           # Extract POOLDEF
