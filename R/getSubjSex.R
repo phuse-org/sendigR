@@ -101,6 +101,8 @@ getSubjSex<-function(dbToken,
   # included in the input table of animals
   # Join t DM to get SEX values
   #  - ensure all empty SEX values are returned as NA
+
+  if(dbToken$dbType=='sqlite'){
   animalListSEX <-
     genericQuery(dbToken,
                  "select dm.studyid
@@ -117,6 +119,27 @@ getSubjSex<-function(dbToken,
                     on dm.studyid = tx.studyid
                    and dm.setcd = tx.setcd",
                  unique(animalList[,c('STUDYID')]))
+  }else if(dbToken$dbType=='postgresql'){
+  animalListSEX <-
+    DBI::dbGetQuery(dbToken$dbHandle,
+                 paste0('SELECT "DM"."STUDYID"
+                        ,"DM"."USUBJID"
+                        ,CASE "SEX"
+                          WHEN \'\' THEN NULL
+                          ELSE "SEX"
+                         END AS "SEX"
+                  FROM "DM"
+                  JOIN (SELECT DISTINCT "STUDYID", "SETCD"
+                           FROM "TX"
+                          WHERE "TXPARMCD" = \'TCNTRL\'
+                            AND "STUDYID" IN ($1))  "TX"
+                    ON "DM"."STUDYID" = "TX"."STUDYID"
+                   AND "DM"."SETCD"="TX"."SETCD"'),
+                 params=list(unique(animalList$STUDYID)))
+
+
+  animalListSEX <- data.table::as.data.table(animalListSEX)
+  }
 
   # Check if a message column for uncertainties shall be included
   msgCol =''
