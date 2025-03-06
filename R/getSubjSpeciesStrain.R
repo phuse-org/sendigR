@@ -189,6 +189,7 @@ getSubjSpeciesStrain <- function(dbToken,
   # animal level (DM) together for each animal
   #  - ensure all empty SPECIES_xx and STRAIN_xx values are NA
   # Trim all species and strain values and convert to uppercase
+  if(dbToken$dbType=='sqlite'){
   animalSpeciesStrainDB <-
     genericQuery(dbToken,
                  "select distinct
@@ -241,6 +242,69 @@ getSubjSpeciesStrain <- function(dbToken,
                      and tx3.txparmcd = 'STRAIN'
                    where dm.studyid in (:1)",
                  unique(animalList[,c('STUDYID')]))
+
+  }else if(dbToken$dbType=='postgresql'){
+
+  animalSpeciesStrainDB <-
+    DBI::dbGetQuery(dbToken$dbHandle,
+                 'SELECT DISTINCT
+                         "DM"."STUDYID"  AS "STUDYID",
+                         "DM"."USUBJID"   AS "USUBJID",
+                         CASE "TS1"."TSVAL"
+                            WHEN \'\' THEN NULL
+                            ELSE UPPER(TRIM("TS1"."TSVAL"))
+                         END          AS "SPECIES_TS",
+                         CASE "TS2"."TSVAL"
+                            WHEN \'\' THEN NULL
+                            ELSE UPPER(TRIM("TS2"."TSVAL"))
+                         END          AS "STRAIN_TS",
+                         CASE "TX2"."TXVAL"
+                            WHEN \'\' THEN NULL
+                            ELSE UPPER(TRIM("TX2"."TXVAL"))
+                         END          AS "SPECIES_TX",
+                         CASE "TX3"."TXVAL"
+                            WHEN \'\' THEN NULL
+                            ELSE UPPER(TRIM("TX3"."TXVAL"))
+                         END          AS "STRAIN_TX",
+                         CASE "DM"."SPECIES"
+                            WHEN \'\' THEN NULL
+                            ELSE UPPER(TRIM("DM"."SPECIES"))
+                         END          AS "SPECIES_DM",
+                         CASE "DM"."STRAIN"
+                            WHEN \'\' THEN NULL
+                            ELSE UPPER(TRIM("DM"."STRAIN"))
+                         END          AS "STRAIN_DM"
+                    FROM "DM"
+                    LEFT JOIN (SELECT DISTINCT "STUDYID", "SETCD"
+                             FROM "TX"
+                            WHERE "TXPARMCD" = \'TCNTRL\')  "TX1"
+                      ON "DM"."STUDYID" = "TX1"."STUDYID"
+                     AND "DM"."SETCD" = "TX1"."SETCD"
+                    LEFT JOIN "TS"                    "TS1"
+                      ON "TS1"."STUDYID" = "DM"."STUDYID"
+                     AND "TS1"."TSPARMCD" = \'SPECIES\'
+                    LEFT JOIN "TS"                    "TS2"
+                      ON "TS2"."STUDYID" = "DM"."STUDYID"
+                     AND COALESCE("TS2"."TSGRPID", \'<NULL>\') = COALESCE("TS1"."TSGRPID", \'<NULL>\')
+                     AND "TS2"."TSPARMCD" = \'STRAIN\'
+                    LEFT JOIN "TX"                    "TX2"
+                      ON "TX2"."STUDYID" = "DM"."STUDYID"
+                     AND "TX2"."SETCD" = "DM"."SETCD"
+                     AND "TX2"."TXPARMCD" = \'SPECIES\'
+                    LEFT JOIN "TX"                    "TX3"
+                      ON "TX3"."STUDYID" = "DM"."STUDYID"
+                     AND "TX3"."SETCD" = "DM"."SETCD"
+                     AND "TX3"."TXPARMCD" = \'STRAIN\'
+                   WHERE "DM"."STUDYID" IN ($1)',
+                 params=list((animalList$STUDYID)))
+
+    animalSpeciesStrainDB <- data.table::as.data.table(animalSpeciesStrainDB)
+
+  }
+
+
+
+
   # Limit the set to the animals included in the input animalList
   animalSpeciesStrainDB <-
     data.table::merge.data.table(animalSpeciesStrainDB,
