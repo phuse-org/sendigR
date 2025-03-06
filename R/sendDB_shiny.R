@@ -186,6 +186,20 @@ getMinStudyStartDate <- function() {
       na.rm = TRUE)
 }
 
+getMinStudyStartDate_2 <- function(dbToken) {
+
+  df <- sendigR::genericQuery(dbToken,
+                                                      "select distinct tsval
+                                                       from ts
+                                                       where TSPARMCD = 'STSTDTC'")$TSVAL
+
+kk <- data.table::as.IDate(df)
+kk <- kk[!is.na(kk)]
+ll <- grep('^[1-2]',kk,ignore.case = T,value = T)
+ ll <- min(ll)
+  ll
+}
+
 # series of functions to query the
 # database to find unique elements.
 GetUniqueDesign <- function() {
@@ -214,7 +228,7 @@ GetUniqueSpecies <- function() {
                            and SPECIES != ''
                          order by SPECIES")$SPECIES
 }
-
+tictoc::tic('strain')
 GetUniqueStrains <- function(species) {
   if (length(species) == 1) {
     # 1 species selected
@@ -264,8 +278,10 @@ GetUniqueStrains <- function(species) {
                          selectStrDM),
                  species)$STRAIN)
 }
+tictoc::toc()
 
 
+  tictoc::tic('route')
 GetUniqueRoutes <- function() {
   toupper(sendigR::genericQuery(.sendigRenv$dbToken, "select distinct tsval as ROUTE
                            from ts
@@ -275,7 +291,7 @@ GetUniqueRoutes <- function() {
                            from ex
                           order by ROUTE")$ROUTE)
 }
-
+tictoc::toc()
 GetUniqueOrgans <- function() {
   uniqueOrgans <- toupper(sendigR::genericQuery(.sendigRenv$dbToken, 'SELECT DISTINCT MISPEC
                                                           FROM MI')$MISPEC)

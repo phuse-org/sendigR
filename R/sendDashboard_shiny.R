@@ -35,21 +35,28 @@
 #' disconnectDB(dbToken)
 #' }
 execSendDashboard <- function(dbToken) {
-
+tictoc::tic('remove')
   # Clear environment
   rm(list = ls(envir = .sendigRenv,
                pattern = 'controlAnimals|lastFilterValues|studiesAll'),
      envir = .sendigRenv)
   # retain dbToken
   assign('dbToken', dbToken, envir = .sendigRenv)
-
+tictoc::toc()
   #### Animal filtering selections ####
 
   # get minimum date
+  tictoc::tic('date')
   minStudyStartDate <- as.Date(getMinStudyStartDate())
+  tictoc::toc()
   # get available studies list
+
+  tictoc::tic('studies')
   availableStudies <- GetAvailableStudies()
   availableStudies <- as.list(stats::setNames(availableStudies, availableStudies))
+  tictoc::toc()
+
+  tictoc::tic('sex')
   # get unique sex
   availableSex <- GetUniqueSex()
   availableSex <- availableSex[[1]]
@@ -57,14 +64,15 @@ execSendDashboard <- function(dbToken) {
   availableSex <- as.list(stats::setNames(availableSex,availableSex))
   # get phase
   availablePhases <- c('Screening', 'Treatment', 'Recovery')
-
+tictoc::toc()
   #### Domains-specific filtering selections ####
   # For the MI domain, allow filtering
   # by organs available in the SEND DB.
-
+tictoc::tic('organ')
   availableOrgans <- GetUniqueOrgans()
   availableOrgans <- as.list(stats::setNames(availableOrgans, availableOrgans))
 
+  tictoc::toc()
   # The LB domain is of the larger
   # domains.  This is currently
   # converting all LBTESTCD to a
@@ -73,14 +81,14 @@ execSendDashboard <- function(dbToken) {
   # without having to manually enter
   # unit conversions.
 
-  availableLBTESTCD <- GetUniqueLBTESTCD('CLINICAL CHEMISTRY')
-  availableLBTESTCD <- as.list(stats::setNames(availableLBTESTCD, availableLBTESTCD))
-  liverEnzymes <- list(
-    ALT='ALT',
-    BILI='BILI',
-    AST='AST',
-    ALP='ALP'
-  )
+  ## availableLBTESTCD <- GetUniqueLBTESTCD('CLINICAL CHEMISTRY')
+  ## availableLBTESTCD <- as.list(stats::setNames(availableLBTESTCD, availableLBTESTCD))
+  ## liverEnzymes <- list(
+  ##   ALT='ALT',
+  ##   BILI='BILI',
+  ##   AST='AST',
+  ##   ALP='ALP'
+  ## )
 
   # add function drag and drop menu ----
   addUIDep <- function(x) {
@@ -215,17 +223,30 @@ guide <- cicerone::Cicerone$new()$step(
 				  ),
                  shiny::dateRangeInput("STSTDTC",
                                 "Select Study Start Date Range:",
-                                start = minStudyStartDate,
-                                end = Sys.Date(),
-                                min = minStudyStartDate,
-                                max = Sys.Date(),
+                                start = NULL,
+                                end = NULL,
+                                min = NULL,
+                                max = NULL,
+                                ## start = minStudyStartDate,
+                                ## end = Sys.Date(),
+                                ## min = minStudyStartDate,
+                                ## max = Sys.Date(),
                                 format="yyyy-mm-dd",
                                 startview = "year"),
                  shiny::selectInput("SDESIGN",
-                             "Select Study Design:",
-                             GetUniqueDesign(),
+                            label =  "Select Study Design:",
+                            ## choices =  GetUniqueDesign(),
+                            choices = NULL,
                              selected=NULL),
-                 shiny::uiOutput('ROUTE'),
+                 ## shiny::uiOutput('ROUTE'),
+
+                shiny::selectizeInput("ROUTE",
+                                     label='Select Route of Administration:',
+                                     ## choices=GetUniqueRoutes(),
+                                     choices=NULL,
+                                     selected= NULL,
+                                     multiple=TRUE),
+
                  addUIDep(shiny::selectizeInput("SPECIES",label='Select Species:',
                                          choices= GetUniqueSpecies(),
                                          selected=NULL,
@@ -312,10 +333,13 @@ guide <- cicerone::Cicerone$new()$step(
                                             shiny::fluidRow(
                                               htmltools::br(),
                                               shiny::column(width = 3, offset = 1,
-                                                            shiny::selectInput("MISPEC",
+                                                            shiny::selectizeInput("MISPEC",
                                                                                "Select MISPEC:",
-                                                                               availableOrgans,
-                                                                               selected='KIDNEY'),
+                                                                               ## availableOrgans,
+                                                                               choices = NULL,
+                                                                               ## selected='KIDNEY'
+                                                                               selected = NULL
+                                                                               ),
                                                             shiny::uiOutput('mi_findings_filter'),
                                                             shiny::actionButton('mi_finding_update', 'Generate/Update Table')),
                                        shiny::column(width = 6, offset = 1,
@@ -458,6 +482,42 @@ guide <- cicerone::Cicerone$new()$step(
 
   server <- function(input, output, session) {
 
+
+##     observe({
+## print('STSTDTC')
+      shiny::updateDateRangeInput(session =session, inputId = 'STSTDTC',
+                                  start = minStudyStartDate,
+                                  end = Sys.Date(),
+                                  min = minStudyStartDate,
+                                  max = Sys.Date())
+
+
+    ## })
+
+    ## observe({
+    ##   print('SDESIGN')
+      shiny::updateSelectInput(session =session,  inputId = 'SDESIGN',
+                               choices = GetUniqueDesign())
+
+    ## })
+
+    ## observe({
+    ##   print('ROUTE')
+      shiny::updateSelectizeInput(session =session, inputId = 'ROUTE',
+                                  choices = GetUniqueRoutes(),
+                                  selected = NULL)
+
+
+    ## })
+
+    ## observe({
+      shiny::updateSelectizeInput(session =session, inputId = 'MISPEC',
+                               choices = availableOrgans,
+                               selected = NULL,server=TRUE)
+
+
+    ## })
+
       shiny::observeEvent(input$tour, {
 		  guide$init()$start()
 
@@ -496,14 +556,14 @@ guide <- cicerone::Cicerone$new()$step(
     })
 
     # ROUTE render
-    output$ROUTE <- shiny::renderUI({
-      addUIDep(shiny::selectizeInput("ROUTE",
-                                     label='Select Route of Administration:',
-                                     choices=GetUniqueRoutes(),
-                                     selected= NULL,
-                                     multiple=TRUE,
-                                     options=list(plugins=list('drag_drop','remove_button'))))
-      })
+    ## output$ROUTE <- shiny::renderUI({
+    ##   addUIDep(shiny::selectizeInput("ROUTE",
+    ##                                  label='Select Route of Administration:',
+    ##                                  choices=GetUniqueRoutes(),
+    ##                                  selected= NULL,
+    ##                                  multiple=TRUE,
+    ##                                  options=list(plugins=list('drag_drop','remove_button'))))
+    ##   })
 
     # Control Animal Table ----
     output$animals <- DT::renderDataTable(server = T,{
