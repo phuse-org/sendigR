@@ -188,6 +188,14 @@ getSubjRoute <- function(dbToken,
   # List of studyid values included in the input table of animals
   animalStudies<-unique(animalList[,c('STUDYID')])
 
+
+  # Extract unique set or rows from EX for all animals studies
+  # included in the input table of animals.
+  # Do only include rows with a non-empty value of EXROUTE
+  # Trim EXROUTE value and convert to uppercase
+
+  if(dbToken$dbType=='sqlite'){
+
   #check if POOLDEF exists and if EX contains POOLDEF
   if (dbExistsTable(dbToken, 'POOLDEF') && 'POOLID' %in% dbListFields(dbToken, 'EX'))
     # select part of pool level rows from EX
@@ -207,10 +215,6 @@ getSubjRoute <- function(dbToken,
     sqlPartPool <- ""
 
 
-  # Extract unique set or rows from EX for all animals studies
-  # included in the input table of animals.
-  # Do only include rows with a non-empty value of EXROUTE
-  # Trim EXROUTE value and convert to uppercase
   allAnimals <-
     genericQuery(dbToken, paste0(
                   "select distinct STUDYID,
@@ -225,6 +229,46 @@ getSubjRoute <- function(dbToken,
                       and exroute != ''",
                     sqlPartPool),
                  animalStudies)
+  }else if(dbToken$dbType=='postgresql'){
+
+  #check if POOLDEF exists and if EX contains POOLDEF
+  if (dbExistsTable(dbToken, 'POOLDEF') && 'POOLID' %in% dbListFields(dbToken, 'EX'))
+    # select part of pool level rows from EX
+    # Trim EXROUTE value and convert to uppercase
+    sqlPartPool <- 'UNION
+                        SELECT "POOLDEF"."STUDYID",
+                               "POOLDEF"."USUBJID",
+                               UPPER(TRIM("EXROUTE")) AS "EXROUTE"
+                         FROM "POOLDEF"
+                         JOIN "EX"
+                           ON "EX"."STUDYID" = "POOLDEF"."STUDYID"
+                          AND "EX"."POOLID" = "POOLDEF"."POOLID"
+                          AND "EXROUTE" IS NOT NULL
+                          AND "EXROUTE" != \'\'
+                        WHERE "POOLDEF"."STUDYID" IN ($1)'
+  else
+    sqlPartPool <- ""
+
+
+
+  allAnimals <-
+    DBI::dbGetQuery(dbToken$dbHandle, paste0(
+                  'SELECT DISTINCT "STUDYID",
+                          "USUBJID",
+                          CASE "EXROUTE"
+                            WHEN \'\' THEN NULL
+                            ELSE UPPER(TRIM("EXROUTE"))
+                          END AS "EXROUTE"
+                     FROM "EX"
+                    WHERE "STUDYID" IN ($1)
+                      AND "EXROUTE" IS NOT NULL
+                      AND "EXROUTE" != \'\'',
+                    sqlPartPool),
+                 params=list(animalStudies$STUDYID))
+    allAnimals <- data.table::as.data.table(allAnimals)
+
+  }
+
 
   # Add variables with
   # - number of distinct EXROUTE values per study
@@ -249,6 +293,8 @@ getSubjRoute <- function(dbToken,
 
   # Extract TS parm ROUTE parameter for all studies in the input list of animals
   # Trim ROUTE value and convert to uppercase
+
+  if(dbToken$dbType=='sqlite'){
   studyRoutes <-
     genericQuery(dbToken,
                  "select distinct studyid,
@@ -259,6 +305,20 @@ getSubjRoute <- function(dbToken,
                      and tsval != ''
                      and studyid in (:1)",
                  animalStudies)
+  }else if(dbToken$dbType=='postgresql'){
+  studyRoutes <-
+   DBI::dbGetQuery(dbToken$dbHandle,
+                 'SELECT DISTINCT "STUDYID",
+                         UPPER(TRIM("TSVAL")) AS "ROUTE_TS"
+                    FROM "TS"
+                   WHERE "TSPARMCD" = \'ROUTE\'
+                     AND "TSVAL" IS NOT NULL
+                     AND "TSVAL" != \'\'
+                     AND "STUDYID" IN ($1)',
+                 params=list(animalStudies$STUDYID))
+studyRoutes <- data.table::as.data.table(studyRoutes)
+
+  }
 
   # Add variables with
   # - number of distinct routes per study
